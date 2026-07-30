@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rsync -a 03_engineering/01_布局/ engineering/layout/)",
+      "Bash(rsync -a 03_engineering/02_底盘/ engineering/chassis/)",
+      "Bash(rsync -a 03_engineering/03_软装与外观/ engineering/interior/)",
+      "Bash(rsync -a 03_engineering/04_电力系统/ engineering/electrical/)",
+      "Bash(rsync -a 03_engineering/05_用水系统/ engineering/water/)",
+      "Bash(rsync *)",
+      "Bash(chmod +x *)"
+    ]
+  }
+}

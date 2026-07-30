@@ -1,0 +1,170 @@
+# ============================================================
+# ESPhome 配置 — 驾驶室自复位按钮面板
+# 硬件: ESP32 DevKitC + 6-8 个自复位按钮 (带 LED)
+# 总线: WiFi 连接到 GL.iNet 路由器
+# ============================================================
+#
+# 将此文件内容放入 ESPhome Dashboard 新建设备配置中
+# 或手动编写后通过 esphome run 编译烧录
+
+esphome:
+  name: van-cab-buttons
+  friendly_name: Van Cab Buttons
+  comment: 驾驶室控制面板 — 6路自复位按钮+LED指示灯
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# ---- WiFi ----
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  manual_ip:
+    static_ip: 192.168.8.20
+    gateway: 192.168.8.1
+    subnet: 255.255.255.0
+
+  ap:
+    ssid: "Van-Cab-AP"
+    password: "1234567890"
+
+# ---- 日志与 OTA ----
+logger:
+api:
+ota:
+  - platform: esphome
+
+# ---- 二进制传感器 (自复位按钮) ----
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO32
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "按钮1 — 逆变器"
+    on_press:
+      - homeassistant.service:
+          service: switch.toggle
+          data:
+            entity_id: switch.逆变器
+    id: btn1
+
+  - platform: gpio
+    pin:
+      number: GPIO33
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "按钮2 — 水泵"
+    on_press:
+      - homeassistant.service:
+          service: switch.toggle
+          data:
+            entity_id: switch.上水泵
+    id: btn2
+
+  - platform: gpio
+    pin:
+      number: GPIO25
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "按钮3 — 主灯"
+    on_press:
+      - homeassistant.service:
+          service: switch.toggle
+          data:
+            entity_id: switch.主灯
+    id: btn3
+
+  - platform: gpio
+    pin:
+      number: GPIO26
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "按钮4 — 场景切换"
+    on_press:
+      - homeassistant.service:
+          service: input_select.select_next
+          data:
+            entity_id: input_select.van_mode
+    id: btn4
+
+  - platform: gpio
+    pin:
+      number: GPIO27
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "按钮5 — 音响模式"
+    on_press:
+      - homeassistant.service:
+          service: input_select.select_next
+          data:
+            entity_id: input_select.audio_mode
+    id: btn5
+
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "按钮6 — 离车"
+    on_press:
+      - homeassistant.service:
+          service: input_select.select_option
+          data:
+            entity_id: input_select.van_mode
+            option: "离车模式"
+    id: btn6
+
+# ---- LED 状态灯 (GPIO 输出) ----
+output:
+  - platform: gpio
+    pin: GPIO18
+    id: led1
+  - platform: gpio
+    pin: GPIO19
+    id: led2
+  - platform: gpio
+    pin: GPIO21
+    id: led3
+  - platform: gpio
+    pin: GPIO22
+    id: led4
+  - platform: gpio
+    pin: GPIO23
+    id: led5
+  - platform: gpio
+    pin: GPIO13
+    id: led6
+
+light:
+  - platform: binary
+    name: "按钮1 LED"
+    output: led1
+    id: light_btn1
+  - platform: binary
+    name: "按钮2 LED"
+    output: led2
+    id: light_btn2
+  - platform: binary
+    name: "按钮3 LED"
+    output: led3
+    id: light_btn3
+  - platform: binary
+    name: "按钮4 LED"
+    output: led4
+    id: light_btn4
+  - platform: binary
+    name: "按钮5 LED"
+    output: led5
+    id: light_btn5
+  - platform: binary
+    name: "按钮6 LED"
+    output: led6
+    id: light_btn6
+
+# ---- 从 HA 同步 LED 状态 ----
+# LED 状态跟随对应设备（需要 HA 侧自动化配合）
+# 例如：逆变器开启时点亮 btn1 LED

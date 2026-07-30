@@ -1,0 +1,231 @@
+# ============================================================
+# VAN-PROJECT 自动化场景
+# ============================================================
+
+# ---- 1. 驻车模式 ----
+- id: "mode_parking"
+  alias: "驻车模式 — 开启生活区"
+  trigger:
+    - platform: state
+      entity_id: input_select.van_mode
+      to: "驻车模式"
+  action:
+    - parallel:
+        - service: switch.turn_on
+          target:
+            entity_id:
+              - switch.上水泵
+              - switch.氛围灯
+        - service: switch.turn_off
+          target:
+            entity_id:
+              - switch.原车鼓风机使能
+              - switch.车内锁
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.audio_mode
+        option: "派对"
+
+# ---- 2. 离车模式 ----
+- id: "mode_leaving"
+  alias: "离车模式 — 锁车关闭所有设备"
+  trigger:
+    - platform: state
+      entity_id: input_select.van_mode
+      to: "离车模式"
+  action:
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.主灯
+          - switch.氛围灯
+          - switch.睡眠灯
+          - switch.排风扇1_生活区
+          - switch.排风扇2_卫浴间
+          - switch.原车鼓风机使能
+    - delay:
+        seconds: 2
+    - service: switch.turn_on
+      target:
+        entity_id: switch.车内锁
+    - delay:
+        seconds: 5
+    - service: switch.turn_on
+      target:
+        entity_id: switch.电动踏步
+    - delay:
+        seconds: 10
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.上水泵
+          - switch.放水泵
+
+# ---- 3. 影院模式 ----
+- id: "mode_cinema"
+  alias: "影院模式 — 调暗灯光，切换音响"
+  trigger:
+    - platform: state
+      entity_id: input_select.van_mode
+      to: "影院模式"
+  action:
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.主灯
+          - switch.睡眠灯
+    - service: switch.turn_on
+      target:
+        entity_id: switch.氛围灯
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.audio_mode
+        option: "影院"
+
+# ---- 4. 休息模式 ----
+- id: "mode_rest"
+  alias: "休息模式 — 保留水电，关闭灯光"
+  trigger:
+    - platform: state
+      entity_id: input_select.van_mode
+      to: "休息模式"
+  action:
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.主灯
+          - switch.氛围灯
+          - switch.排风扇1_生活区
+          - switch.排风扇2_卫浴间
+    - service: switch.turn_on
+      target:
+        entity_id:
+          - switch.上水泵
+          - switch.睡眠灯
+
+# ---- 5. 行车模式 — 自动切换 ----
+- id: "auto_driving"
+  alias: "发动机启动 → 自动切行车模式"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.发动机转速
+      above: 500
+  condition:
+    - condition: state
+      entity_id: input_select.van_mode
+      state: "驻车模式"
+  action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.van_mode
+        option: "行车模式"
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.audio_mode
+        option: "驾驶"
+
+# ---- 6. 发动机熄火 → 自动切驻车模式 ----
+- id: "auto_parking"
+  alias: "发动机熄火 → 自动切驻车模式"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.发动机转速
+      below: 100
+      for:
+        seconds: 30
+  condition:
+    - condition: state
+      entity_id: input_select.van_mode
+      state: "行车模式"
+  action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.van_mode
+        option: "驻车模式"
+
+# ---- 7. 夜间驻车安防 (Frigate 联动) ----
+- id: "night_security"
+  alias: "夜间检测到人 → 骤亮外射灯"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.front_person_motion
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.rear_person_motion
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: input_select.van_mode
+      state: "驻车模式"
+    - condition: sun
+      after: sunset
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.外射灯
+    - service: notify.mobile_app
+      data:
+        title: "驻车安防告警"
+        message: "检测到有人靠近"
+    - delay:
+        minutes: 2
+    - service: switch.turn_off
+      target:
+        entity_id: switch.外射灯
+
+# ---- 8. 行车充电自动启停 ----
+- id: "auto_charging"
+  alias: "引擎启动 → 开启行车充电"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.发动机转速
+      above: 500
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.行车充电器
+
+- id: "auto_charging_off"
+  alias: "引擎熄火 → 关闭行车充电"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.发动机转速
+      below: 100
+      for:
+        seconds: 10
+  action:
+    - service: switch.turn_off
+      target:
+        entity_id: switch.行车充电器
+
+# ---- 9. 原车电瓶低压保护 ----
+- id: "starter_battery_low"
+  alias: "原车电瓶电压低告警"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.原车电瓶电压
+      below: 11.8
+      for:
+        minutes: 5
+  action:
+    - service: notify.mobile_app
+      data:
+        title: "⚠️ 原车电瓶电压低"
+        message: "当前电压 {{ states('sensor.原车电瓶电压') }}V，请检查"
+
+# ---- 10. 踏步未收回行车告警 ----
+- id: "step_warning"
+  alias: "行车时踏步未收回告警"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.车速
+      above: 5
+  condition:
+    - condition: state
+      entity_id: switch.电动踏步
+      state: "on"
+  action:
+    - service: notify.mobile_app
+      data:
+        title: "⚠️ 安全告警"
+        message: "电动踏步未收回！车速 {{ states('sensor.车速') }}km/h"

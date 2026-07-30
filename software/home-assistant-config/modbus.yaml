@@ -1,0 +1,143 @@
+# ============================================================
+# VAN-PROJECT Modbus RTU 设备配置
+# 硬件: 10路 RS485 继电器模块 + PZEM-017 库仑计
+# 总线: RS485, 9600-8-N-1
+# ============================================================
+
+# ---- 主总线配置 ----
+- name: van_bus
+  type: serial
+  method: rtu
+  port: /dev/ttyUSB0
+  baudrate: 9600
+  parity: N
+  stopbits: 1
+  bytesize: 8
+  timeout: 3
+  delay: 1
+
+  # ============================================================
+  # 开关设备 (继电器模块，地址 1)
+  # ============================================================
+
+  switches:
+
+    # --- 照明区 ---
+    - name: "主灯"
+      slave: 1
+      address: 0
+      write_type: coil
+      icon: mdi:ceiling-light
+    - name: "氛围灯"
+      slave: 1
+      address: 1
+      write_type: coil
+      icon: mdi:led-strip-variant
+    - name: "睡眠灯"
+      slave: 1
+      address: 2
+      write_type: coil
+      icon: mdi:sleep
+
+    # --- 通风区 ---
+    - name: "排风扇1(生活区)"
+      slave: 1
+      address: 3
+      write_type: coil
+      icon: mdi:fan
+    - name: "排风扇2(卫浴间)"
+      slave: 1
+      address: 4
+      write_type: coil
+      icon: mdi:fan
+
+    # --- 水路区 ---
+    - name: "上水泵"
+      slave: 1
+      address: 5
+      write_type: coil
+      icon: mdi:water-pump
+    - name: "放水泵"
+      slave: 1
+      address: 6
+      write_type: coil
+      icon: mdi:water-remove
+
+    # --- 安全执行区 ---
+    - name: "车内锁"
+      slave: 1
+      address: 7
+      write_type: coil
+      icon: mdi:car-door-lock
+    - name: "电动踏步"
+      slave: 1
+      address: 8
+      write_type: coil
+      icon: mdi:stairs
+    - name: "原车鼓风机使能"
+      slave: 1
+      address: 9
+      write_type: coil
+      icon: mdi:fan-speed-3
+
+  # ============================================================
+  # 传感器 (库仑计 PZEM-017，地址 2)
+  # ============================================================
+
+  sensors:
+    # 这里需要根据实际 PZEM-017 的寄存器地址填写
+    # 以下为示例，请参考 PZEM-017 手册
+
+    - name: "48V 电池电压"
+      slave: 2
+      address: 0x0000
+      input_type: holding
+      device_class: voltage
+      unit_of_measurement: V
+      scale: 0.01
+      precision: 2
+      data_type: uint16
+
+    - name: "48V 电池电流"
+      slave: 2
+      address: 0x0001
+      input_type: holding
+      device_class: current
+      unit_of_measurement: A
+      scale: 0.01
+      precision: 2
+      data_type: uint16
+
+    - name: "48V 充电功率"
+      slave: 2
+      address: 0x0003
+      input_type: holding
+      device_class: power
+      unit_of_measurement: W
+      scale: 0.1
+      precision: 1
+      data_type: uint16
+
+    - name: "48V 累计电量"
+      slave: 2
+      address: 0x0005
+      input_type: holding
+      device_class: energy
+      unit_of_measurement: kWh
+      scale: 0.001
+      precision: 3
+      data_type: uint32
+
+  # ============================================================
+  # 二进制传感器 (读取继电器状态)
+  # ============================================================
+
+  binary_sensors:
+    - name: "主灯状态"
+      slave: 1
+      address: 0
+      input_type: coil
+    - name: "上水泵状态"
+      slave: 1
+      address: 5
+      input_type: coil

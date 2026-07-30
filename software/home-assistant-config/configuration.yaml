@@ -1,0 +1,139 @@
+# ============================================================
+# VAN-PROJECT Home Assistant 主配置
+# 适配: HA Container on Debian 12 LXC
+# 硬件: N100 Mini PC, RS485 Modbus RTU Relay Board
+# ============================================================
+
+# ---- 基础设置 ----
+homeassistant:
+  name: My Van
+  unit_system: metric
+  time_zone: Asia/Shanghai
+  country: CN
+  internal_url: http://192.168.8.11:8123
+  external_url: https://your-van.tailscale.ts.net:8123
+  currency: CNY
+  packages: !include_dir_named packages
+  allowlist_external_dirs:
+    - /config
+    - /media
+
+# ---- 调试与日志 ----
+logger:
+  default: warning
+  logs:
+    homeassistant.components.modbus: info
+    homeassistant.components.mqtt: info
+
+# ---- 界面 Lovelace ----
+lovelace:
+  mode: yaml
+  resources: !include lovelace-resources.yaml
+
+# ---- HTTP API ----
+http:
+  server_port: 8123
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.8.0/24
+  cors_allowed_origins:
+    - http://192.168.8.10:8080
+    - http://localhost:5173
+
+# ---- 系统健康 ----
+system_health:
+
+# ============================================================
+# 集成模块
+# ============================================================
+
+# ---- MQTT Broker (Mosquitto) ----
+mqtt: !include mqtt.yaml
+
+# ---- RS485 Modbus 设备 ----
+modbus: !include modbus.yaml
+
+# ---- 天气 (外部API) ----
+weather:
+  - platform: openweathermap
+    api_key: !secret weather_api_key
+    latitude: 31.23
+    longitude: 121.47
+    name: "室外"
+
+# ---- OBD-II 车辆传感器 (通过 MQTT 接入) ----
+mqtt:
+  sensor:
+    # 发动机
+    - name: "发动机转速"
+      state_topic: "van/obd/rpm"
+      unit_of_measurement: "rpm"
+      icon: mdi:gauge
+    - name: "车速"
+      state_topic: "van/obd/speed"
+      unit_of_measurement: "km/h"
+      icon: mdi:speedometer
+    - name: "冷却液温度"
+      state_topic: "van/obd/coolant_temp"
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+    - name: "原车电瓶电压"
+      state_topic: "van/obd/battery_voltage"
+      unit_of_measurement: "V"
+      icon: mdi:car-battery
+
+    # 环境
+    - name: "室内温度"
+      state_topic: "van/sensor/indoor_temp"
+      unit_of_measurement: "°C"
+      device_class: temperature
+    - name: "室内湿度"
+      state_topic: "van/sensor/indoor_humidity"
+      unit_of_measurement: "%"
+      device_class: humidity
+
+# ---- 输入辅助 (Helper) ----
+input_select:
+  van_mode:
+    name: 车辆模式
+    options:
+      - "驻车模式"
+      - "行车模式"
+      - "离车模式"
+      - "影院模式"
+      - "休息模式"
+    initial: "驻车模式"
+    icon: mdi:van-passenger
+
+  audio_mode:
+    name: 音响模式
+    options:
+      - "驾驶"
+      - "影院"
+      - "派对"
+    initial: "驾驶"
+    icon: mdi:speaker
+
+input_boolean:
+  maintenance_mode:
+    name: 维护模式
+    icon: mdi:tools
+    initial: false
+
+input_number:
+  target_temp:
+    name: 目标温度
+    min: 16
+    max: 30
+    step: 0.5
+    unit_of_measurement: "°C"
+    icon: mdi:thermostat
+
+# ---- 自动化 ----
+automation: !include automations.yaml
+
+# ---- 场景 ----
+scene: !include scenes.yaml
+
+# ---- 脚本 ----
+script: !include scripts.yaml
