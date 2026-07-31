@@ -1,43 +1,113 @@
 # 模块索引
 
-本项目按**功能模块**组织，每个模块自包含设计决策、施工指导和材料清单。
+本项目按**功能域**组织，编号反映施工顺序，每个模块自包含设计决策、施工指导和材料清单。
 
 ## 模块列表
 
-| 编号 | 模块 | 设计决策 | 施工指导 | 材料清单 | 状态 |
-|------|------|----------|----------|----------|------|
-| 00 | [整车布局与结构](./00-vehicle-layout/) | — | [build-guide.md](./00-vehicle-layout/build-guide.md) | — | 进行中 |
-| 01 | [电力系统](./01-power-system/) | [design.md](./01-power-system/design.md) | — | [bom.md](./01-power-system/bom.md) | 进行中 |
-| 02 | [智能控制系统](./02-smart-control/) | [design.md](./02-smart-control/design.md) | — | [bom.md](./02-smart-control/bom.md) | 进行中 |
-| 03 | [用水系统](./03-water-system/) | — | — | [bom.md](./03-water-system/bom.md) | 待启动 |
-| 04 | [淋浴模块](./04-shower-module/) | [design.md](./04-shower-module/design.md) | — | [bom.md](./04-shower-module/bom.md) | 待启动 |
-| 05 | [折叠卡座](./05-foldable-seat/) | [design.md](./05-foldable-seat/design.md) | — | [bom.md](./05-foldable-seat/bom.md) | 待启动 |
-| 06 | [车顶平台与太阳能](./06-roof-platform/) | [design.md](./06-roof-platform/design.md) | — | [bom.md](./06-roof-platform/bom.md) | 待启动 |
-| 07 | [额头柜](./07-overhead-cabinet/) | [design.md](./07-overhead-cabinet/design.md) | — | [bom.md](./07-overhead-cabinet/bom.md) | 待启动 |
-| 08 | [HVAC 系统](./08-hvac/) | — | — | [bom.md](./08-hvac/bom.md) | 待启动 |
+### 基础
 
-## 使用方式
+| 编号 | 模块 | 内容 | 结构 |
+|------|------|------|------|
+| 00 | 底盘 | 底盘装甲、防锈、开孔加固、底盘挂载 | 多文件 |
 
-施工时按模块推进，每个模块内部包含：
+### 总纲
 
+| 编号 | 模块 | 内容 | 结构 |
+|------|------|------|------|
+| 01 | 整车布局与结构 | 总体设计、地板、保温、框架、遮阳帘 | 多文件 |
+
+### 外观 / 外部
+
+| 编号 | 模块 | 内容 | 结构 |
+|------|------|------|------|
+| 02 | 外部扩展 | 车顶平台、太阳能、储物箱、扰流板、车尾储物箱、自行车架 | 多文件 |
+| 03 | 外观装饰 | 车身拉花、贴纸、装饰件 | 多文件 |
+
+### 管线系统
+
+| 编号 | 模块 | 内容 | 结构 |
+|------|------|------|------|
+| 04 | 电力系统 | 电池、逆变器、充放电、全车布线 | 多文件 |
+| 05 | 用水系统 | 水箱、水泵、管路、排水 | 单文件 |
+| 06 | HVAC 系统 | 空调、暖风、换气 | 单文件 |
+
+### 内饰
+
+| 编号 | 模块 | 内容 | 结构 |
+|------|------|------|------|
+| 07 | 柜体与台面 | 额头柜 + 右侧柜排（台面段 & 床段） | 多文件 |
+| 08 | 床铺与座椅 | 后横床（基座 + 抽拉）+ 折叠卡座 | 多文件 |
+| 09 | 淋浴模块 | 帘式湿区、防水盘、排水快接 | 单文件 |
+
+### 集成
+
+| 编号 | 模块 | 内容 | 结构 |
+|------|------|------|------|
+| 10 | 智能控制 | N100/HA、ESP32/485、继电器、传感器、监控 | 子目录 |
+| 11 | 影音娱乐 | 投影幕布、投影仪、显示器、键鼠收纳、全车音响 | 单文件 |
+
+## 文档约定
+
+每个模块内部包含：
+
+- **README.md** — 模块概述与子系统索引（多文件/子目录模块必有）
 - **design.md** — 方案决策、选型依据、关键尺寸
-- **build-guide.md** — 施工步骤、工艺要点、检查清单、问题记录
-- **bom.md** — 材料清单（器件型号、数量、购买链接）
-- **assets/** — 图纸、模型、过程照片、实测数据
+- **build-guide.md** — 施工步骤、工艺要点、检查清单
+- **bom.md** — 材料清单
+
+### 复杂模块的组织方式
+
+- **单文件**: 子系统 ≤2 个，内容 <100 行
+- **多文件** (`design-{name}.md`): 子系统 3-5 个，BOM 统一管理
+- **子目录**: 子系统 ≥5 个或有独立 BOM/build-guide/YAML 配置
 
 ## 跨模块依赖
 
 ```
-00-vehicle-layout (布局/保温/框架)
-    ├── 01-power-system (电力)
-    ├── 02-smart-control (智能)
-    ├── 03-water-system (水路)
-    ├── 06-roof-platform (车顶)
-    └── 07-overhead-cabinet (额头柜)
+00-chassis (底盘预处理)
+    └── 01-vehicle-layout (开孔位置由布局决定)
 
-01-power-system
-    └── 02-smart-control (依赖电力系统的常电干线)
+01-vehicle-layout (总纲：布局/保温/地板/框架/锚固)
+    ├── 02-external (车顶结构依附)
+    ├── 04-power-system (预留走线路径)
+    ├── 05-water-system (预留管路路径)
+    ├── 06-hvac (预留风道/开孔位)
+    ├── 07-cabinetry (柜体锚固点、空间包络)
+    ├── 08-bed-and-seat (基座锚固、抽拉路径)
+    └── 09-shower-module (湿区防水盘边界)
 
-03-water-system
-    └── 04-shower-module (淋浴依赖总水路)
+02-external
+    ├── 03-exterior-appearance (车顶件颜色协调)
+    └── 04-power-system (太阳能 → MPPT 电气接入)
+
+04-power-system
+    └── 10-smart-control (依赖常电干线)
+
+05-water-system
+    ├── 07-cabinetry (台面水槽供水)
+    └── 09-shower-module (淋浴供水 + 排水)
+
+07-cabinetry
+    ├── 04-power-system (台面电磁炉供电)
+    ├── 08-bed-and-seat (床段柜顶 = 床基座高)
+    └── 11-entertainment (额头柜喇叭开孔)
+
+10-smart-control
+    ├── 05-water-system (水位传感器)
+    ├── 06-hvac (温度传感器联动)
+    └── 11-entertainment (N100 音源 + 音响硬件管理)
+
+11-entertainment
+    ├── 04-power-system (12V 常电供电)
+    ├── 07-cabinetry (额头柜喇叭安装位)
+    └── 10-smart-control (复用 N100 主机)
 ```
+
+## 施工顺序
+
+```
+底盘 → 车顶 → 外观 → 管线预埋 → 木工柜体 → 软装家具 → 淋浴 → 智控 → 影音
+ 00     02     03     04-05-06      07         08        09      10      11
+```
+
+原则：先外后内、先粗后精、先结构后装饰。

@@ -7,7 +7,20 @@
       "Bash(rsync -a 03_engineering/04_电力系统/ engineering/electrical/)",
       "Bash(rsync -a 03_engineering/05_用水系统/ engineering/water/)",
       "Bash(rsync *)",
-      "Bash(chmod +x *)"
+      "Bash(chmod +x *)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/vitepress/package.json'\\).version\\)\")",
+      "Bash(npx --version)",
+      "Bash(gh api *)",
+      "Bash(npm run *)",
+      "Bash(curl -s \"https://shakeyo.github.io/MY-VAN/modules/00-vehicle-layout/\")",
+      "Bash(curl *)",
+      "Bash(python3 -c ' *)",
+      "Bash(read f *)",
+      "Bash(git *)"
     ]
   }
 }
