@@ -45,4 +45,7 @@ export default defineConfig({
     outline: { level: [2, 3] },
   },
   ignoreDeadLinks: true,
+  vite: {
+    assetsInclude: ['**/*.PNG', '**/*.JPG', '**/*.JPEG'],
+  },
 })
