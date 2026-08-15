@@ -20,7 +20,8 @@
       "Bash(curl *)",
       "Bash(python3 -c ' *)",
       "Bash(read f *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(python3 *)"
     ]
   }
 }

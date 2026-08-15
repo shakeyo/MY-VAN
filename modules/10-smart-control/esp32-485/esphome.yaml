@@ -8,8 +8,8 @@ esphome:
   board: esp32dev
 
 wifi:
-  ssid: "你的WiFi名称"
-  password: "你的WiFi密码"
+  ssid: "xxoo"
+  password: "www.baidu.com"
   manual_ip:
     static_ip: 192.168.8.20
     gateway: 192.168.8.1
