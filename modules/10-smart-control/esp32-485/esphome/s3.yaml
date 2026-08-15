@@ -1,0 +1,117 @@
+substitutions:
+  name: esp32-s3-2
+  friendly_name: esp32-s3-2
+
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+
+api:
+  encryption:
+    key: "BTGcLeExk4xanEi/1zwV6fVzQJiULFGZDbkXac4eFCw="
+    
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+web_server:
+  port: 80
+
+wifi:
+  ssid: "ooxx"
+  password: www.baidu.com
+  ap:
+    ssid: "my-van"
+    password: "12345678"
+captive_portal:
+
+
+uart:
+  id: rs485_bus
+  tx_pin: GPIO15
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+output:
+  - platform: gpio
+    id: de_pin
+    pin: GPIO5
+
+script:
+  - id: send_modbus_frame
+    mode: single
+    then:
+      - logger.log: "切换到发送模式 (EN=HIGH)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - logger.log: "发送 Modbus 报文"
+      - uart.write:
+          id: rs485_bus
+          data: "\x01\x03\x00\x00\x00\x01\x84\x0A"
+      - delay: 80ms                     # 【增加】确保数据全部发送完毕
+      - logger.log: "切换到接收模式 (EN=LOW)"
+      - output.turn_off: de_pin
+      - delay: 200ms                    # 等待回环数据到达 RX 缓冲区
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) {
+              buf[len++] = byte;
+            }
+          }
+          if (len > 0) {
+            ESP_LOGI("main", "✅ 收到 %d 个字节：", len);
+            for (int i = 0; i < len; i++) {
+              ESP_LOGI("main", "0x%02X", buf[i]);
+            }
+          } else {
+            ESP_LOGI("main", "❌ 缓冲区为空");
+          }
+          
+button:
+  - platform: template
+    name: "485测试发送"
+    on_press:
+      - script.execute: send_modbus_frame
+# button2:
+#   - platform: template
+#     name: "485测试发送"
+#     on_press:
+#       - script.execute: send_modbus_frame
+
+logger:
+  level: DEBUG
+  logs:
+    uart: DEBUG
+    
+# uart:
+#   id: rs485_bus
+#   tx_pin: GPIO17
+#   rx_pin: GPIO16
+#   baud_rate: 9600
+
+# output:
+#   - platform: gpio
+#     id: rs485_out
+#     pin: GPIO18
+
+# switch:
+#   - platform: output
+#     id: rs485_en
+#     output: rs485_out
+
+
+# button:
+#   - platform: template
+#     name: "485发送测试报文"
+#     on_press:
+#       - logger.log: "===按钮触发，开始发送485数据==="
+#       - switch.turn_on: rs485_en
+#       - uart.write:
+#           id: rs485_bus
+#           data: "\x01\x03\x00\x00\x00\x01\x84\x0A"
+#       - delay: 12ms
+#       - switch.turn_off: rs485_en
