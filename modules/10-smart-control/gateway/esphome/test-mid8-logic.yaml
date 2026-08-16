@@ -1,0 +1,581 @@
+# =============================================================
+# 阶段3：中8 模块全逻辑验证（桌面，模块地址 2，厂家软件已改）
+# 验证目标：中8 全部按键逻辑——双控/场景循环/长按全关/断电恢复
+#   - 杜邦线短接 DI↔GND 模拟按键（0.5s 松手）
+#   - 跨模块动作（入口-户外灯 → 额头.R2）此处只打日志，上车用 prod 验证
+#   - web 测试按钮可直接触发三个场景循环
+# 烧录: esphome run test-mid8-logic.yaml
+# =============================================================
+
+substitutions:
+  name: myvan-485-gateway
+  friendly_name: 485网关
+
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+  on_boot:
+    - priority: -100
+      then:
+        - lambda: 'gpio_set_direction(GPIO_NUM_5, GPIO_MODE_OUTPUT);'
+        - delay: 3s
+        # 确保模块输入主动上传开启（0031H=1，掉电保存状态不确定，每次上电写一次）
+        - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+        - delay: 1ms
+        - uart.write:
+            id: rs485_bus
+            data: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
+        - lambda: 'id(rs485_bus).flush();'
+        - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+        - delay: 10ms
+        # 安全负载 + LED：上电强制关（主灯/氛围灯/冰箱 RESTORE，测断电恢复）
+        - switch.turn_off: sw_fan_rear
+        - switch.turn_off: sw_pump
+        - switch.turn_off: sw_valve
+        - switch.turn_off: sw_led_camp_green
+        - switch.turn_off: sw_led_camp_red
+
+api:
+  encryption:
+    key: "BTGcLeExk4xanEi/1zwV6fVzQJiULFGZDbkXac4eFCw="
+
+ota:
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+web_server:
+  port: 80
+
+wifi:
+  ssid: "ooxx"
+  password: www.baidu.com
+  use_address: 192.168.5.18
+  ap:
+    ssid: "my-van"
+    password: "12345678"
+captive_portal:
+
+logger:
+  level: INFO
+
+uart:
+  id: rs485_bus
+  tx_pin: GPIO15
+  rx_pin: GPIO16
+  baud_rate: 38400
+
+globals:
+  - id: light_scene          # 灯光模式: 0=全关 1=明亮 2=夜灯
+    type: int
+    initial_value: '0'
+  - id: camp_scene           # 离车/驻车: 0=正常 1=离车 2=驻车
+    type: int
+    initial_value: '0'
+  - id: fan_scene            # 排气扇: 0=全关 1=仅后窗 2=全开
+    type: int
+    initial_value: '0'
+  - id: hold_triggered       # 主控键1 长按标记
+    type: bool
+    initial_value: 'false'
+
+# 中8 模块（0x01，暂用默认地址）：R1 主灯 / R2 氛围灯 / R3 驻车LED / R4 后窗扇 / R5 离车LED / R6 水泵 / R7 水阀 / R8 冰箱
+switch:
+  - platform: template
+    name: "MainLight 主灯"
+    id: sw_main_light
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x09]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xF9]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Ambient 氛围灯"
+    id: sw_ambient
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xC9]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x39]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "CampGreen 驻车LED"
+    id: sw_led_camp_green
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0xC9]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x39]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "FanRear 后窗排气扇"
+    id: sw_fan_rear
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7C, 0x09]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3D, 0xF9]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "CampRed 离车LED"
+    id: sw_led_camp_red
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x04, 0xFF, 0x00, 0xCD, 0xC8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x04, 0x00, 0x00, 0x8C, 0x38]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Pump 上水泵"
+    id: sw_pump
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x05, 0xFF, 0x00, 0x9C, 0x08]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x05, 0x00, 0x00, 0xDD, 0xF8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Valve 电控水阀"
+    id: sw_valve
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x06, 0xFF, 0x00, 0x6C, 0x08]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x06, 0x00, 0x00, 0x2D, 0xF8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Fridge 冰箱"
+    id: sw_fridge
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x07, 0xFF, 0x00, 0x3D, 0xC8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - logger.log: 'switch: 置DE=1 写帧发出'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x07, 0x00, 0x00, 0x7C, 0x38]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+
+binary_sensor:
+  - platform: template
+    name: "DoorDrain 入口-排水"
+    id: bs_door_drain
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_drain
+  - platform: template
+    name: "DoorOutdoor 入口-户外灯"
+    id: bs_door_outdoor
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_outdoor
+  - platform: template
+    name: "DoorPump 入口-上水泵"
+    id: bs_door_pump
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_pump_in
+  - platform: template
+    name: "DoorCamp 入口-离车驻车"
+    id: bs_door_camp
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_camp
+  - platform: template
+    name: "BedLight 主控-主灯"
+    id: bs_bed_light
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - lambda: 'id(hold_triggered) = false;'
+      - script.execute: key1_hold_timer
+    on_release:
+      - script.stop: key1_hold_timer
+      - if:
+          condition:
+            lambda: 'return !id(hold_triggered);'
+          then:
+            - switch.toggle: sw_main_light
+      - lambda: 'id(hold_triggered) = false;'
+  - platform: template
+    name: "BedAmbient 主控-氛围灯"
+    id: bs_bed_ambient
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_ambient
+  - platform: template
+    name: "BedFan 主控-排气扇"
+    id: bs_bed_fan
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_fan
+  - platform: template
+    name: "BedPump 主控-上水泵"
+    id: bs_bed_pump
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_pump_bed
+
+# web 测试按钮：直接触发场景循环（不用杜邦线也能验脚本）
+button:
+  - platform: template
+    name: "LightTest 灯光模式循环"
+    on_press:
+      - script.execute: light_scene_next
+  - platform: template
+    name: "CampTest 离车驻车循环"
+    on_press:
+      - script.execute: camp_scene_next
+  - platform: template
+    name: "FanTest 排气扇循环"
+    on_press:
+      - script.execute: fan_scene_next
+  - platform: template
+    name: "UploadOn 开启输入主动上传"
+    on_press:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "UploadOff 关闭输入主动上传"
+    on_press:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x06, 0x00, 0x31, 0x00, 0x00, 0xD8, 0x36]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+
+# DI 按键：模块主动上传驱动（保持寄存器 0031H=1 已开启，输入变化即发帧 02 04 02 <位图> <CRC>）
+# 100ms 高频读缓冲：只解析上传帧，不发轮询帧，零总线竞争、按键 ~100ms 内响应
+interval:
+  - interval: 100ms
+    then:
+      - script.execute: read_upload
+
+script:
+  - id: read_upload
+    mode: single
+    then:
+      - lambda: |-
+          uint8_t buf[32];
+          int len = 0;
+          while (id(rs485_bus).available() && len < 32) {
+            uint8_t b;
+            if (id(rs485_bus).read_byte(&b)) buf[len++] = b;
+          }
+          // 找合法上传帧（02 04 02 + CRC 校验），16 位按键位图：bit0=X1 ... bit7=X8
+          for (int i = 0; i + 6 < len; i++) {
+            if (buf[i] == 0x02 && buf[i+1] == 0x04 && buf[i+2] == 0x02) {
+              uint16_t crc = 0xFFFF;
+              for (int k = i; k < i + 5; k++) {
+                crc ^= buf[k];
+                for (int bit = 0; bit < 8; bit++) {
+                  if (crc & 1) crc = (crc >> 1) ^ 0xA001;
+                  else crc >>= 1;
+                }
+              }
+              if ((uint8_t) crc == buf[i+5] && (uint8_t) (crc >> 8) == buf[i+6]) {
+                uint16_t r = ((uint16_t) buf[i+3] << 8) | buf[i+4];
+                ESP_LOGI("di", "keys X1-X8: %04X", r);
+                id(bs_door_drain).publish_state(r & 0x01);
+                id(bs_door_outdoor).publish_state(r & 0x02);
+                id(bs_door_pump).publish_state(r & 0x04);
+                id(bs_door_camp).publish_state(r & 0x08);
+                id(bs_bed_light).publish_state(r & 0x10);
+                id(bs_bed_ambient).publish_state(r & 0x20);
+                id(bs_bed_fan).publish_state(r & 0x40);
+                id(bs_bed_pump).publish_state(r & 0x80);
+                break;
+              }
+            }
+          }
+
+  # ---- 按键动作（生产版，仅中8 相关；跨模块的户外灯打日志占位）----
+  - id: act_drain
+    then:
+      - switch.toggle: sw_valve
+  - id: act_outdoor
+    then:
+      - logger.log: 'key: 入口-户外灯 → 跨模块(额头.R2)，上车用 prod 验证'
+  - id: act_pump_in
+    then:
+      - switch.toggle: sw_pump
+  - id: act_camp
+    then:
+      - script.execute: camp_scene_next
+  - id: act_ambient
+    then:
+      - switch.toggle: sw_ambient
+  - id: act_fan
+    then:
+      - script.execute: fan_scene_next
+  - id: act_pump_bed
+    then:
+      - switch.toggle: sw_pump
+
+  # 灯光模式：0 全关 → 1 明亮 → 2 夜灯 循环（中4 的场景LED 此处没有，上车看 prod）
+  - id: light_scene_next
+    mode: single
+    then:
+      - lambda: 'id(light_scene) = (id(light_scene) + 1) % 3;'
+      - script.execute: apply_light_scene
+
+  - id: apply_light_scene
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(light_scene) == 1;'
+          then:
+            - logger.log: "场景: 灯光-明亮"
+            - switch.turn_on: sw_main_light
+            - switch.turn_on: sw_ambient
+      - if:
+          condition:
+            lambda: 'return id(light_scene) == 2;'
+          then:
+            - logger.log: "场景: 灯光-夜灯"
+            - switch.turn_off: sw_main_light
+            - switch.turn_on: sw_ambient
+      - if:
+          condition:
+            lambda: 'return id(light_scene) == 0;'
+          then:
+            - logger.log: "场景: 灯光-全关"
+            - switch.turn_off: sw_main_light
+            - switch.turn_off: sw_ambient
+
+  # 离车/驻车：0 正常 → 1 离车 → 2 驻车 循环
+  - id: camp_scene_next
+    mode: single
+    then:
+      - lambda: 'id(camp_scene) = (id(camp_scene) + 1) % 3;'
+      - script.execute: apply_camp_scene
+
+  - id: apply_camp_scene
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(camp_scene) == 1;'
+          then:
+            - logger.log: "场景: 离车"
+            # 离车：中8 负载全关（冰箱保留）；红亮、绿灭
+            - switch.turn_off: sw_main_light
+            - switch.turn_off: sw_ambient
+            - switch.turn_off: sw_fan_rear
+            - switch.turn_off: sw_pump
+            - switch.turn_off: sw_valve
+            - switch.turn_on: sw_led_camp_red
+            - switch.turn_off: sw_led_camp_green
+            - lambda: 'id(light_scene) = 0;'
+            - lambda: 'id(fan_scene) = 0;'
+      - if:
+          condition:
+            lambda: 'return id(camp_scene) == 2;'
+          then:
+            - logger.log: "场景: 驻车"
+            # 驻车：主灯 + 氛围灯开；绿亮、红灭
+            - switch.turn_on: sw_main_light
+            - switch.turn_on: sw_ambient
+            - switch.turn_off: sw_led_camp_red
+            - switch.turn_on: sw_led_camp_green
+            - lambda: 'id(light_scene) = 1;'
+      - if:
+          condition:
+            lambda: 'return id(camp_scene) == 0;'
+          then:
+            - logger.log: "场景: 正常"
+            # 正常：LED 全灭，不动继电器
+            - switch.turn_off: sw_led_camp_red
+            - switch.turn_off: sw_led_camp_green
+
+  # 排气扇：0 全关 → 1 仅后窗 → 2 全开 循环（LED 由 OUT4 硬件跟随 R4）
+  # 副驾扇（额头.R4）由 prod 场景联动，桌面固件只管后窗扇
+  - id: fan_scene_next
+    mode: single
+    then:
+      - lambda: 'id(fan_scene) = (id(fan_scene) + 1) % 3;'
+      - if:
+          condition:
+            lambda: 'return id(fan_scene) == 0;'
+          then:
+            - logger.log: "场景: 排气扇-全关"
+            - switch.turn_off: sw_fan_rear
+      - if:
+          condition:
+            lambda: 'return id(fan_scene) == 1;'
+          then:
+            - logger.log: "场景: 排气扇-后窗"
+            - switch.turn_on: sw_fan_rear
+      - if:
+          condition:
+            lambda: 'return id(fan_scene) == 2;'
+          then:
+            - logger.log: "场景: 排气扇-全开"
+            - switch.turn_on: sw_fan_rear
+
+  # 主控键1 长按 2s 计时器（到达则灯光全关，短按逻辑在 on_release 里）
+  - id: key1_hold_timer
+    mode: restart
+    then:
+      - delay: 2s
+      - lambda: 'id(hold_triggered) = true;'
+      - logger.log: "按键: 主灯长按 2s → 灯光全关"
+      - switch.turn_off: sw_main_light
+      - switch.turn_off: sw_ambient
+      - lambda: 'id(light_scene) = 0;'

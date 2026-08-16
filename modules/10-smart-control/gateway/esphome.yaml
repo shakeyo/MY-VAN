@@ -4,8 +4,7 @@
 esphome:
   name: rv-485-gateway
   friendly_name: "房车485网关"
-  platform: ESP32
-  board: esp32dev
+  board: esp32-s3-devkitc-1
 
 wifi:
   ssid: "xxoo"
@@ -25,27 +24,19 @@ ota:
 logger:
   level: INFO
 
-# 485 串口配置
+# 485 串口配置（MAX3485 3.3V 直连）
 uart:
   id: uart_485
-  tx_pin: GPIO17
+  tx_pin: GPIO15
   rx_pin: GPIO16
-  baud_rate: 9600
+  baud_rate: 38400
   parity: NONE
   stop_bits: 1
-
-# 485 收发控制（DE/RE 使能）
-switch:
-  - platform: gpio
-    pin: GPIO18
-    name: "485收发使能"
-    internal: true
-    restore_mode: ALWAYS_ON
 
 modbus:
   id: modbus_485
   uart_id: uart_485
-  flow_control_pin: GPIO18
+  flow_control_pin: GPIO5
 
 # ===== 继电器控制（按实际地址修改）=====
 switch:

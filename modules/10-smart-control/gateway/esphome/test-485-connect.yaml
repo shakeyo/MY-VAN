@@ -1,0 +1,413 @@
+# =============================================================
+# 阶段1：485 连通性验证（桌面）
+# 验证目标：S3 与模块之间的 485 物理链路收发
+#   - web 按钮"继电器1开/关"：发送线圈1 写帧 → 模块 R1 应吸合/释放（地址默认 1）
+#   - web 按钮"监听总线3秒"：PC 软件读一次模块 → S3 日志应打印总线上的字节
+# 烧录: esphome run test-485-connect.yaml
+# 接线: 模块 12V 供电、A/B 上总线、GND 共地、S3 USB 供电、地址 1（出厂默认）
+# =============================================================
+
+substitutions:
+  name: myvan-485-gateway
+  friendly_name: 485网关
+
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+
+api:
+  encryption:
+    key: "BTGcLeExk4xanEi/1zwV6fVzQJiULFGZDbkXac4eFCw="
+
+ota:
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+web_server:
+  port: 80
+
+wifi:
+  ssid: "ooxx"
+  password: www.baidu.com
+  use_address: 192.168.5.18
+  ap:
+    ssid: "my-van"
+    password: "12345678"
+captive_portal:
+
+logger:
+  level: DEBUG
+  logs:
+    uart: DEBUG
+
+uart:
+  id: rs485_bus
+  tx_pin: GPIO15
+  rx_pin: GPIO16
+  baud_rate: 38400
+
+output:
+  - platform: gpio
+    id: de_pin
+    pin: GPIO5
+
+globals:
+  - id: relay1_on
+    type: bool
+    initial_value: 'false'
+
+script:
+  - id: send_modbus_frame
+    mode: single
+    then:
+      - logger.log: "切换到发送模式 (EN=HIGH)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - if:
+          condition:
+            lambda: 'return !id(relay1_on);'
+          then:
+            - logger.log: "发送：线圈1 开"
+            - uart.write:
+                id: rs485_bus
+                data: [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A]
+            - lambda: 'id(relay1_on) = true;'
+          else:
+            - logger.log: "发送：线圈1 关"
+            - uart.write:
+                id: rs485_bus
+                data: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
+            - lambda: 'id(relay1_on) = false;'
+      - lambda: 'id(rs485_bus).flush();'  # 等最后一个字节真正离开总线（38400 下约 2ms），兼容旧版 ESPHome
+      - logger.log: "切换到接收模式 (EN=LOW)"
+      - output.turn_off: de_pin
+      - delay: 200ms                    # 等待回环数据到达 RX 缓冲区
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) {
+              buf[len++] = byte;
+            }
+          }
+          if (len > 0) {
+            ESP_LOGI("main", "✅ 收到 %d 个字节：", len);
+            for (int i = 0; i < len; i++) {
+              ESP_LOGI("main", "0x%02X", buf[i]);
+            }
+          } else {
+            ESP_LOGI("main", "❌ 缓冲区为空");
+          }
+
+  - id: listen_bus
+    mode: single
+    then:
+      - output.turn_off: de_pin
+      - logger.log: "=== 开始监听总线 3 秒，请在 PC 软件里读一次模块 ==="
+      - lambda: |-
+          unsigned int total = 0;
+          uint32_t start = millis();
+          while (millis() - start < 3000) {
+            uint8_t b;
+            while (id(rs485_bus).available() && id(rs485_bus).read_byte(&b)) {
+              ESP_LOGI("main", "监听: 0x%02X", b);
+              total++;
+            }
+            delay(10);
+          }
+          ESP_LOGI("main", "监听结束，共 %u 字节", total);
+
+  # ---- 诊断探针：发一帧 + 打印原始响应（8字节=正常回显，5字节=异常帧，0=无响应）----
+  - id: probe_fc04_di1
+    mode: single
+    then:
+      - logger.log: "发 FC04 读输入寄存器 0x0000 (DI1)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x04, 0x00, 0x00, 0x00, 0x01, 0x31, 0xCA]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+  - id: probe_fc04_0032
+    mode: single
+    then:
+      - logger.log: "发 FC04 读输入寄存器 0x0032 (按位DI)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x04, 0x00, 0x32, 0x00, 0x01, 0x90, 0x05]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+  - id: probe_fc03_do1
+    mode: single
+    then:
+      - logger.log: "发 FC03 读保持寄存器 0x0000 (DO1)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x0A, 0x84]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+  - id: probe_fc06_do1
+    mode: single
+    then:
+      - logger.log: "发 FC06 写保持寄存器 0x0000=1 (DO1开)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x06, 0x00, 0x00, 0x00, 0x01, 0x0A, 0x48]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+  - id: probe_fc05_do1
+    mode: single
+    then:
+      - logger.log: "发 FC05 写线圈 0x0000=1 (DO1开)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+  - id: probe_fc05_do1_off
+    mode: single
+    then:
+      - logger.log: "发 FC05 写线圈 0x0000=0 (DO1关)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+  - id: probe_fc01_do1
+    mode: single
+    then:
+      - logger.log: "发 FC01 读线圈 0x0000 (DO1)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0xCA]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+  - id: probe_fc01_do2
+    mode: single
+    then:
+      - logger.log: "发 FC01 读线圈 0x0001 (DO2)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x01, 0x00, 0x01, 0x00, 0x01, 0xAC, 0x0A]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+  - id: probe_fc05_do2
+    mode: single
+    then:
+      - logger.log: "发 FC05 写线圈 0x0001=1 (DO2开)"
+      - output.turn_on: de_pin
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xFA]
+      - lambda: 'id(rs485_bus).flush();'
+      - output.turn_off: de_pin
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[64];
+          int len = 0;
+          while (id(rs485_bus).available() && len < sizeof(buf)) {
+            uint8_t byte;
+            if (id(rs485_bus).read_byte(&byte)) buf[len++] = byte;
+          }
+          if (len > 0) {
+            ESP_LOGI("probe", "响应 %d 字节:", len);
+            for (int i = 0; i < len; i++) ESP_LOGI("probe", "  0x%02X", buf[i]);
+            if (len == 5) ESP_LOGI("probe", "  → 异常帧! 异常码 0x%02X (1=非法功能码 2=非法地址 3=非法数据)", buf[2]);
+          } else {
+            ESP_LOGI("probe", "无响应");
+          }
+
+button:
+  - platform: template
+    name: "Relay1Toggle 继电器1切换"
+    on_press:
+      - script.execute: send_modbus_frame
+  - platform: template
+    name: "监听总线3秒"
+    on_press:
+      - script.execute: listen_bus
+  - platform: template
+    name: "Probe FC04读DI1"
+    on_press:
+      - script.execute: probe_fc04_di1
+  - platform: template
+    name: "Probe FC04读0x32"
+    on_press:
+      - script.execute: probe_fc04_0032
+  - platform: template
+    name: "Probe FC03读DO1"
+    on_press:
+      - script.execute: probe_fc03_do1
+  - platform: template
+    name: "Probe FC06写DO1"
+    on_press:
+      - script.execute: probe_fc06_do1
+  - platform: template
+    name: "Probe FC05写DO1"
+    on_press:
+      - script.execute: probe_fc05_do1
+  - platform: template
+    name: "Probe FC05写DO1关"
+    on_press:
+      - script.execute: probe_fc05_do1_off
+  - platform: template
+    name: "Probe FC01读DO1"
+    on_press:
+      - script.execute: probe_fc01_do1
+  - platform: template
+    name: "Probe FC01读DO2"
+    on_press:
+      - script.execute: probe_fc01_do2
+  - platform: template
+    name: "Probe FC05写DO2"
+    on_press:
+      - script.execute: probe_fc05_do2

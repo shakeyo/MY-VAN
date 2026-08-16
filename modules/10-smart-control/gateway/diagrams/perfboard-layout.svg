@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="sans-serif">
+  <defs>
+    <!-- 洞洞板孔位网格：孔距 2.54mm = 25.4 单位 -->
+    <pattern id="holes" width="25.4" height="25.4" patternUnits="userSpaceOnUse">
+      <circle cx="12.7" cy="12.7" r="3.2" fill="none" stroke="#ccc" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+
+  <!-- 洞洞板 100×70mm（39×27 孔） -->
+  <rect x="25" y="25" width="950" height="650" fill="url(#holes)" stroke="#333" stroke-width="4"/>
+
+  <!-- ==================== 走线（画在元件下面） ==================== -->
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- 电源正（红） -->
+    <path d="M160,300 L200,300" stroke="#c00" stroke-width="6"/>
+    <path d="M420,140 V95 H445 V530 H420" stroke="#c00" stroke-width="6"/>
+    <path d="M420,530 H480" stroke="#c00" stroke-width="6"/>
+    <!-- GND 汇流（黑）：横贯板底，各元件 GND 就近接入 -->
+    <path d="M100,380 V640 H950" stroke="#000" stroke-width="6"/>
+    <path d="M200,230 V640" stroke="#000" stroke-width="6"/>
+    <path d="M610,578 V640" stroke="#000" stroke-width="6"/>
+    <path d="M760,150 V640" stroke="#000" stroke-width="6"/>
+    <path d="M845,620 V640" stroke="#000" stroke-width="6"/>
+    <!-- 信号（蓝） -->
+    <path d="M734,90 H760" stroke="#00a" stroke-width="4"/>
+    <path d="M734,120 H760" stroke="#00a" stroke-width="4"/>
+    <path d="M734,150 H760" stroke="#00a" stroke-width="4"/>
+    <path d="M810,170 V520" stroke="#00a" stroke-width="4"/>
+    <path d="M840,170 V520" stroke="#00a" stroke-width="4"/>
+  </g>
+
+  <!-- ==================== 元件 ==================== -->
+  <!-- 12V 输入端子（2P） -->
+  <rect x="25" y="280" width="150" height="100" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="3"/>
+  <text x="100" y="315" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">12V IN</text>
+  <circle cx="60" cy="330" r="5" fill="#666"/><text x="60" y="348" text-anchor="middle" font-size="12" fill="#1b5e20">+</text>
+  <circle cx="140" cy="330" r="5" fill="#666"/><text x="140" y="348" text-anchor="middle" font-size="12" fill="#1b5e20">−</text>
+
+  <!-- 12→5V 稳压模块 -->
+  <rect x="200" y="100" width="220" height="170" rx="8" fill="#fff3e0" stroke="#ef6c00" stroke-width="3"/>
+  <text x="310" y="155" text-anchor="middle" font-size="16" font-weight="bold" fill="#e65100">12→5V</text>
+  <text x="310" y="180" text-anchor="middle" font-size="14" fill="#e65100">稳压模块</text>
+  <circle cx="200" cy="140" r="5" fill="#666"/><text x="212" y="135" font-size="11" fill="#e65100">IN+</text>
+  <circle cx="200" cy="230" r="5" fill="#666"/><text x="212" y="225" font-size="11" fill="#e65100">IN−</text>
+  <circle cx="420" cy="140" r="5" fill="#666"/><text x="438" y="135" font-size="11" fill="#e65100">OUT+</text>
+  <circle cx="420" cy="230" r="5" fill="#666"/><text x="438" y="225" font-size="11" fill="#e65100">OUT−</text>
+
+  <!-- 滤波电容 1000μF -->
+  <circle cx="380" cy="480" r="50" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="3"/>
+  <text x="380" y="486" text-anchor="middle" font-size="12" font-weight="bold" fill="#6a1b9a">1000μF</text>
+  <text x="392" y="452" font-size="12" font-weight="bold" fill="#6a1b9a">+</text>
+  <circle cx="366" cy="530" r="4" fill="#666"/>
+  <circle cx="416" cy="530" r="4" fill="#666"/>
+
+  <!-- 0.1μF 陶瓷电容 -->
+  <rect x="400" y="560" width="80" height="60" rx="6" fill="#eceff1" stroke="#546e7a" stroke-width="2"/>
+  <text x="440" y="596" text-anchor="middle" font-size="11" fill="#37474f">0.1μF</text>
+
+  <!-- ESP32-S3 DevKitC-1（插排母） -->
+  <rect x="480" y="45" width="254" height="533" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="3"/>
+  <text x="607" y="290" text-anchor="middle" font-size="16" font-weight="bold" fill="#0d47a1">ESP32-S3</text>
+  <text x="607" y="315" text-anchor="middle" font-size="13" fill="#0d47a1">DevKitC-1</text>
+  <text x="607" y="340" text-anchor="middle" font-size="13" fill="#0d47a1">插排母 · 可拆重烧</text>
+  <!-- USB 口（朝下） -->
+  <rect x="575" y="563" width="64" height="15" fill="#fff" stroke="#0d47a1" stroke-width="2"/>
+  <text x="607" y="598" text-anchor="middle" font-size="11" fill="#0d47a1">USB</text>
+
+  <!-- MAX3485 转接板 -->
+  <rect x="760" y="60" width="130" height="110" rx="8" fill="#fffde7" stroke="#f9a825" stroke-width="3"/>
+  <text x="825" y="95" text-anchor="middle" font-size="13" font-weight="bold" fill="#f57f17">MAX3485</text>
+  <text x="768" y="78" font-size="11" fill="#f57f17">VCC</text>
+  <text x="768" y="93" font-size="11" fill="#f57f17">GND</text>
+  <text x="840" y="150" font-size="11" fill="#f57f17">A</text>
+  <text x="856" y="150" font-size="11" fill="#f57f17">B</text>
+  <circle cx="760" cy="90" r="4" fill="#666"/><circle cx="760" cy="120" r="4" fill="#666"/><circle cx="760" cy="150" r="4" fill="#666"/>
+  <circle cx="810" cy="170" r="4" fill="#666"/><circle cx="840" cy="170" r="4" fill="#666"/>
+
+  <!-- 485 输出端子（3P） -->
+  <rect x="770" y="520" width="150" height="100" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="3"/>
+  <text x="845" y="555" text-anchor="middle" font-size="12" font-weight="bold" fill="#1b5e20">485 OUT</text>
+  <text x="808" y="512" font-size="11" fill="#1b5e20">A</text>
+  <text x="838" y="512" font-size="11" fill="#1b5e20">B</text>
+  <text x="845" y="632" text-anchor="middle" font-size="11" fill="#1b5e20">GND</text>
+
+  <!-- 屏幕接口预留排针（1×4：5V GND TX RX，后期加串口屏用） -->
+  <rect x="540" y="598" width="190" height="38" rx="6" fill="#fff" fill-opacity="0.7" stroke="#888" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="635" y="614" text-anchor="middle" font-size="11" fill="#555">屏接口预留 5V GND TX RX</text>
+  <circle cx="595" cy="622" r="4" fill="#666"/>
+  <circle cx="625" cy="622" r="4" fill="#666"/>
+  <circle cx="655" cy="622" r="4" fill="#666"/>
+  <circle cx="685" cy="622" r="4" fill="#666"/>
+
+  <!-- ==================== 走线标注 ==================== -->
+  <text x="490" y="524" font-size="12" font-weight="bold" fill="#c00">5V</text>
+  <text x="640" y="80" font-size="11" fill="#00a">GPIO15 TX</text>
+  <text x="640" y="110" font-size="11" fill="#00a">GPIO16 RX</text>
+  <text x="640" y="140" font-size="11" fill="#00a">GPIO5 DE+RE</text>
+  <text x="816" y="500" font-size="11" fill="#00a">A</text>
+  <text x="846" y="500" font-size="11" fill="#00a">B</text>
+  <text x="905" y="100" font-size="11" fill="#f57f17">A B</text>
+
+  <!-- 图例 -->
+  <g transform="translate(30,30)">
+    <rect x="0" y="0" width="180" height="128" rx="6" fill="#ffffff" fill-opacity="0.92" stroke="#555" stroke-width="2"/>
+    <text x="10" y="20" font-size="13" font-weight="bold" fill="#333">图例</text>
+    <line x1="10" y1="42" x2="42" y2="42" stroke="#c00" stroke-width="6"/>
+    <text x="52" y="46" font-size="12" fill="#333">电源正（12V/5V）</text>
+    <line x1="10" y1="68" x2="42" y2="68" stroke="#000" stroke-width="6"/>
+    <text x="52" y="72" font-size="12" fill="#333">GND 汇流（单点汇聚）</text>
+    <line x1="10" y1="94" x2="42" y2="94" stroke="#00a" stroke-width="4"/>
+    <text x="52" y="98" font-size="12" fill="#333">485 / GPIO 信号</text>
+    <text x="10" y="120" font-size="11" fill="#666">洞洞板 100×70mm · 孔距 2.54mm</text>
+  </g>
+</svg>

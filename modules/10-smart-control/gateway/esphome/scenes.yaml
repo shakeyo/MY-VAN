@@ -1,0 +1,177 @@
+# 场景自动化脚本（按键动作 / 灯光模式 / 离车驻车 / 排气扇 / 主控键1 长按）
+# 按键动作 act_xxx：mapping.yaml 用 keys-mapping.yaml 替换为日志版（只读验证）
+
+script:
+  # ---- 按键动作（每键一个，对应各模块文件 on_press 的 script.execute）----
+  - id: act_spot
+    then:
+      - switch.toggle: sw_spot
+  - id: act_dsp
+    then:
+      - switch.toggle: sw_dsp
+  - id: act_scene
+    then:
+      - script.execute: light_scene_next
+  - id: act_drain
+    then:
+      - switch.toggle: sw_valve
+  - id: act_outdoor
+    then:
+      - switch.toggle: sw_outdoor
+  - id: act_pump_in
+    then:
+      - switch.toggle: sw_pump
+  - id: act_camp
+    then:
+      - script.execute: camp_scene_next
+  - id: act_ambient
+    then:
+      - switch.toggle: sw_ambient
+  - id: act_fan
+    then:
+      - script.execute: fan_scene_next
+  - id: act_pump_bed
+    then:
+      - switch.toggle: sw_pump
+  - id: act_fridge
+    then:
+      - switch.toggle: sw_fridge
+  - id: act_scene_bed
+    then:
+      - script.execute: light_scene_next
+
+  # 灯光模式：0 全关 → 1 明亮 → 2 夜灯 循环
+  - id: light_scene_next
+    mode: single
+    then:
+      - lambda: 'id(light_scene) = (id(light_scene) + 1) % 3;'
+      - script.execute: apply_light_scene
+
+  - id: apply_light_scene
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(light_scene) == 1;'
+          then:
+            - logger.log: "场景: 灯光-明亮"
+            # 明亮：主灯 + 氛围灯全开；绿亮、红灭
+            - switch.turn_on: sw_main_light
+            - switch.turn_on: sw_ambient
+            - switch.turn_off: sw_led_scene_red
+            - switch.turn_on: sw_led_scene_green
+      - if:
+          condition:
+            lambda: 'return id(light_scene) == 2;'
+          then:
+            - logger.log: "场景: 灯光-夜灯"
+            # 夜灯：仅氛围灯；红+绿亮（橙）
+            - switch.turn_off: sw_main_light
+            - switch.turn_on: sw_ambient
+            - switch.turn_on: sw_led_scene_red
+            - switch.turn_on: sw_led_scene_green
+      - if:
+          condition:
+            lambda: 'return id(light_scene) == 0;'
+          then:
+            - logger.log: "场景: 灯光-全关"
+            # 全关
+            - switch.turn_off: sw_main_light
+            - switch.turn_off: sw_ambient
+            - switch.turn_off: sw_led_scene_red
+            - switch.turn_off: sw_led_scene_green
+
+  # 离车/驻车：0 正常 → 1 离车 → 2 驻车 循环
+  - id: camp_scene_next
+    mode: single
+    then:
+      - lambda: 'id(camp_scene) = (id(camp_scene) + 1) % 3;'
+      - script.execute: apply_camp_scene
+
+  - id: apply_camp_scene
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(camp_scene) == 1;'
+          then:
+            - logger.log: "场景: 离车"
+            # 离车：全关（冰箱不断电，后续由 HA 远程控制）；红亮、绿灭
+            - switch.turn_off: sw_main_light
+            - switch.turn_off: sw_ambient
+            - switch.turn_off: sw_fan_rear
+            - switch.turn_off: sw_pump
+            - switch.turn_off: sw_valve
+            - switch.turn_off: sw_spot
+            - switch.turn_off: sw_outdoor
+            - switch.turn_off: sw_dsp
+            - switch.turn_off: sw_fan_pass
+            - switch.turn_on: sw_led_camp_red
+            - switch.turn_off: sw_led_camp_green
+            # 灯光/排气扇场景同步为全关
+            - lambda: 'id(light_scene) = 0;'
+            - switch.turn_off: sw_led_scene_red
+            - switch.turn_off: sw_led_scene_green
+            - lambda: 'id(fan_scene) = 0;'
+      - if:
+          condition:
+            lambda: 'return id(camp_scene) == 2;'
+          then:
+            - logger.log: "场景: 驻车"
+            # 驻车：主灯 + 氛围灯开（暖光需灯自身支持，继电器只能开关）；绿亮、红灭
+            - switch.turn_on: sw_main_light
+            - switch.turn_on: sw_ambient
+            - switch.turn_off: sw_led_camp_red
+            - switch.turn_on: sw_led_camp_green
+            # 灯光场景同步为明亮
+            - lambda: 'id(light_scene) = 1;'
+            - switch.turn_off: sw_led_scene_red
+            - switch.turn_on: sw_led_scene_green
+      - if:
+          condition:
+            lambda: 'return id(camp_scene) == 0;'
+          then:
+            - logger.log: "场景: 正常"
+            # 正常：LED 全灭，不动继电器
+            - switch.turn_off: sw_led_camp_red
+            - switch.turn_off: sw_led_camp_green
+
+  # 排气扇：0 全关 → 1 仅后窗 → 2 全开 循环（LED 由 OUT4 硬件跟随 R4）
+  - id: fan_scene_next
+    mode: single
+    then:
+      - lambda: 'id(fan_scene) = (id(fan_scene) + 1) % 3;'
+      - if:
+          condition:
+            lambda: 'return id(fan_scene) == 0;'
+          then:
+            - logger.log: "场景: 排气扇-全关"
+            - switch.turn_off: sw_fan_rear
+            - switch.turn_off: sw_fan_pass
+      - if:
+          condition:
+            lambda: 'return id(fan_scene) == 1;'
+          then:
+            - logger.log: "场景: 排气扇-后窗"
+            - switch.turn_on: sw_fan_rear
+            - switch.turn_off: sw_fan_pass
+      - if:
+          condition:
+            lambda: 'return id(fan_scene) == 2;'
+          then:
+            - logger.log: "场景: 排气扇-全开"
+            - switch.turn_on: sw_fan_rear
+            - switch.turn_on: sw_fan_pass
+
+  # 主控键1 长按 2s 计时器（到达则灯光全关，短按逻辑在 on_release 里）
+  - id: key1_hold_timer
+    mode: restart
+    then:
+      - delay: 2s
+      - lambda: 'id(hold_triggered) = true;'
+      - logger.log: "按键: 主灯长按 2s → 灯光全关"
+      - switch.turn_off: sw_main_light
+      - switch.turn_off: sw_ambient
+      - lambda: 'id(light_scene) = 0;'
+      - switch.turn_off: sw_led_scene_red
+      - switch.turn_off: sw_led_scene_green

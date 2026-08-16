@@ -1,0 +1,171 @@
+# 额头模块（8 路，额头柜，地址 0x01，软件设置）
+# R1 射灯 / R2 户外灯 / R3 DSP / R4 副驾排气扇 / R5 户外灯LED（预留跨箱线）
+# 按键动作 = 执行 act_xxx script（prod 在 scenes.yaml，mapping 版在 keys-mapping.yaml 换成日志）
+
+switch:
+  - platform: template
+    name: "Spot 射灯"
+    id: sw_spot
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Outdoor 户外灯"
+    id: sw_outdoor
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xFA]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x0A]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_state:
+      # 入口键2 LED（跨箱线到额头.OUT5，预留）跟户外灯状态
+      - if:
+          condition:
+            lambda: 'return id(sw_outdoor).state;'
+          then:
+            - switch.turn_on: sw_led_outdoor
+          else:
+            - switch.turn_off: sw_led_outdoor
+  - platform: template
+    name: "DSP"
+    id: sw_dsp
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0xFA]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x0A]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "FanPass 副驾排气扇"
+    id: sw_fan_pass
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7C, 0x3A]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3D, 0xCA]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "LedOutdoor 户外灯LED"
+    id: sw_led_outdoor
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x04, 0xFF, 0x00, 0xCD, 0xFB]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x01, 0x05, 0x00, 0x04, 0x00, 0x00, 0x8C, 0x0B]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+
+# 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
+binary_sensor:
+  - platform: template
+    name: "CabinSpot 驾驶室-射灯"
+    id: bs_cabin_spot
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_spot
+  - platform: template
+    name: "CabinReverse 驾驶室-倒车灯"
+    id: bs_cabin_reverse
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    # TODO: 车尾模块未购（地址 0x04 R1），购后加 on_press: switch.toggle: sw_reverse
+  - platform: template
+    name: "CabinDsp 驾驶室-DSP"
+    id: bs_cabin_dsp
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_dsp
+  - platform: template
+    name: "CabinFan 驾驶室-换气风扇"
+    id: bs_cabin_fan
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    # TODO: 蓝牙风扇，后期解析协议
+  - platform: template
+    name: "CabinScene 驾驶室-灯光模式"
+    id: bs_cabin_scene
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_scene

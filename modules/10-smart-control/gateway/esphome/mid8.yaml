@@ -1,0 +1,278 @@
+# 中门 8 路模块（配电箱内，地址 0x02，软件设置）
+# R1 主灯 / R2 氛围灯+睡眠灯 / R3 驻车LED(DO) / R4 后窗排气扇 / R5 离车LED(DO)
+# R6 上水泵(→48V接触器) / R7 电控水阀 / R8 冰箱
+# 按键动作 = 执行 act_xxx script（prod 在 scenes.yaml，mapping 版在 keys-mapping.yaml 换成日志）
+# 主灯键（BedLight）例外：逻辑含长按计时内联在此，mapping 版按下会真的切灯（无害，兼作端到端抽验）
+
+switch:
+  - platform: template
+    name: "MainLight 主灯"
+    id: sw_main_light
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x09]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xF9]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Ambient 氛围灯"
+    id: sw_ambient
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xC9]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x39]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "CampGreen 驻车LED"
+    id: sw_led_camp_green
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0xC9]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x39]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "FanRear 后窗排气扇"
+    id: sw_fan_rear
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7C, 0x09]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3D, 0xF9]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "CampRed 离车LED"
+    id: sw_led_camp_red
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x04, 0xFF, 0x00, 0xCD, 0xC8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x04, 0x00, 0x00, 0x8C, 0x38]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Pump 上水泵"
+    id: sw_pump
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x05, 0xFF, 0x00, 0x9C, 0x08]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x05, 0x00, 0x00, 0xDD, 0xF8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Valve 电控水阀"
+    id: sw_valve
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x06, 0xFF, 0x00, 0x6C, 0x08]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x06, 0x00, 0x00, 0x2D, 0xF8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "Fridge 冰箱"
+    id: sw_fridge
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x07, 0xFF, 0x00, 0x3D, 0xC8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x02, 0x05, 0x00, 0x07, 0x00, 0x00, 0x7C, 0x38]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_state:
+      # 主控键5 LED（中4.R3）跟踪冰箱状态
+      - if:
+          condition:
+            lambda: 'return id(sw_fridge).state;'
+          then:
+            - switch.turn_on: sw_led_fridge
+          else:
+            - switch.turn_off: sw_led_fridge
+
+# 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
+binary_sensor:
+  - platform: template
+    name: "DoorDrain 入口-排水"
+    id: bs_door_drain
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_drain
+  - platform: template
+    name: "DoorOutdoor 入口-户外灯"
+    id: bs_door_outdoor
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_outdoor
+  - platform: template
+    name: "DoorPump 入口-上水泵"
+    id: bs_door_pump
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_pump_in
+  - platform: template
+    name: "DoorCamp 入口-离车驻车"
+    id: bs_door_camp
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_camp
+  - platform: template
+    name: "BedLight 主控-主灯"
+    id: bs_bed_light
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - lambda: 'id(hold_triggered) = false;'
+      - script.execute: key1_hold_timer
+    on_release:
+      - script.stop: key1_hold_timer
+      - if:
+          condition:
+            lambda: 'return !id(hold_triggered);'
+          then:
+            - switch.toggle: sw_main_light
+      - lambda: 'id(hold_triggered) = false;'
+  - platform: template
+    name: "BedAmbient 主控-氛围灯"
+    id: bs_bed_ambient
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_ambient
+  - platform: template
+    name: "BedFan 主控-排气扇"
+    id: bs_bed_fan
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_fan
+  - platform: template
+    name: "BedPump 主控-上水泵"
+    id: bs_bed_pump
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_pump_bed

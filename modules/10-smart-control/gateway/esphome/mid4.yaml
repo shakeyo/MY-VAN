@@ -1,0 +1,96 @@
+# 中门 4 路模块（中门柜内，地址 0x03，软件设置）
+# R1 键6红·夜灯LED(DO) / R2 键6绿·明亮LED(DO) / R3 键5冰箱LED(DO) / R4 预留
+# 按键动作 = 执行 act_xxx script（prod 在 scenes.yaml，mapping 版在 keys-mapping.yaml 换成日志）
+
+switch:
+  - platform: template
+    name: "SceneRed 夜灯LED"
+    id: sw_led_scene_red
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x03, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xD8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x03, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x28]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "SceneGreen 明亮LED"
+    id: sw_led_scene_green
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x03, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDC, 0x18]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x03, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9D, 0xE8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+  - platform: template
+    name: "FridgeLed 冰箱LED"
+    id: sw_led_fridge
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x03, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2C, 0x18]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+    on_turn_off:
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: [0x03, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0xE8]
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+      - delay: 10ms
+
+# 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
+binary_sensor:
+  - platform: template
+    name: "BedFridge 主控-冰箱"
+    id: bs_bed_fridge
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_fridge
+  - platform: template
+    name: "BedScene 主控-灯光模式"
+    id: bs_bed_scene
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - script.execute: act_scene_bed

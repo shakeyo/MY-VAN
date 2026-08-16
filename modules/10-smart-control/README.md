@@ -9,7 +9,7 @@
 | 目录 | 内容 | 状态 |
 |------|------|------|
 | [n100-ha/](n100-ha/) | N100 主机、HA Core、网络、安卓车机 | 设计中 |
-| [esp32-485/](esp32-485/) | ESP32 网关、MAX485、485 总线、ESPHome 固件 | 设计中 |
+| [gateway/](gateway/) | ESP32-S3 网关、MAX3485、485 总线、ESPHome 固件 | 调试中 |
 | [relays/](relays/) | 485 继电器模块、物理按钮、双控逻辑 | 设计中 |
 | [sensors/](sensors/) | 温湿度、电量计、水位、门磁、漏水、OBD-II | 设计中 |
 | [media/](media/) | 监控（DVR/Frigate）+ 音响（Alpine DSP） | 设计中 |

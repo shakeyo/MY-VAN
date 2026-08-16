@@ -21,7 +21,13 @@
       "Bash(python3 -c ' *)",
       "Bash(read f *)",
       "Bash(git *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(esphome version *)",
+      "Bash(esphome config *)",
+      "Bash(esphome compile *)",
+      "Read(//dev/**)",
+      "Bash(system_profiler SPUSBDataType)",
+      "Bash(esphome run *)"
     ]
   }
 }

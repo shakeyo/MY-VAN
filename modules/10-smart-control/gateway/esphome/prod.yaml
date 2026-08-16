@@ -1,0 +1,21 @@
+# =============================================================
+# 生产配置（主文件）：打包全部模块 + 场景
+# 烧录: esphome run prod.yaml
+#
+# 文件结构:
+#   base.yaml      基础（网络/串口/上电策略/场景状态/DI 上传驱动解析）
+#   forehead.yaml  额头模块（地址 0x01）
+#   mid8.yaml      中门 8 路（地址 0x02）
+#   mid4.yaml      中门 4 路（地址 0x03）
+#   scenes.yaml    场景自动化脚本
+#
+# 按键架构：模块主动上传驱动（FC06 0031H=1），零轮询、零总线竞争
+# 按键触发方式：X 与 COM 间电压差（双向光耦，任一极性），COM 必须接电源一极
+# =============================================================
+
+packages:
+  base: !include base.yaml
+  forehead: !include forehead.yaml
+  mid8: !include mid8.yaml
+  mid4: !include mid4.yaml
+  scenes: !include scenes.yaml
