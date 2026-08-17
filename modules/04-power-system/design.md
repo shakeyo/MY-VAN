@@ -22,6 +22,7 @@
   - 行车充电 (DC-DC)。
   - 太阳能充电 (MPPT)。
   - 市电充电器 (58.4V)。
+- **MPPT 485 集成**: 易科 MPPT 支持 485 监控与控制（充电开关/限流/待机断电/低温禁充），协议速查与功能规划见 [10-smart-control/energy/mppt-protocol.md](../10-smart-control/energy/mppt-protocol.md)，原始手册 `attachments/MPTT.pdf`。
 - **物理接口**: 统一使用安德森接口以便于插拔维护。
 
 ### 4. 总控与 AC 模块 (Control & AC Module)

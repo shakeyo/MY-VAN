@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "vitepress dev",
-    "prebuild": "cd modules && rm -rf 0* 1* && cp -r ../../modules/0* . && cp -r ../../modules/1* . && for d in 0* 1*; do [ -f \"$d/README.md\" ] && mv \"$d/README.md\" \"$d/index.md\"; done",
+    "prebuild": "cd modules && rm -rf 0* 1* && rsync -a --exclude '.esphome/' --exclude 'secrets.yaml' ../../modules/0* ../../modules/1* ./ && for d in 0* 1*; do [ -f \"$d/README.md\" ] && mv \"$d/README.md\" \"$d/index.md\"; done",
     "build": "vitepress build",
     "preview": "vitepress preview"
   },

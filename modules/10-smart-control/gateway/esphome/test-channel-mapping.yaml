@@ -78,11 +78,14 @@ web_server:
   port: 80
 
 wifi:
-  ssid: "ooxx"              # 装车后改真实 wifi
-  password: www.baidu.com
+  networks:
+    - ssid: "ooxx"            # 家里调试（占位符，改成真实家庭 wifi）
+      password: www.baidu.com
+    # - ssid: "my-van"         # 车上网络（路由/热点方案定后启用，优先级 2）
+    #   password: ""
   use_address: 192.168.5.18
   ap:
-    ssid: "my-van"
+    ssid: "myvan-ap"          # 兜底 AP（调试用），与车上热点名区分
     password: "12345678"
 captive_portal:
 
