@@ -7,6 +7,10 @@
     </pattern>
   </defs>
 
+  <!-- ⚠ 已废弃：改用「扩展底板 + 485 小副板」方案，见 gateway-wiring.svg -->
+  <rect x="25" y="6" width="950" height="22" rx="4" fill="#ffebee" stroke="#c62828" stroke-width="2"/>
+  <text x="500" y="21" text-anchor="middle" font-size="13" font-weight="bold" fill="#c62828">⚠ 已废弃：改用「扩展底板 + 485 小副板」方案，见 gateway-wiring.svg</text>
+
   <!-- 洞洞板 100×70mm（39×27 孔） -->
   <rect x="25" y="25" width="950" height="650" fill="url(#holes)" stroke="#333" stroke-width="4"/>
 

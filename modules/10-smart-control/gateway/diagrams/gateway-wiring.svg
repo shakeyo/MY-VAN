@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 620" width="1040" height="620" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- 12V 输入 -->
+  <line x1="30" y1="150" x2="66" y2="150" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="8" y="138" font-size="12" fill="#333">配电箱</text>
+  <text x="8" y="186" font-size="12" fill="#333">「控+」12V</text>
+
+  <!-- ============ 扩展板 ============ -->
+  <rect x="70" y="90" width="320" height="350" rx="10" fill="#eceff1" stroke="#455a64" stroke-width="3"/>
+  <text x="230" y="120" text-anchor="middle" font-size="16" font-weight="bold" fill="#37474f">S3 扩展底板</text>
+  <rect x="70" y="130" width="88" height="42" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="3"/>
+  <text x="114" y="156" text-anchor="middle" font-size="13" font-weight="bold" fill="#1b5e20">DC 12V</text>
+  <rect x="120" y="190" width="220" height="200" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="3"/>
+  <text x="230" y="265" text-anchor="middle" font-size="15" font-weight="bold" fill="#0d47a1">ESP32-S3</text>
+  <text x="230" y="290" text-anchor="middle" font-size="13" fill="#0d47a1">DevKitC-1</text>
+  <text x="230" y="312" text-anchor="middle" font-size="13" fill="#0d47a1">插板载母排</text>
+  <text x="230" y="356" text-anchor="middle" font-size="12" fill="#0d47a1">USB 口朝外（可烧录）</text>
+  <text x="230" y="414" text-anchor="middle" font-size="12" fill="#455a64">板载 buck：12V → 5V / 3.3V</text>
+
+  <!-- ============ 5 根短导线（硬连） ============ -->
+  <g stroke-linecap="round">
+    <line x1="390" y1="200" x2="590" y2="200" stroke="#c00" stroke-width="6"/>
+    <line x1="390" y1="228" x2="590" y2="228" stroke="#000" stroke-width="6"/>
+    <line x1="390" y1="256" x2="590" y2="256" stroke="#00a" stroke-width="4"/>
+    <line x1="390" y1="284" x2="590" y2="284" stroke="#00a" stroke-width="4"/>
+    <line x1="390" y1="312" x2="590" y2="312" stroke="#00a" stroke-width="4"/>
+  </g>
+  <text x="430" y="192" font-size="12" font-weight="bold" fill="#c00">3V3</text>
+  <text x="430" y="220" font-size="12" font-weight="bold" fill="#000">GND</text>
+  <text x="430" y="248" font-size="12" font-weight="bold" fill="#00a">GPIO15</text>
+  <text x="430" y="276" font-size="12" font-weight="bold" fill="#00a">GPIO16</text>
+  <text x="430" y="304" font-size="12" font-weight="bold" fill="#00a">GPIO5</text>
+  <text x="482" y="330" font-size="11" fill="#00a">DE+RE 并接</text>
+  <text x="470" y="168" font-size="11" fill="#666">5 根短导线</text>
+  <text x="470" y="182" font-size="11" fill="#666">硬连（焊）</text>
+
+  <!-- ============ 485 小副板 ============ -->
+  <rect x="560" y="90" width="380" height="460" rx="10" fill="#fafafa" stroke="#78909c" stroke-width="3" stroke-dasharray="8,5"/>
+  <text x="750" y="118" text-anchor="middle" font-size="14" font-weight="bold" fill="#546e7a">485 小副板（洞洞板）</text>
+
+  <!-- MAX3485 -->
+  <rect x="590" y="160" width="160" height="160" rx="8" fill="#fffde7" stroke="#f9a825" stroke-width="3"/>
+  <text x="670" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="#f57f17">MAX3485</text>
+  <circle cx="590" cy="200" r="4" fill="#666"/><text x="602" y="204" font-size="11" fill="#f57f17">VCC</text>
+  <circle cx="590" cy="228" r="4" fill="#666"/><text x="602" y="232" font-size="11" fill="#f57f17">GND</text>
+  <circle cx="590" cy="256" r="4" fill="#666"/><text x="602" y="260" font-size="11" fill="#f57f17">DI</text>
+  <circle cx="590" cy="284" r="4" fill="#666"/><text x="602" y="288" font-size="11" fill="#f57f17">RO</text>
+  <circle cx="590" cy="312" r="4" fill="#666"/><text x="602" y="316" font-size="11" fill="#f57f17">EN</text>
+
+  <!-- A/B → 端子 -->
+  <g fill="none" stroke="#00a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M650,320 V360 H700 V390"/>
+    <path d="M710,320 V360 H770 V390"/>
+  </g>
+  <text x="648" y="352" font-size="11" fill="#00a" text-anchor="end">A</text>
+  <text x="716" y="352" font-size="11" fill="#00a">B</text>
+
+  <!-- 3P 端子 -->
+  <rect x="680" y="390" width="210" height="70" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="3"/>
+  <text x="700" y="428" text-anchor="middle" font-size="13" font-weight="bold" fill="#1b5e20">A</text>
+  <text x="770" y="428" text-anchor="middle" font-size="13" font-weight="bold" fill="#1b5e20">B</text>
+  <text x="850" y="428" text-anchor="middle" font-size="13" font-weight="bold" fill="#1b5e20">GND</text>
+  <circle cx="700" cy="450" r="3.5" fill="#2e7d32"/>
+  <circle cx="770" cy="450" r="3.5" fill="#2e7d32"/>
+  <circle cx="850" cy="450" r="3.5" fill="#2e7d32"/>
+  <!-- GND：屏蔽层，与副板 GND 共点 -->
+  <line x1="850" y1="460" x2="850" y2="514" stroke="#888" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="856" y="482" font-size="11" fill="#333" font-weight="bold">屏蔽层 → 共地</text>
+  <text x="856" y="496" font-size="11" fill="#666">（副板内同 MAX3485 GND）</text>
+
+  <!-- 485 总线输出（A / B / 屏蔽层） -->
+  <g stroke-linecap="round">
+    <line x1="700" y1="460" x2="700" y2="502" stroke="#00a" stroke-width="4"/>
+    <line x1="770" y1="460" x2="770" y2="508" stroke="#00a" stroke-width="4"/>
+    <line x1="700" y1="502" x2="1010" y2="502" stroke="#00a" stroke-width="4"/>
+    <line x1="770" y1="508" x2="1010" y2="508" stroke="#00a" stroke-width="4"/>
+    <line x1="850" y1="514" x2="1010" y2="514" stroke="#888" stroke-width="2" stroke-dasharray="6,4"/>
+    <line x1="1010" y1="502" x2="1032" y2="502" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
+  </g>
+  <text x="900" y="540" text-anchor="middle" font-size="12" fill="#333">RVSP 2×0.5 屏蔽双绞线</text>
+  <text x="900" y="558" text-anchor="middle" font-size="11" fill="#666">→ 配电箱 485 端子排（A / B / 屏蔽层单端接地）</text>
+
+  <!-- 图例 -->
+  <g transform="translate(60,470)">
+    <rect x="0" y="0" width="300" height="128" rx="6" fill="#ffffff" fill-opacity="0.94" stroke="#555" stroke-width="2"/>
+    <text x="10" y="20" font-size="13" font-weight="bold" fill="#333">图例</text>
+    <line x1="10" y1="42" x2="42" y2="42" stroke="#c00" stroke-width="6"/>
+    <text x="52" y="46" font-size="12" fill="#333">电源正（12V / 3V3）</text>
+    <line x1="10" y1="68" x2="42" y2="68" stroke="#000" stroke-width="6"/>
+    <text x="52" y="72" font-size="12" fill="#333">GND / 屏蔽层（单点共地）</text>
+    <line x1="10" y1="94" x2="42" y2="94" stroke="#00a" stroke-width="4"/>
+    <text x="52" y="98" font-size="12" fill="#333">485 / GPIO 信号</text>
+    <text x="10" y="120" font-size="11" fill="#666">虚线框 = 洞洞板边界 · 实线 = 短导线硬连</text>
+  </g>
+</svg>
