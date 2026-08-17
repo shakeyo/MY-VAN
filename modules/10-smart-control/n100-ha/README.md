@@ -4,7 +4,8 @@ N100 迷你主机运行 Home Assistant，负责统一 UI、历史与能源面板
 
 | 文件 | 内容 |
 |------|------|
-| [design.md](design.md) | HA 角色边界（定稿原则）、N100 主机、网络、安卓车机 |
+| [design.md](design.md) | HA 角色边界（定稿原则）、N100 主机、网络、安卓车机、平板 |
+| [tablet.md](tablet.md) | 小米平板4 直供电改造 + 快拆支架（副驾驶/后床旁） |
 | [bom.md](bom.md) | 材料清单 |
 
 ## 边界
