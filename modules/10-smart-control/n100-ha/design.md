@@ -14,9 +14,9 @@
 
 ### 待定决策（后续在此补结论，不另起文档）
 
-- [ ] **远程访问方式**：Tailscale（免费，推荐）/ Nabu Casa（付费）/ WireGuard
-- [ ] **中枢常开策略**：倾向 7×24 常开（离车远程监看 + 中控台机器人依赖；N100 待机约 5-10W，太阳能可补）
-- [ ] **通知渠道**：手机 App 推送
+- [x] **远程访问方式**：Tailscale（定稿；add-on 安装见 软件清单）
+- [ ] **中枢常开策略**：倾向 7×24 常开（离车远程监看 + 中控台机器人依赖；N100 待机约 5-10W，太阳能可补；装机后实测功耗补数）
+- [x] **通知渠道**：HA Companion App 推送（定稿）
 - [ ] **Dashboard 布局**：生活区控制 / 能源 / 监控 分页方案
 - [x] **语音控制**：中控台机器人走 HA Assist 管线（定稿），见 [robot/](../robot/)
 
@@ -25,10 +25,25 @@
 - **规格**: 16G RAM / 512G SSD
 - **平台**: PVE 虚拟化
 - **核心服务**:
-  - Home Assistant Core — Dashboard、历史/能源统计、远程访问、通知、高阶自动化（非安全关键）
-  - Frigate — AI 视频监控
-  - MQTT Broker — 消息总线
+  - HAOS（PVE 虚拟机，Supervisor 管理）— Dashboard、历史/能源统计、远程访问、通知、高阶自动化（非安全关键）
+  - Tailscale（add-on）— 远程访问
+  - Mosquitto（add-on）— MQTT 消息总线
+  - Frigate（后期）— AI 视频监控
 - **供电**: 副电瓶常电（见 [04-power-system](../../04-power-system/)）
+
+## 软件清单（必装）
+
+| 软件 | 类型 | 用途 | 状态 |
+|------|------|------|------|
+| HAOS（Supervisor 版） | 系统 | HA 本体，PVE 虚拟机 | 已装 |
+| Tailscale | add-on | 远程访问（定稿，见待定决策） | 待装 |
+| Mosquitto broker | add-on | MQTT 消息总线（OBD-II 车机数据、传感器、ESPHome 备选通道） | 待装 |
+| ESPHome | 集成 | ESP32 网关 native API，上线后自动发现实体 | 待装 |
+| System Monitor | 集成 | 系统状态卡片（CPU/磁盘/网络） | 待装 |
+| HA Companion | 手机 App | 通知推送 + 移动控制 | 待装 |
+| Fully Kiosk | 安卓 App | 车机/平板固定显示 Dashboard（见 安卓车机、tablet.md） | 待装 |
+
+**依赖关系**：Tailscale/Mosquitto 为 add-on（HAOS Supervisor 必装），ESPHome/System Monitor 为内置集成（无需商店），Companion/Fully Kiosk 为客户端。安装顺序：系统 → add-on → 集成 → 客户端。
 
 ## 网络
 
