@@ -70,7 +70,7 @@ pnpm dev
 # 访问 http://localhost:5173
 ```
 
-配合 [docker-compose 开发环境](../../software/docker-compose/) 可以模拟完整的 HA 后端。
+配合 [dev-environment 开发环境](../../software/dev-environment/) 可以模拟完整的 HA 后端。
 
 ## 环境变量配置
 

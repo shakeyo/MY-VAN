@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 560" width="1060" height="560" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text x="530" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">48V 水泵控制（核心安全回路）— 主回路 + 控制回路</text>
+  <text x="530" y="54" text-anchor="middle" font-size="12" fill="#666">主回路大电流走铜鼻子直连（不经端子排）；控制回路小电流由 485 模块 R6 驱动接触器线圈</text>
+
+  <!-- ========== 主回路（上部，粗红线） ========== -->
+  <text x="40" y="100" font-size="14" font-weight="bold" fill="#b71c1c">主回路（大电流 · 铜鼻子直连）</text>
+
+  <!-- F48-2 -->
+  <rect x="40" y="120" width="130" height="56" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="3"/>
+  <text x="105" y="143" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e65100">48V 保险盒</text>
+  <text x="105" y="162" text-anchor="middle" font-size="11.5" fill="#e65100">F48-2 · 15A</text>
+
+  <line x1="170" y1="148" x2="268" y2="148" stroke="#c00" stroke-width="6"/>
+  <text x="219" y="136" text-anchor="middle" font-size="11" fill="#c00">2.5mm² · OT2.5-6</text>
+
+  <!-- 接触器主触点 -->
+  <rect x="272" y="120" width="150" height="56" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="3"/>
+  <text x="347" y="143" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">接触器主触点</text>
+  <text x="347" y="162" text-anchor="middle" font-size="11.5" fill="#b71c1c">COM（进电侧）→ NO</text>
+
+  <line x1="422" y1="148" x2="560" y2="148" stroke="#c00" stroke-width="6"/>
+  <text x="491" y="136" text-anchor="middle" font-size="11" fill="#c00">2.5mm² · OT2.5-6</text>
+
+  <!-- 水泵 -->
+  <rect x="564" y="112" width="150" height="72" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="3"/>
+  <text x="639" y="140" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#b71c1c">48V 隔膜水泵</text>
+  <text x="639" y="160" text-anchor="middle" font-size="11" fill="#b71c1c">+ / −</text>
+  <text x="639" y="176" text-anchor="middle" font-size="10.5" fill="#777">中门柜内 · SB50 蓝色插头</text>
+
+  <!-- 水泵负回汇流 -->
+  <path d="M714,148 H800 V250" fill="none" stroke="#111" stroke-width="5"/>
+  <text x="760" y="140" font-size="11" fill="#111">水泵 −（2.5mm²）</text>
+  <rect x="560" y="250" width="340" height="14" rx="4" fill="#263238"/>
+  <text x="730" y="282" text-anchor="middle" font-size="12" font-weight="bold" fill="#111">48V 负极汇流排</text>
+
+  <!-- 主回路注 -->
+  <text x="40" y="212" font-size="11.5" fill="#b71c1c">⚠ 保险盒 OT 直连接触器 COM，接触器 NO 直连水泵 —— 主回路全程不走端子排。</text>
+
+  <!-- ========== 控制回路（下部） ========== -->
+  <text x="40" y="340" font-size="14" font-weight="bold" fill="#4527a0">控制回路（小电流 · 模块驱动）</text>
+
+  <!-- 48V+ 源 -->
+  <circle cx="60" cy="400" r="6" fill="#c00"/>
+  <text x="60" y="384" text-anchor="middle" font-size="12" font-weight="bold" fill="#c00">48V+</text>
+
+  <line x1="66" y1="400" x2="128" y2="400" stroke="#c00" stroke-width="3.5"/>
+  <text x="97" y="390" text-anchor="middle" font-size="10.5" fill="#c00">1.0mm²</text>
+
+  <!-- F48-3 -->
+  <rect x="132" y="372" width="120" height="56" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="3"/>
+  <text x="192" y="395" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e65100">F48-3 · 5A</text>
+  <text x="192" y="414" text-anchor="middle" font-size="11" fill="#e65100">线圈供电保险</text>
+
+  <line x1="252" y1="400" x2="330" y2="400" stroke="#c00" stroke-width="3.5"/>
+
+  <!-- 中8 R6 -->
+  <rect x="334" y="372" width="150" height="56" rx="6" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
+  <text x="409" y="395" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">中8 模块 R6</text>
+  <text x="409" y="414" text-anchor="middle" font-size="11" fill="#4527a0">COM → NO（干接点）</text>
+
+  <line x1="484" y1="400" x2="560" y2="400" stroke="#00a" stroke-width="3.5"/>
+  <text x="522" y="390" text-anchor="middle" font-size="10.5" fill="#00a">1.0mm²</text>
+
+  <!-- 线圈 -->
+  <rect x="564" y="372" width="150" height="56" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="3"/>
+  <text x="639" y="395" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">接触器线圈 48V</text>
+  <text x="639" y="414" text-anchor="middle" font-size="11" fill="#b71c1c">线圈 + / 线圈 −</text>
+
+  <!-- 续流二极管（线圈两端并联） -->
+  <line x1="639" y1="372" x2="639" y2="336" stroke="#00a" stroke-width="2.5"/>
+  <g>
+    <line x1="599" y1="336" x2="679" y2="336" stroke="#00a" stroke-width="2.5"/>
+    <polygon points="619,328 619,344 637,336" fill="#00a"/>
+    <line x1="637" y1="328" x2="637" y2="344" stroke="#00a" stroke-width="3"/>
+    <text x="700" y="330" font-size="11.5" font-weight="bold" fill="#00a">1N5408 续流二极管</text>
+    <text x="700" y="346" font-size="10.5" fill="#555">阴极（有环）→ 线圈+，阳极 → 线圈−</text>
+  </g>
+
+  <!-- 线圈负回汇流 -->
+  <path d="M714,400 H860 V264" fill="none" stroke="#111" stroke-width="4"/>
+  <text x="790" y="392" font-size="11" fill="#111">线圈 −（1.0mm²）</text>
+
+  <!-- 谁驱动 R6 -->
+  <rect x="334" y="452" width="150" height="66" rx="8" fill="#e8f5e9" fill-opacity="0.9" stroke="#2e7d32" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="409" y="474" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1b5e20">R6 由 ESPhome 控制</text>
+  <text x="409" y="492" text-anchor="middle" font-size="10.5" fill="#333">入口键3（DI3）+ 主控键4（DI8）</text>
+  <text x="409" y="508" text-anchor="middle" font-size="10.5" fill="#333">双控 · 一起亮一起灭</text>
+  <line x1="409" y1="452" x2="409" y2="428" stroke="#2e7d32" stroke-width="2" stroke-dasharray="6,4"/>
+
+  <!-- 通电前核查 -->
+  <g>
+    <rect x="640" y="452" width="380" height="96" rx="8" fill="#fffde7" stroke="#f9a825" stroke-width="2"/>
+    <text x="656" y="476" font-size="12.5" font-weight="bold" fill="#f57f17">通电前核查（逐项打勾）</text>
+    <text x="656" y="498" font-size="11.5" fill="#333">☐ 线圈电压 48V 与接触器标称一致　☐ 续流二极管方向（阴极朝线圈+）</text>
+    <text x="656" y="518" font-size="11.5" fill="#333">☐ 主回路相序：F48-2 → COM → NO → 水泵+，无跳接</text>
+    <text x="656" y="538" font-size="11.5" fill="#333">☐ F48-2 = 水泵电流 ×1.5~2　☐ 所有 OT 铜鼻液压压接 + 热缩</text>
+  </g>
+</svg>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 560" width="1080" height="560" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text x="540" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">传感器三条接入路径（均不占 ESP32 GPIO）</text>
+
+  <!-- ========== 路径 A：485 ========== -->
+  <rect x="40" y="60" width="1000" height="120" rx="10" fill="#e0f2f1" fill-opacity="0.5" stroke="#00897b" stroke-width="2"/>
+  <text x="60" y="84" font-size="13.5" font-weight="bold" fill="#00695c">路径 A · 485 总线（9600 8N1，与全车同一条总线）</text>
+  <g>
+    <rect x="60" y="100" width="150" height="56" rx="6" fill="#fff" stroke="#00897b" stroke-width="2.5"/>
+    <text x="135" y="124" text-anchor="middle" font-size="12" font-weight="bold" fill="#00695c">温湿度 ×2</text>
+    <text x="135" y="142" text-anchor="middle" font-size="10.5" fill="#555">车内 / 储物仓</text>
+    <rect x="230" y="100" width="150" height="56" rx="6" fill="#fff" stroke="#00897b" stroke-width="2.5"/>
+    <text x="305" y="124" text-anchor="middle" font-size="12" font-weight="bold" fill="#00695c">水位 ×2</text>
+    <text x="305" y="142" text-anchor="middle" font-size="10.5" fill="#555">清水箱 / 灰水箱</text>
+    <line x1="380" y1="128" x2="430" y2="128" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="434" y="100" width="190" height="56" rx="6" fill="#e0f2f1" stroke="#00897b" stroke-width="2.5"/>
+    <text x="529" y="122" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#00695c">菊花链并上 485 总线</text>
+    <text x="529" y="140" text-anchor="middle" font-size="10" fill="#555">末端模块之后并线（拓扑见 485-bus.svg）</text>
+    <line x1="624" y1="128" x2="674" y2="128" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="678" y="100" width="150" height="56" rx="6" fill="#ede7f6" stroke="#5e35b1" stroke-width="2.5"/>
+    <text x="753" y="124" text-anchor="middle" font-size="12" font-weight="bold" fill="#4527a0">ESP32 解析</text>
+    <text x="753" y="142" text-anchor="middle" font-size="10.5" fill="#555">ESPHome → HA 实体</text>
+    <line x1="828" y1="128" x2="878" y2="128" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="882" y="100" width="148" height="56" rx="6" fill="#f1f8e9" stroke="#558b2f" stroke-width="2.5"/>
+    <text x="956" y="124" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#33691e">HA 联动</text>
+    <text x="956" y="142" text-anchor="middle" font-size="10.5" fill="#555">环境卡片 / 风扇联动</text>
+  </g>
+  <text x="60" y="172" font-size="10.5" fill="#00897b">⚠ 选型硬要求：485 传感器必须 9600 8N1（与全车总线同速）；地址避开 1-4 与 0x10/0x11，建议 0x20 起</text>
+
+  <!-- ========== 路径 B：干接点 DI ========== -->
+  <rect x="40" y="200" width="1000" height="120" rx="10" fill="#fff3e0" fill-opacity="0.5" stroke="#ef6c00" stroke-width="2"/>
+  <text x="60" y="224" font-size="13.5" font-weight="bold" fill="#e65100">路径 B · 干接点 → 继电器模块 DI（X1-X8）</text>
+  <g>
+    <rect x="60" y="240" width="150" height="56" rx="6" fill="#fff" stroke="#ef6c00" stroke-width="2.5"/>
+    <text x="135" y="264" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">门磁 ×2</text>
+    <text x="135" y="282" text-anchor="middle" font-size="10.5" fill="#555">中门 / 尾门</text>
+    <rect x="230" y="240" width="150" height="56" rx="6" fill="#fff" stroke="#ef6c00" stroke-width="2.5"/>
+    <text x="305" y="264" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">漏水 ×2</text>
+    <text x="305" y="282" text-anchor="middle" font-size="10.5" fill="#555">底盘 / 窗边</text>
+    <line x1="380" y1="268" x2="430" y2="268" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="434" y="240" width="190" height="56" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="2.5"/>
+    <text x="529" y="262" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#e65100">模块 DI 输入口</text>
+    <text x="529" y="280" text-anchor="middle" font-size="10" fill="#555">COM 接电源一极 · 内部上拉，触点闭合触发</text>
+    <line x1="624" y1="268" x2="674" y2="268" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="678" y="240" width="150" height="56" rx="6" fill="#ede7f6" stroke="#5e35b1" stroke-width="2.5"/>
+    <text x="753" y="262" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#4527a0">主动上传</text>
+    <text x="753" y="280" text-anchor="middle" font-size="10" fill="#555">状态变化即发帧</text>
+    <line x1="828" y1="268" x2="878" y2="268" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="882" y="240" width="148" height="56" rx="6" fill="#f1f8e9" stroke="#558b2f" stroke-width="2.5"/>
+    <text x="956" y="262" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#33691e">HA 联动</text>
+    <text x="956" y="280" text-anchor="middle" font-size="10.5" fill="#555">开门亮灯 / 漏水报警</text>
+  </g>
+  <text x="60" y="312" font-size="10.5" fill="#e65100">DI 通道是公共资源（与按键共用 X1-X8）：分配前核对 switch-assignment.md 各模块 DI 占用表，留够余量</text>
+
+  <!-- ========== 路径 C：蓝牙 MQTT ========== -->
+  <rect x="40" y="340" width="1000" height="120" rx="10" fill="#fffde7" fill-opacity="0.5" stroke="#f9a825" stroke-width="2"/>
+  <text x="60" y="364" font-size="13.5" font-weight="bold" fill="#f57f17">路径 C · 蓝牙 → 车机 → MQTT（OBD-II，不经 485）</text>
+  <g>
+    <rect x="60" y="380" width="150" height="56" rx="6" fill="#fff" stroke="#f9a825" stroke-width="2.5"/>
+    <text x="135" y="404" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57f17">ELM327</text>
+    <text x="135" y="422" text-anchor="middle" font-size="10.5" fill="#555">OBD 口 · 蓝牙</text>
+    <line x1="210" y1="408" x2="260" y2="408" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="235" y="398" text-anchor="middle" font-size="10" fill="#555">蓝牙</text>
+    <rect x="264" y="380" width="150" height="56" rx="6" fill="#fff" stroke="#f9a825" stroke-width="2.5"/>
+    <text x="339" y="404" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57f17">安卓车机</text>
+    <text x="339" y="422" text-anchor="middle" font-size="10.5" fill="#555">Torque App 读数据</text>
+    <line x1="414" y1="408" x2="464" y2="408" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="439" y="398" text-anchor="middle" font-size="10" fill="#555">MQTT</text>
+    <rect x="468" y="380" width="150" height="56" rx="6" fill="#fff" stroke="#f9a825" stroke-width="2.5"/>
+    <text x="543" y="404" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57f17">Mosquitto（.13）</text>
+    <text x="543" y="422" text-anchor="middle" font-size="10.5" fill="#555">N100 上的 broker</text>
+    <line x1="618" y1="408" x2="668" y2="408" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="672" y="380" width="150" height="56" rx="6" fill="#f1f8e9" stroke="#558b2f" stroke-width="2.5"/>
+    <text x="747" y="404" text-anchor="middle" font-size="12" font-weight="bold" fill="#33691e">HA</text>
+    <text x="747" y="422" text-anchor="middle" font-size="10.5" fill="#555">MQTT 集成订阅</text>
+    <line x1="822" y1="408" x2="872" y2="408" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="876" y="380" width="154" height="56" rx="6" fill="#fffde7" stroke="#f9a825" stroke-width="2"/>
+    <text x="953" y="404" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#f57f17">用途</text>
+    <text x="953" y="422" text-anchor="middle" font-size="10" fill="#555">RPM&gt;500 行车充电 / 电压跳变迎宾</text>
+  </g>
+  <text x="60" y="452" font-size="10.5" fill="#f57f17">依赖车机常亮（Fully Kiosk）：车机断电 = OBD 链路断；对行车充电判定要留兜底（如 ESPHome 侧电池电压判断）</text>
+
+  <!-- 底部汇总 -->
+  <g>
+    <rect x="40" y="480" width="1000" height="60" rx="8" fill="#ffffff" fill-opacity="0.95" stroke="#555" stroke-width="2"/>
+    <text x="56" y="504" font-size="12.5" font-weight="bold" fill="#333">选型/接线核对（开工前过一遍）</text>
+    <text x="56" y="526" font-size="11.5" fill="#333">① 485 传感器波特率 9600 8N1 + 地址规划　② DI 传感器 COM 接哪一极（模块内部上拉 → COM 接负）　③ OBD 兜底逻辑　④ 安装位置见 04-power-system，线材留余量 10cm</text>
+  </g>
+</svg>

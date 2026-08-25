@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 560" width="1080" height="560" font-family="sans-serif">
+  <text x="540" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">单个带灯按键的 3 个回路（开关检测 / LED 指示 / 负载功率）</text>
+  <text x="540" y="54" text-anchor="middle" font-size="12" fill="#666">负载功率走继电器干接点切正极，LED 走 OUTx NPN 吸地 —— 两者独立，互不承载</text>
+
+  <!-- ========== 左：按键 + 14 芯线 ========== -->
+  <text x="60" y="96" font-size="14" font-weight="bold" fill="#283593">信号侧（14 芯线内）</text>
+
+  <!-- 按键 -->
+  <rect x="60" y="130" width="190" height="200" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="3"/>
+  <text x="155" y="156" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0d47a1">带灯按键（自复位 NO）</text>
+  <text x="155" y="176" text-anchor="middle" font-size="11" fill="#555">单色 4 线：绿绿=COM/NO · 红=灯+ · 黑=灯−</text>
+  <text x="155" y="194" text-anchor="middle" font-size="11" fill="#555">双色 5 线：黄白=NO/COM · 红=共阳 · 黑/绿=两色灯阴</text>
+
+  <!-- 引脚标签 -->
+  <rect x="70" y="210" width="70" height="30" rx="5" fill="#fff" stroke="#1565c0" stroke-width="2"/>
+  <text x="105" y="230" text-anchor="middle" font-size="12" font-weight="bold" fill="#0d47a1">COM</text>
+  <rect x="70" y="248" width="70" height="30" rx="5" fill="#fff" stroke="#1565c0" stroke-width="2"/>
+  <text x="105" y="268" text-anchor="middle" font-size="12" font-weight="bold" fill="#0d47a1">NO</text>
+  <rect x="70" y="286" width="70" height="30" rx="5" fill="#fff" stroke="#1565c0" stroke-width="2"/>
+  <text x="105" y="306" text-anchor="middle" font-size="12" font-weight="bold" fill="#0d47a1">LED+</text>
+  <rect x="70" y="324" width="70" height="30" rx="5" fill="#fff" stroke="#1565c0" stroke-width="2"/>
+  <text x="105" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="#0d47a1">LED−</text>
+  <text x="172" y="300" text-anchor="middle" font-size="10.5" fill="#777">同面板多键：COM 焊并 1 点、</text>
+  <text x="172" y="316" text-anchor="middle" font-size="10.5" fill="#777">LED+ 焊并 1 点</text>
+
+  <!-- 14 芯线 -->
+  <rect x="360" y="130" width="130" height="200" rx="10" fill="#eceff1" stroke="#546e7a" stroke-width="3"/>
+  <text x="425" y="154" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#37474f">14 芯线</text>
+  <text x="425" y="172" text-anchor="middle" font-size="10.5" fill="#777">A=入口 / B=主控</text>
+  <g font-size="11.5">
+    <circle cx="378" cy="200" r="7" fill="#222"/><text x="392" y="204" fill="#333">#1 黑 GND</text>
+    <circle cx="378" cy="232" r="7" fill="#d32f2f"/><text x="392" y="236" fill="#333">#2 红 +12V</text>
+    <circle cx="378" cy="264" r="7" fill="#fafafa" stroke="#999"/><text x="392" y="268" fill="#333">#3-6 白黄灰淡绿 DIx</text>
+    <circle cx="378" cy="296" r="7" fill="#9e9e9e"/><text x="392" y="300" fill="#333">#7-8 深绿棕 预留DI</text>
+    <circle cx="378" cy="328" r="7" fill="#1e88e5"/><text x="392" y="332" fill="#333">#9-12 蓝黑白粉橙 OUTx</text>
+  </g>
+
+  <!-- 信号连线 -->
+  <g stroke-linecap="round">
+    <line x1="140" y1="225" x2="371" y2="200" stroke="#222" stroke-width="3.5"/>
+    <line x1="140" y1="263" x2="371" y2="264" stroke="#00a" stroke-width="3.5"/>
+    <line x1="140" y1="301" x2="371" y2="232" stroke="#d32f2f" stroke-width="3.5"/>
+    <line x1="140" y1="339" x2="371" y2="328" stroke="#00a" stroke-width="3.5"/>
+  </g>
+  <text x="240" y="205" text-anchor="middle" font-size="10.5" fill="#222" font-weight="bold">COM → GND（按下拉低触发）</text>
+  <text x="240" y="252" text-anchor="middle" font-size="10.5" fill="#00a">NO → DIx</text>
+  <text x="240" y="286" text-anchor="middle" font-size="10.5" fill="#d32f2f">LED+ → +12V</text>
+  <text x="240" y="330" text-anchor="middle" font-size="10.5" fill="#00a">LED− → OUTx（NPN 吸地）</text>
+
+  <!-- ========== 右：功率回路 ========== -->
+  <text x="580" y="96" font-size="14" font-weight="bold" fill="#b71c1c">功率侧（端子排，不在 14 芯线内）</text>
+
+  <rect x="600" y="130" width="220" height="48" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="3"/>
+  <text x="710" y="159" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e65100">12V 保险盒 F12-x 输出 +</text>
+
+  <line x1="710" y1="178" x2="710" y2="206" stroke="#c00" stroke-width="4"/>
+  <rect x="600" y="210" width="220" height="48" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="3"/>
+  <text x="710" y="239" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">继电器 COM（公共端·进电侧）</text>
+
+  <line x1="710" y1="258" x2="710" y2="286" stroke="#c00" stroke-width="4"/>
+  <rect x="600" y="290" width="220" height="48" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="3"/>
+  <text x="710" y="319" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">继电器 NO（常开·出线侧）</text>
+
+  <line x1="710" y1="338" x2="710" y2="366" stroke="#c00" stroke-width="4"/>
+  <rect x="600" y="370" width="220" height="48" rx="6" fill="#eceff1" stroke="#546e7a" stroke-width="3"/>
+  <text x="710" y="399" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#37474f">端子排 功率区正极位 → 负载 +</text>
+
+  <line x1="710" y1="418" x2="710" y2="446" stroke="#c00" stroke-width="4"/>
+  <rect x="600" y="450" width="220" height="48" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="3"/>
+  <text x="710" y="479" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1b5e20">负载（灯 / 风扇 / 锁 / 阀…）</text>
+
+  <!-- 负载负 -->
+  <path d="M820,474 H940 V496" fill="none" stroke="#111" stroke-width="4"/>
+  <rect x="900" y="498" width="160" height="44" rx="6" fill="#263238"/>
+  <text x="980" y="525" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">负极端子排（常通）</text>
+
+  <!-- 继电器线圈 ↔ 模块 -->
+  <path d="M820,234 H880 V300 H600" fill="none" stroke="#5e35b1" stroke-width="2.5" stroke-dasharray="6,4"/>
+  <text x="900" y="266" font-size="11" fill="#5e35b1">继电器线圈 12V：控制区取电</text>
+  <text x="900" y="284" font-size="11" fill="#5e35b1">线圈− 接模块 DO（ESPhome 控制）</text>
+
+  <!-- 同步说明 -->
+  <g>
+    <rect x="920" y="130" width="140" height="130" rx="8" fill="#ede7f6" fill-opacity="0.9" stroke="#5e35b1" stroke-width="2"/>
+    <text x="990" y="156" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#4527a0">动作时序</text>
+    <text x="990" y="178" text-anchor="middle" font-size="10.5" fill="#333">ESPhome 收到按键</text>
+    <text x="990" y="194" text-anchor="middle" font-size="10.5" fill="#333">→ 吸继电器（功率通）</text>
+    <text x="990" y="210" text-anchor="middle" font-size="10.5" fill="#333">→ OUTx 同步吸地</text>
+    <text x="990" y="226" text-anchor="middle" font-size="10.5" fill="#333">→ 按键 LED 亮</text>
+    <text x="990" y="248" text-anchor="middle" font-size="10.5" fill="#777">硬件同步：一起亮一起灭</text>
+  </g>
+
+  <!-- 两个 COM 警示 -->
+  <g>
+    <rect x="60" y="370" width="500" height="128" rx="8" fill="#ffebee" fill-opacity="0.85" stroke="#c62828" stroke-width="2.5"/>
+    <text x="76" y="396" font-size="13" font-weight="bold" fill="#b71c1c">⚠ 两个 COM 不要混</text>
+    <text x="76" y="422" font-size="12" fill="#333">① 按键开关的 COM → 模块 GND（负侧）：DI 内部上拉，按下把 NO 拉到 GND 触发。</text>
+    <text x="76" y="444" font-size="12" fill="#333">② 继电器干接点的 COM → 负载正极（正侧）：切正极，NO 出线到负载。</text>
+    <text x="76" y="468" font-size="12" fill="#333">同名不同物：一个在信号回路（负），一个在功率回路（正）。接反 = DI 常触发 / 负载常电。</text>
+    <text x="76" y="490" font-size="11" fill="#777">LED 只是指示灯，不承载负载电流；裸 LED 每色串 1~3.3kΩ，双色灯自带限流电阻可直接接 12V。</text>
+  </g>
+</svg>

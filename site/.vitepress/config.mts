@@ -34,10 +34,20 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '模块', link: '/modules/' },
+      { text: '部署', link: '/docs/deployment/' },
       { text: 'GitHub', link: 'https://github.com/shakeyo/MY-VAN' },
     ],
     sidebar: {
       '/modules/': modulesSidebar,
+      '/docs/': [
+        { text: '部署指南', items: [
+          { text: '总览', link: '/docs/deployment/' },
+          { text: 'PVE 基础环境', link: '/docs/deployment/pve-setup' },
+          { text: 'Home Assistant', link: '/docs/deployment/home-assistant' },
+          { text: 'Frigate NVR', link: '/docs/deployment/frigate' },
+          { text: '仪表盘', link: '/docs/deployment/dashboard' },
+        ]},
+      ],
     },
     search: {
       provider: 'local',

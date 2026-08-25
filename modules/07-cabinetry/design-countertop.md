@@ -91,7 +91,7 @@ IGT 槽剖面（正面）：
 完整平面，无开孔。用于放置显示器、键盘、鼠标，日常办公区域。
 
 - 显示器支架固定于台面或侧壁（靠近尾门端）
-- 台面下方走 HDMI + USB 线至 N100 主机（见 [10-smart-control](../../10-smart-control/)）
+- 台面下方走 HDMI + USB 线至 N100 主机（见 [10-smart-control](../10-smart-control/)）
 
 ## 4. 台面材质与工艺
 
@@ -113,6 +113,6 @@ IGT 槽剖面（正面）：
 |----------|------|
 | [05-water-system](../05-water-system/) | 水槽进排水快接 |
 | [04-power-system](../04-power-system/) | 电磁炉/显示器供电 |
-| [10-smart-control](../../10-smart-control/) | N100 HDMI 走线至显示器 |
+| [10-smart-control](../10-smart-control/) | N100 HDMI 走线至显示器 |
 | [08-bed-and-seat](../08-bed-and-seat/) | 后床上方段下方 = 床段柜，柜顶需与台面结构协调 |
 | 户外厨房（待建） | IGT 模块室内外共用 |

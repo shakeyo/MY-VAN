@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 780" width="1240" height="780" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#00a"/>
+    </marker>
+  </defs>
+
+  <text x="620" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">整车电力架构单线图（48V 磷酸铁锂 · 多源充电 · 星型配电）</text>
+
+  <!-- ============ 充电侧 ============ -->
+  <text x="40" y="66" font-size="14" font-weight="bold" fill="#2e7d32">充电侧（多源）</text>
+  <g>
+    <rect x="40" y="78" width="220" height="44" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2.5"/>
+    <text x="150" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#1b5e20">行车充电器 DC-DC 48V/40A</text>
+    <rect x="40" y="132" width="220" height="44" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2.5"/>
+    <text x="150" y="159" text-anchor="middle" font-size="13" font-weight="bold" fill="#1b5e20">太阳能 MPPT（485 可控）</text>
+    <rect x="40" y="186" width="220" height="44" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2.5"/>
+    <text x="150" y="213" text-anchor="middle" font-size="13" font-weight="bold" fill="#1b5e20">市电充电器 58.4V</text>
+  </g>
+  <!-- 充电汇流虚线 -->
+  <g stroke="#2e7d32" stroke-width="2.5" stroke-dasharray="7,5" fill="none">
+    <line x1="260" y1="100" x2="292" y2="100"/>
+    <line x1="260" y1="154" x2="292" y2="154"/>
+    <line x1="260" y1="208" x2="292" y2="208"/>
+    <line x1="292" y1="100" x2="292" y2="352"/>
+    <line x1="292" y1="352" x2="260" y2="352"/>
+  </g>
+  <text x="300" y="96" font-size="11" fill="#2e7d32">充电</text>
+
+  <!-- ============ 电池 ============ -->
+  <rect x="40" y="320" width="220" height="96" rx="10" fill="#fffde7" stroke="#f9a825" stroke-width="3"/>
+  <text x="150" y="352" text-anchor="middle" font-size="15" font-weight="bold" fill="#f57f17">48V 磷酸铁锂电池组</text>
+  <text x="150" y="374" text-anchor="middle" font-size="12" fill="#f57f17">100Ah · 16S · BMS</text>
+  <text x="150" y="394" text-anchor="middle" font-size="12" fill="#f57f17">低温保护</text>
+
+  <!-- 电池正极 → 源头保护 -->
+  <path d="M150,416 V470 H316" fill="none" stroke="#c00" stroke-width="4"/>
+  <circle cx="150" cy="416" r="4" fill="#c00"/>
+  <text x="158" y="450" font-size="12" font-weight="bold" fill="#c00">电池 +</text>
+
+  <!-- 源头熔断 + 主断 -->
+  <g>
+    <rect x="320" y="448" width="120" height="44" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2.5"/>
+    <text x="380" y="467" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">源头熔断器</text>
+    <text x="380" y="484" text-anchor="middle" font-size="12" fill="#b71c1c">150A（电池侧）</text>
+    <rect x="480" y="448" width="120" height="44" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2.5"/>
+    <text x="540" y="467" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">主断路器</text>
+    <text x="540" y="484" text-anchor="middle" font-size="12" fill="#b71c1c">125A（电池侧）</text>
+  </g>
+  <line x1="440" y1="470" x2="480" y2="470" stroke="#c00" stroke-width="4"/>
+  <line x1="600" y1="470" x2="700" y2="470" stroke="#c00" stroke-width="5" marker-end="url(#arrow)"/>
+  <text x="648" y="458" text-anchor="middle" font-size="11.5" fill="#c00">2×8AWG 硅胶线（并联）</text>
+
+  <!-- 电池总负 -->
+  <path d="M80,416 V648 H862 V624" fill="none" stroke="#111" stroke-width="4"/>
+  <circle cx="80" cy="416" r="4" fill="#111"/>
+  <text x="88" y="440" font-size="12" font-weight="bold" fill="#111">电池 −（总负）</text>
+  <text x="420" y="640" text-anchor="middle" font-size="11.5" fill="#111">总负 2×8AWG 并联 → 箱内负极汇流</text>
+
+  <!-- ============ 中门配电箱 ============ -->
+  <rect x="700" y="120" width="330" height="500" rx="10" fill="#fafafa" stroke="#455a64" stroke-width="3"/>
+  <text x="865" y="147" text-anchor="middle" font-size="15" font-weight="bold" fill="#37474f">中门配电箱</text>
+
+  <!-- 进线 → 总开关 -->
+  <path d="M700,470 H736 V190 H716" fill="none" stroke="#c00" stroke-width="4"/>
+  <rect x="720" y="170" width="130" height="42" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2.5"/>
+  <text x="785" y="188" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">总开关（隔离）≥60A</text>
+  <text x="785" y="204" text-anchor="middle" font-size="11" fill="#b71c1c">柜内左上 · 明显断开点</text>
+  <line x1="785" y1="212" x2="785" y2="238" stroke="#c00" stroke-width="4"/>
+  <rect x="720" y="238" width="130" height="42" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2.5"/>
+  <text x="785" y="256" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">总保险 60A</text>
+  <text x="785" y="272" text-anchor="middle" font-size="11" fill="#b71c1c">紧挨总开关 · 正极串联</text>
+
+  <!-- 48V 母线节点 -->
+  <line x1="785" y1="280" x2="785" y2="300" stroke="#c00" stroke-width="4"/>
+  <circle cx="785" cy="300" r="4" fill="#c00"/>
+
+  <!-- 48V 保险盒 -->
+  <rect x="716" y="300" width="148" height="104" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="2.5"/>
+  <text x="790" y="320" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e65100">48V 保险盒（6 路）</text>
+  <text x="726" y="340" font-size="11.5" fill="#333">F48-1 → DCDC 20A</text>
+  <text x="726" y="358" font-size="11.5" fill="#333">F48-2 → 水泵 15A</text>
+  <text x="726" y="376" font-size="11.5" fill="#333">F48-3 → 线圈 5A</text>
+  <text x="726" y="394" font-size="11.5" fill="#777">F48-4~6 备用 10A</text>
+
+  <!-- DCDC -->
+  <line x1="864" y1="326" x2="904" y2="326" stroke="#c00" stroke-width="3.5"/>
+  <rect x="904" y="300" width="116" height="56" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+  <text x="962" y="322" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0d47a1">DCDC 48V→12V</text>
+  <text x="962" y="340" text-anchor="middle" font-size="11.5" fill="#0d47a1">40A（非隔离）</text>
+  <line x1="962" y1="356" x2="962" y2="388" stroke="#c00" stroke-width="3.5"/>
+  <rect x="904" y="388" width="116" height="64" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+  <text x="962" y="410" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0d47a1">12V 保险盒</text>
+  <text x="962" y="428" text-anchor="middle" font-size="11.5" fill="#0d47a1">12 路箱 · 用 6 路</text>
+  <text x="962" y="444" text-anchor="middle" font-size="11" fill="#555">F12-1~6</text>
+
+  <!-- 8 路模块 -->
+  <rect x="716" y="430" width="148" height="54" rx="6" fill="#ede7f6" stroke="#5e35b1" stroke-width="2.5"/>
+  <text x="790" y="452" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">8 路 485 继电器模块</text>
+  <text x="790" y="470" text-anchor="middle" font-size="11" fill="#4527a0">ESPhome 驱动 · DIN 导轨</text>
+  <rect x="712" y="488" width="156" height="8" rx="3" fill="#90a4ae"/>
+
+  <!-- 端子排 -->
+  <rect x="716" y="510" width="148" height="62" rx="6" fill="#eceff1" stroke="#546e7a" stroke-width="2.5"/>
+  <text x="790" y="532" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#37474f">端子排（箱底）</text>
+  <text x="790" y="550" text-anchor="middle" font-size="11" fill="#555">功率区（红/黑）+ 控制区</text>
+  <text x="790" y="564" text-anchor="middle" font-size="10.5" fill="#777">负载出线 · 正负成对相邻</text>
+
+  <!-- 箱内负极汇流（示意） -->
+  <line x1="862" y1="624" x2="862" y2="586" stroke="#111" stroke-width="3.5"/>
+  <rect x="716" y="578" width="148" height="10" rx="3" fill="#263238"/>
+  <text x="790" y="606" text-anchor="middle" font-size="10.5" fill="#111">负极端子排（桥接）= 全系统负极汇流</text>
+
+  <!-- ============ 48V 负载：水泵 ============ -->
+  <line x1="1030" y1="336" x2="1076" y2="336" stroke="#c00" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="1053" y="326" text-anchor="middle" font-size="10.5" fill="#c00">F48-2</text>
+  <rect x="1080" y="308" width="150" height="58" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="2.5"/>
+  <text x="1155" y="330" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b71c1c">48V 隔膜水泵</text>
+  <text x="1155" y="348" text-anchor="middle" font-size="11" fill="#b71c1c">经直流接触器</text>
+  <text x="1155" y="362" text-anchor="middle" font-size="10.5" fill="#777">R6 驱线圈 · 入口键3/主控键4 双控</text>
+
+  <!-- ============ AC 侧 ============ -->
+  <line x1="1030" y1="430" x2="1076" y2="430" stroke="#f9a825" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="1080" y="408" width="150" height="44" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="2.5"/>
+  <text x="1155" y="435" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#f57f17">逆变器 48V→220V</text>
+  <line x1="1155" y1="452" x2="1155" y2="470" stroke="#f9a825" stroke-width="3.5"/>
+  <rect x="1080" y="470" width="150" height="44" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="2.5"/>
+  <text x="1155" y="497" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57f17">AC 接触器 + 急停</text>
+  <line x1="1155" y1="514" x2="1155" y2="532" stroke="#f9a825" stroke-width="3.5"/>
+  <rect x="1080" y="532" width="150" height="40" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="2.5"/>
+  <text x="1155" y="557" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57f17">220V 插座回路</text>
+
+  <!-- ============ 12V 负载 ============ -->
+  <path d="M962,452 V560 H1076" fill="none" stroke="#c00" stroke-width="3.5" marker-end="url(#arrow)"/>
+  <rect x="1080" y="588" width="150" height="104" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2.5"/>
+  <text x="1155" y="608" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1b5e20">12V 负载</text>
+  <text x="1090" y="628" font-size="11" fill="#333">主灯 / 氛围灯 / 睡眠灯</text>
+  <text x="1090" y="644" font-size="11" fill="#333">后窗排气扇 / 冰箱</text>
+  <text x="1090" y="660" font-size="11" fill="#333">点烟器 ×2 / 车内锁</text>
+  <text x="1090" y="676" font-size="11" fill="#333">N100·路由器·485 控制</text>
+  <text x="1090" y="692" font-size="11" fill="#333">电控水阀（R7）</text>
+
+  <!-- ============ 踏步 ============ -->
+  <rect x="1080" y="708" width="150" height="44" rx="8" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="1155" y="726" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#616161">踏步（原车电瓶功率）</text>
+  <text x="1155" y="742" text-anchor="middle" font-size="10.5" fill="#757575">本箱仅出干接点控制信号</text>
+  <path d="M864,457 H1036 V730 H1076" fill="none" stroke="#00a" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#arrow-blue)"/>
+
+  <!-- ============ 485 总线 ============ -->
+  <path d="M790,484 V700 H330" fill="none" stroke="#00a" stroke-width="3" stroke-dasharray="1,0"/>
+  <line x1="330" y1="700" x2="270" y2="700" stroke="#00a" stroke-width="3" stroke-dasharray="7,5" marker-end="url(#arrow-blue)"/>
+  <text x="560" y="722" text-anchor="middle" font-size="12" fill="#00a">485 总线（手拉手菊花链）→ 额头模块 / 中4 / 车尾 4 路（后期）</text>
+  <text x="560" y="740" text-anchor="middle" font-size="11" fill="#666">双绞 A/B · 两端 120Ω 终端电阻 · 与功率线间距 ≥15cm（详见 485-bus.svg）</text>
+
+  <!-- ============ 图例 ============ -->
+  <g>
+    <rect x="320" y="56" width="330" height="128" rx="8" fill="#ffffff" fill-opacity="0.95" stroke="#555" stroke-width="2"/>
+    <text x="334" y="80" font-size="13" font-weight="bold" fill="#333">图例</text>
+    <line x1="334" y1="100" x2="368" y2="100" stroke="#c00" stroke-width="4"/>
+    <text x="378" y="104" font-size="12" fill="#333">48V / 12V 正极（功率）</text>
+    <line x1="334" y1="124" x2="368" y2="124" stroke="#111" stroke-width="4"/>
+    <text x="378" y="128" font-size="12" fill="#333">负极 / 总负（汇流）</text>
+    <line x1="334" y1="148" x2="368" y2="148" stroke="#00a" stroke-width="3"/>
+    <text x="378" y="152" font-size="12" fill="#333">485 信号 / 控制</text>
+    <line x1="334" y1="172" x2="368" y2="172" stroke="#f9a825" stroke-width="4"/>
+    <text x="378" y="176" font-size="12" fill="#333">AC 220V（独立分区）</text>
+    <line x1="334" y1="196" x2="368" y2="196" stroke="#2e7d32" stroke-width="2.5" stroke-dasharray="6,4"/>
+    <text x="378" y="200" font-size="12" fill="#333">充电 / 虚线 = 后期预留</text>
+  </g>
+
+  <!-- 边界提示 -->
+  <text x="865" y="112" text-anchor="middle" font-size="11" fill="#777">范围：中门配电箱（额头柜配电箱为独立系统，见 design-distribution-box.md §1）</text>
+</svg>

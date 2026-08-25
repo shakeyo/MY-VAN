@@ -1,5 +1,7 @@
 # N100 中枢与网络
 
+> 全系统位置见 [smart-architecture.svg](../diagrams/smart-architecture.svg)；网络与 IP 规划见 [network-topology.svg](../diagrams/network-topology.svg)。
+
 ## HA 角色定义（定稿原则，改动需在本文显式更新）
 
 三层分工，边界固定——**HA 不承载安全关键自动化**：

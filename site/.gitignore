@@ -3,3 +3,6 @@ node_modules
 .vitepress/dist
 modules/0*
 modules/1*
+docs/
+software/
+public/

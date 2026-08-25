@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 640" width="1160" height="640" font-family="sans-serif">
+  <text x="580" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">中门配电箱 端子排布局（箱底 · 功率区 + 控制区）</text>
+  <text x="580" y="54" text-anchor="middle" font-size="12" fill="#666">每负载正负成对出线：正 → 正极区对应位，负 → 负极区（全桥，任一位）· 中间用隔板分隔控制区</text>
+
+  <!-- ========== 功率正极区 ========== -->
+  <text x="60" y="92" font-size="14" font-weight="bold" fill="#b71c1c">功率正极区（红色 · 独立 · 不桥接）</text>
+
+  <g font-size="11">
+    <rect x="60"  y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="116" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="172" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="228" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="284" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="340" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="396" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="452" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="508" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="564" y="104" width="48" height="54" rx="4" fill="#ffcdd2" stroke="#c62828" stroke-width="2"/>
+    <rect x="620" y="104" width="48" height="54" rx="4" fill="#eceff1" stroke="#90a4ae" stroke-width="2"/>
+    <rect x="676" y="104" width="48" height="54" rx="4" fill="#eceff1" stroke="#90a4ae" stroke-width="2"/>
+
+    <text x="84"  y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">1</text>
+    <text x="140" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">2</text>
+    <text x="196" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">3</text>
+    <text x="252" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">4</text>
+    <text x="308" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">5</text>
+    <text x="364" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">6</text>
+    <text x="420" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">7</text>
+    <text x="476" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">8</text>
+    <text x="532" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">9</text>
+    <text x="588" y="126" text-anchor="middle" font-weight="bold" fill="#b71c1c">10</text>
+    <text x="644" y="126" text-anchor="middle" font-weight="bold" fill="#78909c">11</text>
+    <text x="700" y="126" text-anchor="middle" font-weight="bold" fill="#78909c">12</text>
+    <text x="84"  y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">点烟器1+</text>
+    <text x="140" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">点烟器2+</text>
+    <text x="196" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">冰箱+</text>
+    <text x="252" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">主灯+</text>
+    <text x="308" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">氛围/</text>
+    <text x="364" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">睡眠+</text>
+    <text x="420" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">氛围/</text>
+    <text x="476" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">睡眠+</text>
+    <text x="532" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">后窗扇+</text>
+    <text x="588" y="146" text-anchor="middle" font-size="9.5" fill="#b71c1c">水阀+</text>
+    <text x="644" y="146" text-anchor="middle" font-size="9.5" fill="#78909c">预留</text>
+    <text x="700" y="146" text-anchor="middle" font-size="9.5" fill="#78909c">预留</text>
+  </g>
+  <!-- 位5-8 并联短接片 -->
+  <rect x="284" y="96" width="216" height="8" rx="3" fill="#f9a825"/>
+  <text x="392" y="90" text-anchor="middle" font-size="10.5" fill="#e65100">位 5-8 短接片并联（R2.NO 供电，各路独立出线）</text>
+
+  <!-- 来源标注 -->
+  <g font-size="10.5" fill="#555" text-anchor="middle">
+    <text x="84"  y="176">F12-5 直连</text>
+    <text x="140" y="176">F12-6 直连</text>
+    <text x="196" y="176">中8.R8.NO</text>
+    <text x="252" y="176">中8.R1.NO</text>
+    <text x="392" y="176">中8.R2.NO（4 位并联）</text>
+    <text x="532" y="176">中8.R4.NO</text>
+    <text x="588" y="176">中8.R7.NO</text>
+  </g>
+
+  <!-- ========== 功率负极区 ========== -->
+  <text x="60" y="226" font-size="14" font-weight="bold" fill="#111">功率负极区（黑色 · 短接片全桥接 = 负汇流）</text>
+  <g font-size="11">
+    <rect x="60"  y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="116" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="172" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="228" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="284" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="340" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="396" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="452" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="508" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="564" y="240" width="48" height="50" rx="4" fill="#37474f"/>
+    <rect x="620" y="240" width="48" height="50" rx="4" fill="#cfd8dc"/>
+    <rect x="676" y="240" width="48" height="50" rx="4" fill="#cfd8dc"/>
+
+    <text x="84"  y="260" text-anchor="middle" font-weight="bold" fill="#fff">13</text>
+    <text x="140" y="260" text-anchor="middle" font-weight="bold" fill="#fff">14</text>
+    <text x="196" y="260" text-anchor="middle" font-weight="bold" fill="#fff">15</text>
+    <text x="252" y="260" text-anchor="middle" font-weight="bold" fill="#fff">16</text>
+    <text x="308" y="260" text-anchor="middle" font-weight="bold" fill="#fff">17</text>
+    <text x="364" y="260" text-anchor="middle" font-weight="bold" fill="#fff">18</text>
+    <text x="420" y="260" text-anchor="middle" font-weight="bold" fill="#fff">19</text>
+    <text x="476" y="260" text-anchor="middle" font-weight="bold" fill="#fff">20</text>
+    <text x="532" y="260" text-anchor="middle" font-weight="bold" fill="#fff">21</text>
+    <text x="588" y="260" text-anchor="middle" font-weight="bold" fill="#fff">22</text>
+    <text x="84"  y="278" text-anchor="middle" font-size="9.5" fill="#cfd8dc">点烟器1-</text>
+    <text x="140" y="278" text-anchor="middle" font-size="9.5" fill="#cfd8dc">点烟器2-</text>
+    <text x="196" y="278" text-anchor="middle" font-size="9.5" fill="#cfd8dc">冰箱-</text>
+    <text x="252" y="278" text-anchor="middle" font-size="9.5" fill="#cfd8dc">主灯-</text>
+    <text x="308" y="278" text-anchor="middle" font-size="9.5" fill="#cfd8dc">氛围-</text>
+    <text x="364" y="278" text-anchor="middle" font-size="9.5" fill="#cfd8dc">睡眠-</text>
+    <text x="420" y="278" text-anchor="middle" font-size="9.5" fill="#cfd8dc">后窗扇-</text>
+    <text x="476" y="278" text-anchor="middle" font-size="9.5" fill="#cfd8dc">水阀-</text>
+    <text x="532" y="278" text-anchor="middle" font-size="9.5" fill="#546e7a">预留</text>
+    <text x="588" y="278" text-anchor="middle" font-size="9.5" fill="#546e7a">预留</text>
+  </g>
+  <rect x="60" y="232" width="552" height="8" rx="3" fill="#b0bec5"/>
+  <text x="336" y="224" text-anchor="middle" font-size="10.5" fill="#546e7a">短接片全桥接（13-22 一体）</text>
+  <line x1="336" y1="290" x2="336" y2="330" stroke="#111" stroke-width="5"/>
+  <rect x="236" y="330" width="200" height="40" rx="6" fill="#263238"/>
+  <text x="336" y="355" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">6mm² 黑线 → 电池总负</text>
+  <text x="620" y="352" font-size="11" fill="#555">氛围-（17）与睡眠-（18）走线分开；</text>
+  <text x="620" y="370" font-size="11" fill="#555">睡眠灯床头另有独立物理开关。</text>
+
+  <!-- ========== 隔板 ========== -->
+  <line x1="770" y1="84" x2="770" y2="480" stroke="#37474f" stroke-width="5"/>
+  <text x="770" y="76" text-anchor="middle" font-size="11" fill="#37474f">UK 隔板（物理隔离）</text>
+
+  <!-- ========== 控制区 ========== -->
+  <text x="790" y="92" font-size="14" font-weight="bold" fill="#283593">控制区（红/黑 · 独立隔板分隔）</text>
+  <g font-size="11.5">
+    <rect x="790" y="104" width="150" height="40" rx="5" fill="#e8eaf6" stroke="#3949ab" stroke-width="2.5"/>
+    <text x="865" y="129" text-anchor="middle" font-weight="bold" fill="#283593">控+（蓝）</text>
+    <text x="790" y="164" font-size="10.5" fill="#555">F12-1 → 2A 保险 → 此处（并接 2-3 位）</text>
+
+    <rect x="790" y="176" width="150" height="40" rx="5" fill="#e8eaf6" stroke="#3949ab" stroke-width="2.5"/>
+    <text x="865" y="201" text-anchor="middle" font-weight="bold" fill="#283593">控-（灰）</text>
+    <text x="790" y="236" font-size="10.5" fill="#555">→ 负极端子排（桥接）</text>
+
+    <rect x="790" y="248" width="150" height="40" rx="5" fill="#ede7f6" stroke="#5e35b1" stroke-width="2.5"/>
+    <text x="865" y="273" text-anchor="middle" font-weight="bold" fill="#4527a0">中8 12V / 中8 GND</text>
+
+    <rect x="790" y="300" width="150" height="40" rx="5" fill="#ede7f6" stroke="#5e35b1" stroke-width="2.5"/>
+    <text x="865" y="325" text-anchor="middle" font-weight="bold" fill="#4527a0">中4 12V / 中4 GND</text>
+    <text x="790" y="360" font-size="10.5" fill="#555">中4 跨接线引出到柜内（已接线，保险未插）</text>
+
+    <rect x="790" y="372" width="150" height="40" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2.5"/>
+    <text x="865" y="397" text-anchor="middle" font-weight="bold" fill="#00695c">485-A / 485-B</text>
+    <text x="790" y="432" font-size="10.5" fill="#555">总线并线位（中4 已接，车尾预留）</text>
+  </g>
+
+  <!-- 双控泵 LED 汇接位 -->
+  <rect x="960" y="104" width="160" height="60" rx="5" fill="#fff3e0" stroke="#ef6c00" stroke-width="2.5"/>
+  <text x="1040" y="128" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#e65100">上水泵LED 汇接位</text>
+  <text x="1040" y="146" text-anchor="middle" font-size="10.5" fill="#555">14芯A 芯11粉 + 14芯B 芯12橙</text>
+  <text x="1040" y="160" text-anchor="middle" font-size="10.5" fill="#555">并后单线 → 中8.OUT6</text>
+
+  <!-- ========== 底部规则 ========== -->
+  <g>
+    <rect x="60" y="480" width="1060" height="130" rx="8" fill="#fffde7" fill-opacity="0.8" stroke="#f9a825" stroke-width="2"/>
+    <text x="76" y="506" font-size="13" font-weight="bold" fill="#f57f17">接线规则（对照施工）</text>
+    <text x="76" y="532" font-size="12" fill="#333">① 顺序不可改：保险盒 → 继电器 COM → 继电器 NO → 端子排 → 负载（继电器不得接在端子排之后）</text>
+    <text x="76" y="556" font-size="12" fill="#333">② 48V 水泵主回路（大电流）不走端子排：F48-2 OT 直连接触器 COM → NO → 水泵（见 pump-48v.svg）</text>
+    <text x="76" y="580" font-size="12" fill="#333">③ 正极区各路独立不桥接（唯 5-8 位并联供电）· 负极区全桥接 · 信号线（按钮 DI / 485）不进端子排，走独立线槽</text>
+    <text x="76" y="600" font-size="11" fill="#777">倒车灯已迁至车尾 4 路模块（车尾柜就近出线），本箱无倒车灯端子位 —— 见 switch-assignment.md §四/§八</text>
+  </g>
+</svg>

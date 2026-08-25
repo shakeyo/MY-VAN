@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 660" width="1100" height="660" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text x="550" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">监控与音响链路</text>
+
+  <!-- ================= 监控 ================= -->
+  <text x="60" y="72" font-size="14" font-weight="bold" fill="#37474f">视觉监控（后期 · AHD 模拟 → RTSP 网络流）</text>
+  <g>
+    <rect x="60" y="92" width="180" height="84" rx="8" fill="#eceff1" stroke="#546e7a" stroke-width="2.5"/>
+    <text x="150" y="116" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#37474f">AHD 摄像头 ×4</text>
+    <text x="150" y="136" text-anchor="middle" font-size="10.5" fill="#555">1080P：行车/驻车/侧方/后方</text>
+    <text x="150" y="154" text-anchor="middle" font-size="10.5" fill="#555">原车摄像头经 Y 型转接线</text>
+    <text x="150" y="168" text-anchor="middle" font-size="10.5" fill="#555">并联接入（原车机同时看）</text>
+
+    <line x1="240" y1="134" x2="296" y2="134" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="268" y="124" text-anchor="middle" font-size="10" fill="#555">同轴线</text>
+
+    <rect x="300" y="92" width="180" height="84" rx="8" fill="#fff3e0" stroke="#ef6c00" stroke-width="2.5"/>
+    <text x="390" y="116" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e65100">DVR 编码器</text>
+    <text x="390" y="136" text-anchor="middle" font-size="10.5" fill="#555">4 路 AHD → RTSP</text>
+    <text x="390" y="154" text-anchor="middle" font-size="10.5" fill="#555">有线 192.168.8.100</text>
+    <text x="390" y="168" text-anchor="middle" font-size="10.5" fill="#777">供电：12V 保险盒（F12 预留位）</text>
+
+    <line x1="480" y1="134" x2="536" y2="134" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="508" y="124" text-anchor="middle" font-size="10" fill="#555">RTSP</text>
+
+    <rect x="540" y="92" width="200" height="84" rx="8" fill="#f1f8e9" stroke="#558b2f" stroke-width="2.5"/>
+    <text x="640" y="116" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#33691e">N100 · Frigate</text>
+    <text x="640" y="136" text-anchor="middle" font-size="10.5" fill="#555">AI：人形/车辆识别</text>
+    <text x="640" y="154" text-anchor="middle" font-size="10.5" fill="#555">录像存储（本地 SSD）</text>
+    <text x="640" y="168" text-anchor="middle" font-size="10.5" fill="#775">（可选 Coral TPU 加速）</text>
+
+    <line x1="740" y1="134" x2="796" y2="134" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
+
+    <rect x="800" y="92" width="240" height="84" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+    <text x="920" y="116" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0d47a1">HA + 终端</text>
+    <text x="920" y="136" text-anchor="middle" font-size="10.5" fill="#555">告警推送（Companion）</text>
+    <text x="920" y="154" text-anchor="middle" font-size="10.5" fill="#555">平板副驾位查看（Frigate 画面）</text>
+    <text x="920" y="168" text-anchor="middle" font-size="10.5" fill="#555">手机远程（Tailscale）</text>
+  </g>
+  <text x="60" y="200" font-size="10.5" fill="#546e7a">细节：docs/deployment/frigate.md（部署）· 摄像头安装位见 01-vehicle-layout / 02-external</text>
+
+  <!-- ================= 音响 ================= -->
+  <text x="60" y="252" font-size="14" font-weight="bold" fill="#37474f">全车音响（Alpine · 8 路 DSP 统一驱动）</text>
+
+  <!-- 音源 -->
+  <g font-size="11">
+    <rect x="60" y="276" width="120" height="40" rx="6" fill="#fff" stroke="#546e7a" stroke-width="2"/>
+    <text x="120" y="300" text-anchor="middle" font-weight="bold" fill="#37474f">N100</text>
+    <rect x="60" y="326" width="120" height="40" rx="6" fill="#fff" stroke="#546e7a" stroke-width="2"/>
+    <text x="120" y="350" text-anchor="middle" font-weight="bold" fill="#37474f">蓝牙音源</text>
+    <rect x="60" y="376" width="120" height="40" rx="6" fill="#fff" stroke="#546e7a" stroke-width="2"/>
+    <text x="120" y="400" text-anchor="middle" font-weight="bold" fill="#37474f">安卓车机</text>
+  </g>
+  <text x="120" y="436" text-anchor="middle" font-size="10.5" fill="#777">音源（三选一/混音）</text>
+  <g stroke="#333" stroke-width="2.5" fill="none">
+    <path d="M180,296 H216 V348"/>
+    <path d="M180,346 H216"/>
+    <path d="M180,396 H216 V348"/>
+  </g>
+  <line x1="216" y1="348" x2="272" y2="348" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- DSP -->
+  <rect x="276" y="300" width="180" height="96" rx="10" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
+  <text x="366" y="326" text-anchor="middle" font-size="13" font-weight="bold" fill="#4527a0">Alpine R600</text>
+  <text x="366" y="346" text-anchor="middle" font-size="11" fill="#4527a0">8 路 DSP 功放</text>
+  <text x="366" y="368" text-anchor="middle" font-size="10.5" fill="#555">声场预设：驾驶 / 影院 / 派对</text>
+  <text x="366" y="384" text-anchor="middle" font-size="10.5" fill="#775">12V 供电经继电器切（见下）</text>
+
+  <!-- 喇叭分支 -->
+  <g stroke="#333" stroke-width="2.5" fill="none">
+    <path d="M456,316 H520 V296 H560"/>
+    <path d="M456,340 H520 V356 H560"/>
+    <path d="M456,364 H520 V416 H560"/>
+    <path d="M456,388 H520 V476 H560"/>
+  </g>
+  <g font-size="11.5">
+    <rect x="564" y="276" width="240" height="40" rx="6" fill="#fff" stroke="#546e7a" stroke-width="2"/>
+    <text x="684" y="300" text-anchor="middle" font-weight="bold" fill="#37474f">前门 DM65C 两分频 ×2</text>
+    <rect x="564" y="336" width="240" height="40" rx="6" fill="#fff" stroke="#546e7a" stroke-width="2"/>
+    <text x="684" y="360" text-anchor="middle" font-weight="bold" fill="#37474f">后门 DM65 同轴 ×2</text>
+    <rect x="564" y="396" width="240" height="40" rx="6" fill="#fff" stroke="#546e7a" stroke-width="2"/>
+    <text x="684" y="420" text-anchor="middle" font-weight="bold" fill="#37474f">PWE-S800 超薄低音炮</text>
+    <rect x="564" y="456" width="240" height="40" rx="6" fill="#fff" stroke="#546e7a" stroke-width="2"/>
+    <text x="684" y="476" text-anchor="middle" font-weight="bold" fill="#37474f">额头柜喇叭（见 07-cabinetry）</text>
+  </g>
+
+  <!-- 控制：驾驶室键3 -->
+  <rect x="850" y="300" width="190" height="96" rx="10" fill="#fff3e0" stroke="#ef6c00" stroke-width="2.5"/>
+  <text x="945" y="324" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e65100">控制：DSP 开/关</text>
+  <text x="945" y="346" text-anchor="middle" font-size="10.5" fill="#555">驾驶室键3 → 额头.DI3</text>
+  <text x="945" y="364" text-anchor="middle" font-size="10.5" fill="#555">→ 额头.R3（485 继电器）</text>
+  <text x="945" y="382" text-anchor="middle" font-size="10.5" fill="#555">切 DSP + 低音炮 12V 电源</text>
+  <path d="M850,348 H790" stroke="#ef6c00" stroke-width="2.5" stroke-dasharray="7,4" marker-end="url(#arrow)"/>
+  <text x="820" y="338" text-anchor="middle" font-size="10" fill="#ef6c00">12V 电源</text>
+
+  <!-- 底部说明 -->
+  <g>
+    <rect x="60" y="520" width="980" height="116" rx="8" fill="#fffde7" fill-opacity="0.8" stroke="#f9a825" stroke-width="2"/>
+    <text x="76" y="546" font-size="13" font-weight="bold" fill="#f57f17">声场预设（DSP 内设置，键3 只切电源，场景切换用 DSP 遥控/面板）</text>
+    <text x="76" y="572" font-size="12" fill="#333">· 驾驶：前声场为主，导航/通话优先　· 影院：全车环绕，配合投影（11-entertainment）</text>
+    <text x="76" y="594" font-size="12" fill="#333">· 派对：高音量低音增强，户外场景（车尾户外灯 + 低音炮）</text>
+    <text x="76" y="618" font-size="11" fill="#777">边界：音响硬件统一由本模块管理；额头柜喇叭物理安装位归 07-cabinetry；娱乐场景音频输入切换见 11-entertainment</text>
+  </g>
+</svg>

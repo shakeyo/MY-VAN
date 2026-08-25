@@ -2,7 +2,7 @@
 
 ## 方案概述
 
-通过拖车杠方口（2" receiver）统一接口挂载，年审时可整体取下。拖车杠安装见 [00-chassis](../../00-chassis/)。
+通过拖车杠方口（2" receiver）统一接口挂载，年审时可整体取下。拖车杠安装见 [00-chassis](../00-chassis/)。
 
 ## 安装接口
 
@@ -31,5 +31,5 @@
 
 ## 跨模块依赖
 
-- 拖车杠安装见 [00-chassis](../../00-chassis/build-rear-mount.md)
-- 如需尾灯/牌照灯移位或增补，电力接入 [04-power-system](../../04-power-system/)
+- 拖车杠安装见 [00-chassis](../00-chassis/build-rear-mount.md)
+- 如需尾灯/牌照灯移位或增补，电力接入 [04-power-system](../04-power-system/)

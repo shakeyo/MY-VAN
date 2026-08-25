@@ -25,4 +25,4 @@
 
 ## 规划
 
-- `mppt.yaml`（待建）：MPPT 485 轮询 + 实体 + 自动化，见 [energy/mppt-protocol.md](../energy/mppt-protocol.md)
+- `mppt.yaml`（待建）：MPPT 485 轮询 + 实体 + 自动化，见 [energy/mppt-protocol.md](../../energy/mppt-protocol.md)

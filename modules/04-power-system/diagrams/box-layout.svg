@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 720" width="900" height="720" font-family="sans-serif">
+  <text x="450" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">中门配电箱 箱内布局（正视图）</text>
+  <text x="450" y="56" text-anchor="middle" font-size="12" fill="#666">箱体 400×300×150mm · 本图 1.6px = 1mm · 按此图定位器件</text>
+
+  <!-- 箱体 -->
+  <rect x="130" y="80" width="640" height="480" rx="8" fill="#ffffff" stroke="#37474f" stroke-width="4"/>
+
+  <!-- 进线（顶部，贴顶边走） -->
+  <circle cx="330" cy="80" r="9" fill="none" stroke="#c00" stroke-width="4"/>
+  <text x="330" y="66" text-anchor="middle" font-size="11.5" fill="#c00" font-weight="bold">48V 进线 2×8AWG（顶部入箱 · 贴顶边走）</text>
+
+  <!-- 出线（底部） -->
+  <circle cx="380" cy="560" r="9" fill="none" stroke="#c00" stroke-width="3.5"/>
+  <circle cx="430" cy="560" r="9" fill="none" stroke="#111" stroke-width="3.5"/>
+  <circle cx="480" cy="560" r="9" fill="none" stroke="#00a" stroke-width="3.5"/>
+  <text x="430" y="592" text-anchor="middle" font-size="11.5" fill="#333">负载 / 信号出线（底部出箱 · 红正黑负分侧）</text>
+
+  <!-- DCDC 左上 -->
+  <rect x="150" y="100" width="160" height="95" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="3"/>
+  <text x="230" y="128" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0d47a1">DCDC 降压器</text>
+  <text x="230" y="148" text-anchor="middle" font-size="12" fill="#0d47a1">48V→12V · 40A</text>
+  <text x="230" y="168" text-anchor="middle" font-size="11" fill="#1565c0">左上角安装</text>
+  <rect x="142" y="92" width="176" height="111" rx="8" fill="none" stroke="#ef9a9a" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="230" y="222" text-anchor="middle" font-size="11" fill="#c62828">四周 5cm 内禁止线缆遮挡散热</text>
+
+  <!-- 48V 保险盒 右上 -->
+  <rect x="540" y="100" width="210" height="95" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="3"/>
+  <text x="645" y="126" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#e65100">48V 保险盒（6 路）</text>
+  <text x="645" y="146" text-anchor="middle" font-size="11.5" fill="#333">F48-1 DCDC 20A · F48-2 水泵 15A</text>
+  <text x="645" y="163" text-anchor="middle" font-size="11.5" fill="#333">F48-3 线圈 5A · F48-4~6 备用</text>
+  <text x="645" y="183" text-anchor="middle" font-size="11" fill="#777">紧挨总开关/总保险（左上→右上走线最短）</text>
+
+  <!-- 总开关/总保险（左上靠顶） -->
+  <rect x="150" y="240" width="120" height="40" rx="5" fill="#ffebee" stroke="#c62828" stroke-width="2.5"/>
+  <text x="210" y="258" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b71c1c">总开关 ≥60A</text>
+  <text x="210" y="273" text-anchor="middle" font-size="10.5" fill="#b71c1c">柜内最左上方</text>
+  <rect x="280" y="240" width="100" height="40" rx="5" fill="#ffebee" stroke="#c62828" stroke-width="2.5"/>
+  <text x="330" y="258" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b71c1c">总保险 60A</text>
+  <text x="330" y="273" text-anchor="middle" font-size="10.5" fill="#b71c1c">正极串联</text>
+  <line x1="330" y1="280" x2="330" y2="308" stroke="#c00" stroke-width="3.5"/>
+  <line x1="330" y1="308" x2="645" y2="308" stroke="#c00" stroke-width="3.5"/>
+  <line x1="645" y1="308" x2="645" y2="195" stroke="#c00" stroke-width="3.5"/>
+  <text x="470" y="300" text-anchor="middle" font-size="10.5" fill="#c00">48V+ 主干</text>
+
+  <!-- 12V 保险盒 中左 -->
+  <rect x="150" y="308" width="180" height="100" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="3"/>
+  <text x="240" y="334" text-anchor="middle" font-size="13" font-weight="bold" fill="#0d47a1">12V 保险盒（12 路箱）</text>
+  <text x="240" y="354" text-anchor="middle" font-size="11.5" fill="#333">用 6 路：F12-1~6</text>
+  <text x="240" y="371" text-anchor="middle" font-size="11.5" fill="#333">余 6 路预留</text>
+  <text x="240" y="391" text-anchor="middle" font-size="11" fill="#777">DCDC 输出 → 本盒总正</text>
+  <path d="M230,220 V240" fill="none" stroke="#c00" stroke-width="0"/>
+  <line x1="230" y1="280" x2="230" y2="308" stroke="#c00" stroke-width="3"/>
+  <text x="244" y="298" font-size="10.5" fill="#c00">12V 输出</text>
+
+  <!-- 负极端子排 中部 -->
+  <rect x="380" y="330" width="140" height="80" rx="6" fill="#263238" stroke="#111" stroke-width="3"/>
+  <rect x="388" y="340" width="124" height="14" rx="3" fill="#b0bec5"/>
+  <text x="450" y="351" text-anchor="middle" font-size="10" fill="#263238">短接片桥接</text>
+  <text x="450" y="376" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#fff">负极端子排（桥接）</text>
+  <text x="450" y="394" text-anchor="middle" font-size="10.5" fill="#cfd8dc">全系统负极汇流点 · 绝缘底座</text>
+  <text x="450" y="430" text-anchor="middle" font-size="10.5" fill="#111">6mm² 黑线回电池总负 · 各负载负 / 模块负都回这里</text>
+
+  <!-- DIN 导轨 -->
+  <rect x="540" y="318" width="212" height="10" rx="3" fill="#90a4ae"/>
+  <rect x="540" y="470" width="212" height="10" rx="3" fill="#90a4ae"/>
+
+  <!-- 8 路 485 模块 右下 -->
+  <rect x="548" y="334" width="196" height="130" rx="6" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
+  <text x="646" y="360" text-anchor="middle" font-size="13" font-weight="bold" fill="#4527a0">8 路 485 继电器模块</text>
+  <text x="646" y="380" text-anchor="middle" font-size="11" fill="#4527a0">卡导轨 · 切全部负载</text>
+  <text x="646" y="400" text-anchor="middle" font-size="11" fill="#555">X1-X8 = DI1-8（输入）</text>
+  <text x="646" y="417" text-anchor="middle" font-size="11" fill="#555">Y1-Y8 = R1-8（继电器 COM/NO）</text>
+  <text x="646" y="437" text-anchor="middle" font-size="10.5" fill="#777">485 并线 + 12V 供电（F12-1）</text>
+
+  <!-- 端子排 底部：功率区 + 控制区 -->
+  <rect x="150" y="440" width="330" height="105" rx="6" fill="#eceff1" stroke="#546e7a" stroke-width="3"/>
+  <text x="315" y="462" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#37474f">端子排 · 功率区（箱底）</text>
+  <g font-size="10">
+    <rect x="162" y="474" width="42" height="34" rx="3" fill="#ffcdd2" stroke="#c62828"/>
+    <rect x="210" y="474" width="42" height="34" rx="3" fill="#ffcdd2" stroke="#c62828"/>
+    <rect x="258" y="474" width="42" height="34" rx="3" fill="#ffcdd2" stroke="#c62828"/>
+    <rect x="306" y="474" width="42" height="34" rx="3" fill="#ffcdd2" stroke="#c62828"/>
+    <rect x="354" y="474" width="42" height="34" rx="3" fill="#ffcdd2" stroke="#c62828"/>
+    <rect x="402" y="474" width="42" height="34" rx="3" fill="#ffcdd2" stroke="#c62828"/>
+    <text x="183" y="495" text-anchor="middle" fill="#b71c1c">1-6</text>
+    <text x="231" y="495" text-anchor="middle" fill="#b71c1c">+独立</text>
+    <text x="279" y="495" text-anchor="middle" fill="#b71c1c">+独立</text>
+    <text x="327" y="495" text-anchor="middle" fill="#b71c1c">+独立</text>
+    <text x="375" y="495" text-anchor="middle" fill="#b71c1c">+独立</text>
+    <text x="423" y="495" text-anchor="middle" fill="#b71c1c">+独立</text>
+    <rect x="162" y="514" width="42" height="20" rx="3" fill="#37474f"/>
+    <rect x="210" y="514" width="42" height="20" rx="3" fill="#37474f"/>
+    <rect x="258" y="514" width="42" height="20" rx="3" fill="#37474f"/>
+    <rect x="306" y="514" width="42" height="20" rx="3" fill="#37474f"/>
+    <rect x="354" y="514" width="42" height="20" rx="3" fill="#37474f"/>
+    <rect x="402" y="514" width="42" height="20" rx="3" fill="#37474f"/>
+    <rect x="162" y="519" width="282" height="4" fill="#b0bec5"/>
+    <text x="315" y="536" text-anchor="middle" font-size="10.5" fill="#111">位 13-22 负极 · 短接片全桥接</text>
+  </g>
+  <text x="315" y="500" text-anchor="middle" font-size="0" fill="none"></text>
+  <text x="183" y="470" text-anchor="middle" font-size="10" fill="#b71c1c">位 1-12 正极（红·独立）</text>
+
+  <!-- 隔板 -->
+  <line x1="492" y1="440" x2="492" y2="545" stroke="#37474f" stroke-width="4"/>
+  <text x="492" y="434" text-anchor="middle" font-size="10" fill="#37474f">隔板</text>
+
+  <!-- 控制区 -->
+  <rect x="500" y="440" width="250" height="105" rx="6" fill="#e8eaf6" stroke="#3949ab" stroke-width="3"/>
+  <text x="625" y="462" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#283593">端子排 · 控制区（隔板隔离）</text>
+  <text x="625" y="484" text-anchor="middle" font-size="11" fill="#333">控+ / 控−（F12-1 → 2A 保险）</text>
+  <text x="625" y="502" text-anchor="middle" font-size="11" fill="#333">中8 12V · 中8 GND · 中4 12V · 中4 GND</text>
+  <text x="625" y="520" text-anchor="middle" font-size="11" fill="#333">485-A · 485-B（总线并线位）</text>
+  <text x="625" y="538" text-anchor="middle" font-size="10.5" fill="#777">12V 小电流 · 与功率线物理隔离</text>
+
+  <!-- 信号走线槽（右侧边） -->
+  <rect x="756" y="96" width="18" height="448" rx="5" fill="#e0e0e0" stroke="#9e9e9e" stroke-width="2"/>
+  <text x="800" y="300" font-size="11.5" fill="#616161" transform="rotate(90 800 300)">14 芯信号线走线槽（贴右边缘 · 槽口出线到 DI/OUT/控+）</text>
+
+  <!-- 走线分区说明 -->
+  <g>
+    <rect x="130" y="616" width="640" height="84" rx="8" fill="#fffde7" fill-opacity="0.7" stroke="#f9a825" stroke-width="2"/>
+    <text x="146" y="640" font-size="12.5" font-weight="bold" fill="#f57f17">箱内走线规则（详见 design-distribution-box.md §11）</text>
+    <text x="146" y="662" font-size="11.5" fill="#333">① 粗线（48V 进线 / DCDC 线）走箱体最外圈，细线在内圈 · ② 负极黑线全部贴底板走成 ┐└ 形回负极区</text>
+    <text x="146" y="682" font-size="11.5" fill="#333">③ 负载红线按去向分三束贴边（左上 12V 保险 / 右上 48V 保险 / 右下控制区）· ④ 中间区域留空，线在四边和底板</text>
+  </g>
+</svg>

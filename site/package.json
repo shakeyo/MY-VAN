@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "vitepress dev",
-    "prebuild": "cd modules && rm -rf 0* 1* && rsync -a --exclude '.esphome/' --exclude 'secrets.yaml' ../../modules/0* ../../modules/1* ./ && find . -name README.md -exec sh -c 'mv \"$1\" \"${1%README.md}index.md\"' _ {} \\;",
+    "prebuild": "cd modules && rm -rf 0* 1* && rsync -a --exclude '.esphome/' --exclude 'secrets.yaml' ../../modules/0* ../../modules/1* ./ && find . -name README.md -exec sh -c 'mv \"$1\" \"${1%README.md}index.md\"' _ {} \\; && rm -rf ../docs ../software && rsync -a --exclude '.esphome/' --exclude 'secrets.yaml' --exclude 'node_modules' --exclude 'dist' --exclude 'pnpm-lock.yaml' ../../docs/ ../docs/ && rsync -a --exclude '.esphome/' --exclude 'secrets.yaml' --exclude 'node_modules' --exclude 'dist' --exclude 'pnpm-lock.yaml' ../../software/ ../software/ && find ../docs ../software -name README.md -exec sh -c 'mv \"$1\" \"${1%README.md}index.md\"' _ {} \\; && rm -rf ../public/modules ../public/docs ../public/software && for full in $(find ../../modules ../../docs ../../software -type d \\( -name diagrams -o -name assets -o -name home-assistant-config -o -name ha-config \\) | sed 's|^\\./\\./||'); do rel=\"${full#../../}\"; mkdir -p \"../public/$(dirname \"$rel\")\" && rsync -a --exclude '*.md' \"$full/\" \"../public/$rel/\"; done",
     "build": "vitepress build",
     "preview": "vitepress preview"
   },

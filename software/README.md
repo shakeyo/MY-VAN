@@ -27,4 +27,4 @@ pnpm dev
 
 ### 部署到房车
 
-详见 [modules/02-smart-control/design.md](../modules/02-smart-control/design.md) 和 [docs/deployment/](../docs/deployment/)。
+详见 [modules/10-smart-control/](../modules/10-smart-control/) 和 [docs/deployment/](../docs/deployment/)。

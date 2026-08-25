@@ -28,12 +28,11 @@
 |------|----------|------|
 | 计算主机 | N100 迷你主机 (16G RAM, 512G SSD) | PVE 虚拟化平台 |
 | 路由器 | GL.iNet MT3000 / Cudy WR3000 | 车内局域网 + 4G/5G 上网 |
-| USB-485 | CH340/FT232 + MAX485 | RS485 总线接入 HA |
-| 继电器模块 | 10路 RS485 Modbus RTU | 全车灯光/水泵/风扇控制 |
+| 485 网关 | ESP32-S3 + MAX3485（ESPHome） | 485 总线桥接 HA（原生，非 USB-485） |
+| 继电器模块 | 485 继电器模块化：额头8/中8/中4/车尾4（9600 8N1） | 全车灯光/水泵/风扇控制 + 按键 DI |
 | 摄像头 | AHD 1080P × 4 | 四路监控 |
 | DVR 编码器 | AHD → RTSP 网络编码器 | 模拟摄像头数字化 |
-| ESP32 | ESP32-DevKitC | 驾驶室自复位按钮接入 |
-| OBD-II | ELM327 蓝牙版 | 车辆数据读取 |
+| OBD-II | ELM327 蓝牙版 | 车辆数据读取（蓝牙→车机→MQTT） |
 
 ## 部署步骤
 
@@ -66,8 +65,8 @@ DHCP 池: 192.168.8.150-192.168.8.250
 如果只是想先在笔记本上体验和开发仪表盘，不需要 N100 硬件：
 
 ```bash
-# 进入 docker-compose 目录
-cd software/docker-compose
+# 进入 dev-environment 目录
+cd software/dev-environment
 
 # 启动 HA + MQTT 开发环境
 docker compose up -d
@@ -80,4 +79,4 @@ cd ../rv-smart-dashboard
 pnpm install && pnpm dev
 ```
 
-详细说明见 [docker-compose 开发环境](../../software/docker-compose/README.md)。
+详细说明见 [dev-environment 开发环境](../../software/dev-environment/)。

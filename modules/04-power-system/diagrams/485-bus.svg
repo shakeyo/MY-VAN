@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 420" width="1100" height="420" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text x="550" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">485 总线拓扑（手拉手菊花链 · 严禁星型）</text>
+  <text x="550" y="54" text-anchor="middle" font-size="12" fill="#666">模块间用双绞线（A/B）· 两端各一个 120Ω 终端电阻 · 屏蔽层单端接地 · 与功率线间距 ≥15cm、禁止同管</text>
+
+  <!-- 总线干线（A/B 双线） -->
+  <g stroke-linecap="round">
+    <line x1="190" y1="150" x2="950" y2="150" stroke="#00a" stroke-width="4"/>
+    <line x1="190" y1="166" x2="950" y2="166" stroke="#00a" stroke-width="4" stroke-dasharray="10,6"/>
+  </g>
+  <text x="1010" y="150" font-size="12" font-weight="bold" fill="#00a">A</text>
+  <text x="1010" y="170" font-size="12" font-weight="bold" fill="#00a">B</text>
+  <text x="560" y="136" text-anchor="middle" font-size="11.5" fill="#00a">RVSP 2×0.5 屏蔽双绞（双绞示意：实线 A / 虚线 B）</text>
+
+  <!-- ESP32 -->
+  <line x1="120" y1="158" x2="190" y2="158" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="30" y="110" width="160" height="100" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="3"/>
+  <text x="110" y="138" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1b5e20">ESP32 网关</text>
+  <text x="110" y="158" text-anchor="middle" font-size="11" fill="#333">（中门配电箱）</text>
+  <text x="110" y="176" text-anchor="middle" font-size="11" fill="#333">ESPhome 本地自动化</text>
+  <text x="110" y="194" text-anchor="middle" font-size="10.5" fill="#777">MAX3485 电平转换</text>
+  <!-- 终端电阻 1 -->
+  <rect x="150" y="222" width="34" height="14" rx="3" fill="#fff" stroke="#333" stroke-width="2"/>
+  <line x1="110" y1="210" x2="110" y2="229" stroke="#333" stroke-width="2"/>
+  <line x1="110" y1="229" x2="167" y2="229" stroke="#333" stroke-width="2"/>
+  <line x1="167" y1="229" x2="167" y2="210" stroke="#333" stroke-width="2"/>
+  <text x="140" y="256" text-anchor="middle" font-size="10.5" fill="#333">120Ω 终端电阻</text>
+
+  <!-- 接头节点 -->
+  <circle cx="330" cy="158" r="6" fill="#00a"/>
+  <circle cx="540" cy="158" r="6" fill="#00a"/>
+  <circle cx="750" cy="158" r="6" fill="#00a"/>
+  <circle cx="950" cy="158" r="6" fill="#00a"/>
+  <line x1="330" y1="158" x2="330" y2="210" stroke="#00a" stroke-width="3"/>
+  <line x1="540" y1="158" x2="540" y2="210" stroke="#00a" stroke-width="3"/>
+  <line x1="750" y1="158" x2="750" y2="210" stroke="#00a" stroke-width="3"/>
+  <line x1="950" y1="158" x2="950" y2="210" stroke="#00a" stroke-width="3"/>
+
+  <!-- 额头模块 -->
+  <rect x="250" y="210" width="160" height="86" rx="8" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
+  <text x="330" y="236" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">额头 8 路模块</text>
+  <text x="330" y="256" text-anchor="middle" font-size="10.5" fill="#555">额头柜</text>
+  <text x="330" y="274" text-anchor="middle" font-size="10.5" fill="#555">驾驶室 6 键 + 射灯/DSP/户外灯</text>
+
+  <!-- 中8 -->
+  <rect x="460" y="210" width="160" height="86" rx="8" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
+  <text x="540" y="236" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">中门 8 路模块</text>
+  <text x="540" y="256" text-anchor="middle" font-size="10.5" fill="#555">中门配电箱内</text>
+  <text x="540" y="274" text-anchor="middle" font-size="10.5" fill="#555">入口 4 键 + 主控键1-4</text>
+
+  <!-- 中4 -->
+  <rect x="670" y="210" width="160" height="86" rx="8" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
+  <text x="750" y="236" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">中门 4 路模块</text>
+  <text x="750" y="256" text-anchor="middle" font-size="10.5" fill="#555">中门柜内 · 已接线未通电</text>
+  <text x="750" y="274" text-anchor="middle" font-size="10.5" fill="#555">主控键5-6（插保险即通电）</text>
+
+  <!-- 车尾（后期，虚线） -->
+  <rect x="870" y="210" width="160" height="86" rx="8" fill="#fafafa" stroke="#9e9e9e" stroke-width="3" stroke-dasharray="7,5"/>
+  <text x="950" y="236" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#757575">车尾 4 路模块</text>
+  <text x="950" y="256" text-anchor="middle" font-size="10.5" fill="#9e9e9e">车尾柜 · 后期新购</text>
+  <text x="950" y="274" text-anchor="middle" font-size="10.5" fill="#9e9e9e">倒车灯/车尾户外灯/点烟器</text>
+  <!-- 终端电阻 2 -->
+  <rect x="920" y="312" width="34" height="14" rx="3" fill="#fff" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="5,3"/>
+  <line x1="950" y1="296" x2="950" y2="319" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="5,3"/>
+  <line x1="950" y1="319" x2="957" y2="319" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="950" y="348" text-anchor="middle" font-size="10.5" fill="#9e9e9e">120Ω（最远端 · 装车尾模块时补）</text>
+
+  <!-- 模块供电说明 -->
+  <g>
+    <rect x="250" y="360" width="780" height="46" rx="8" fill="#fffde7" fill-opacity="0.8" stroke="#f9a825" stroke-width="2"/>
+    <text x="266" y="380" font-size="12" fill="#333">模块 12V 供电：箱内模块取自 F12-1（经控制区端子）· 车尾模块取自车尾保险盒（中门 12V 母线 → 6mm² → MAXI 30A inline 保险 → 车尾盒）</text>
+    <text x="266" y="398" font-size="11.5" fill="#777">485 并线点：新模块 = 总线末端并线（A 并 A、B 并 B），零拆改 —— 见 switch-assignment.md §十二</text>
+  </g>
+</svg>

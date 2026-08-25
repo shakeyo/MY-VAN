@@ -13,6 +13,7 @@
 
 ## 待办
 
+- [ ] 采购（采购项在 [04-power-system/bom.md](../../04-power-system/bom.md) 系统级：库仑计 PZEM-017 + 分流器）
 - [ ] 获取厂家协议手册（寄存器表：电压/电流/功率/电量）
 - [ ] 地址改 0x11、波特率 9600 确认
 - [ ] ESPHome 集成方式定案：modbus_controller 或 uart lambda（与 MPPT 解析同模式，见 [mppt-protocol.md](mppt-protocol.md)）

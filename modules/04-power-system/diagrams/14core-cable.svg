@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 430" width="1080" height="430" font-family="sans-serif">
+  <text x="540" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">14 芯线 线色与芯位对照（插头从左到右 = 芯 1 → 芯 14）</text>
+  <text x="540" y="54" text-anchor="middle" font-size="12" fill="#666">每根 14 芯线对应一个面板，线序固定 · 常规 RVV 14×0.5mm²，靠近 DCDC/逆变器用 RVVP（屏蔽层单端接地）</text>
+
+  <!-- 第一行：芯 1-7 -->
+  <g text-anchor="middle">
+    <!-- 1 黑 GND -->
+    <circle cx="90" cy="130" r="34" fill="#222"/>
+    <text x="90" y="137" font-size="16" font-weight="bold" fill="#fff">1</text>
+    <text x="90" y="188" font-size="11.5" fill="#333">黑</text>
+    <text x="90" y="206" font-size="12" font-weight="bold" fill="#333">GND</text>
+    <!-- 2 红 +12V -->
+    <circle cx="230" cy="130" r="34" fill="#d32f2f"/>
+    <text x="230" y="137" font-size="16" font-weight="bold" fill="#fff">2</text>
+    <text x="230" y="188" font-size="11.5" fill="#333">红</text>
+    <text x="230" y="206" font-size="12" font-weight="bold" fill="#333">+12V</text>
+    <!-- 3 白 DI1 -->
+    <circle cx="370" cy="130" r="34" fill="#fafafa" stroke="#999" stroke-width="2"/>
+    <text x="370" y="137" font-size="16" font-weight="bold" fill="#333">3</text>
+    <text x="370" y="188" font-size="11.5" fill="#333">白</text>
+    <text x="370" y="206" font-size="12" font-weight="bold" fill="#333">DI1</text>
+    <!-- 4 黄 DI2 -->
+    <circle cx="510" cy="130" r="34" fill="#fdd835"/>
+    <text x="510" y="137" font-size="16" font-weight="bold" fill="#333">4</text>
+    <text x="510" y="188" font-size="11.5" fill="#333">黄</text>
+    <text x="510" y="206" font-size="12" font-weight="bold" fill="#333">DI2</text>
+    <!-- 5 灰 DI3 -->
+    <circle cx="650" cy="130" r="34" fill="#9e9e9e"/>
+    <text x="650" y="137" font-size="16" font-weight="bold" fill="#fff">5</text>
+    <text x="650" y="188" font-size="11.5" fill="#333">灰</text>
+    <text x="650" y="206" font-size="12" font-weight="bold" fill="#333">DI3</text>
+    <!-- 6 淡绿 DI4 -->
+    <circle cx="790" cy="130" r="34" fill="#a5d6a7"/>
+    <text x="790" y="137" font-size="16" font-weight="bold" fill="#1b5e20">6</text>
+    <text x="790" y="188" font-size="11.5" fill="#333">淡绿</text>
+    <text x="790" y="206" font-size="12" font-weight="bold" fill="#333">DI4</text>
+    <!-- 7 深绿 预留DI5 -->
+    <circle cx="930" cy="130" r="34" fill="#2e7d32"/>
+    <text x="930" y="137" font-size="16" font-weight="bold" fill="#fff">7</text>
+    <text x="930" y="188" font-size="11.5" fill="#333">深绿</text>
+    <text x="930" y="206" font-size="12" font-weight="bold" fill="#777">预留 DI5</text>
+  </g>
+
+  <!-- 第二行：芯 8-14 -->
+  <g text-anchor="middle">
+    <!-- 8 棕 预留DI6 -->
+    <circle cx="90" cy="270" r="34" fill="#795548"/>
+    <text x="90" y="277" font-size="16" font-weight="bold" fill="#fff">8</text>
+    <text x="90" y="328" font-size="11.5" fill="#333">棕</text>
+    <text x="90" y="346" font-size="12" font-weight="bold" fill="#777">预留 DI6</text>
+    <!-- 9 蓝 OUT1 -->
+    <circle cx="230" cy="270" r="34" fill="#1e88e5"/>
+    <text x="230" y="277" font-size="16" font-weight="bold" fill="#fff">9</text>
+    <text x="230" y="328" font-size="11.5" fill="#333">蓝</text>
+    <text x="230" y="346" font-size="12" font-weight="bold" fill="#333">OUT1</text>
+    <!-- 10 黑白 OUT2 -->
+    <circle cx="370" cy="270" r="34" fill="#fafafa" stroke="#222" stroke-width="4" stroke-dasharray="8,6"/>
+    <text x="370" y="277" font-size="16" font-weight="bold" fill="#333">10</text>
+    <text x="370" y="328" font-size="11.5" fill="#333">黑白</text>
+    <text x="370" y="346" font-size="12" font-weight="bold" fill="#333">OUT2</text>
+    <!-- 11 粉 OUT3 -->
+    <circle cx="510" cy="270" r="34" fill="#f48fb1"/>
+    <text x="510" y="277" font-size="16" font-weight="bold" fill="#333">11</text>
+    <text x="510" y="328" font-size="11.5" fill="#333">粉</text>
+    <text x="510" y="346" font-size="12" font-weight="bold" fill="#333">OUT3</text>
+    <!-- 12 橙 OUT4 -->
+    <circle cx="650" cy="270" r="34" fill="#fb8c00"/>
+    <text x="650" y="277" font-size="16" font-weight="bold" fill="#fff">12</text>
+    <text x="650" y="328" font-size="11.5" fill="#333">橙</text>
+    <text x="650" y="346" font-size="12" font-weight="bold" fill="#333">OUT4</text>
+    <!-- 13 红白 键4红阴(A)/预留(B) -->
+    <circle cx="790" cy="270" r="34" fill="#fafafa" stroke="#d32f2f" stroke-width="4" stroke-dasharray="8,6"/>
+    <text x="790" y="277" font-size="16" font-weight="bold" fill="#333">13</text>
+    <text x="790" y="328" font-size="11.5" fill="#333">红白</text>
+    <text x="790" y="346" font-size="12" font-weight="bold" fill="#777">A=键4红阴 / B=预留</text>
+    <!-- 14 紫 预留LED6 -->
+    <circle cx="930" cy="270" r="34" fill="#8e24aa"/>
+    <text x="930" y="277" font-size="16" font-weight="bold" fill="#fff">14</text>
+    <text x="930" y="328" font-size="11.5" fill="#333">紫</text>
+    <text x="930" y="346" font-size="12" font-weight="bold" fill="#777">预留 LED6</text>
+  </g>
+
+  <!-- 底部说明 -->
+  <g>
+    <rect x="60" y="372" width="960" height="44" rx="8" fill="#fffde7" fill-opacity="0.8" stroke="#f9a825" stroke-width="2"/>
+    <text x="76" y="392" font-size="12" fill="#333">芯 1 黑 = 各键 COM 焊并后共地 · 芯 2 红 = 各键 LED 阳极焊并后共 +12V · 双色按钮（键4/键6）：黑=红LED阴、绿=绿LED阴</text>
+    <text x="76" y="408" font-size="12" fill="#333">14P（入口=黑壳+蓝标 / 主控=黑壳+绿标）· 8P 短跳线（主控键5-6）位1黑位2红与本表同规 · 全车只有 14P / 8P / 2P 三种插头，尺寸物理防呆</text>
+  </g>
+</svg>

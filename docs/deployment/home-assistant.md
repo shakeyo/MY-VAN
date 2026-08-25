@@ -1,5 +1,7 @@
 # Home Assistant 部署与集成
 
+> **定稿（以 [modules/10-smart-control/n100-ha/design.md](../../modules/10-smart-control/n100-ha/design.md) 为准）**：本项目 HA 安装方式为 **HAOS（Supervisor 版本）PVE 虚拟机**——Tailscale/Mosquitto 等 add-on 依赖 Supervisor。下方 LXC + Docker 段是早期存档的备选方案，**不要按它施工**，仅留档参考。
+
 Home Assistant 是 VAN-PROJECT 智能控制的核心中枢，负责设备接入、自动化逻辑和状态聚合。
 
 ## 安装方式选择
@@ -10,7 +12,7 @@ Home Assistant 是 VAN-PROJECT 智能控制的核心中枢，负责设备接入�
 | **HA Container (LXC)** | 轻量(~512MB)、灵活 | 需手动装 Add-on | **本项目推荐** |
 | **HA Supervised (LXC)** | 完整功能 | 安装复杂 | 需要 Add-on 但不想用 VM |
 
-本项目推荐 **HA Container** 方式：在 PVE 上创建一个 Debian 12 LXC，然后用 Docker 运行 HA。
+（早期曾推荐 **HA Container** 方式：在 PVE 上创建一个 Debian 12 LXC，然后用 Docker 运行 HA；定稿已改为 HAOS VM，见文首定稿说明。）
 
 ## 方式一：LXC + Docker（推荐）
 
@@ -295,7 +297,7 @@ automation:
 
 使用 ESPhome 固件，在 HA 中直接管理和 OTA 更新。在 `configuration.yaml` 中无需额外配置，ESPhome 设备会被自动发现。
 
-ESPhome 配置示例见 [软件配置目录](../../software/ha-config/esp32-buttons.yaml)。
+ESPhome 配置示例见 [软件配置目录](../../software/home-assistant-config/esp32-buttons.yaml)。
 
 ## secrets.yaml
 
@@ -314,7 +316,7 @@ weather_api_key: "your_api_key"
 
 ## 自动化场景
 
-完整的自动化配置见 [software/ha-config/automations.yaml](../../software/ha-config/automations.yaml)，包含：
+完整的自动化配置见 [software/home-assistant-config/automations.yaml](../../software/home-assistant-config/automations.yaml)，包含：
 
 - **驻车模式** — 关闭行车相关设备，开启生活区灯光
 - **离车模式** — 关闭所有非必要设备，锁车+收回踏步

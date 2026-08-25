@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" width="1100" height="640" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+    <marker id="arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1565c0"/>
+    </marker>
+  </defs>
+
+  <text x="550" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">车内网络拓扑（192.168.8.0/24 · 固定 IP 规划）</text>
+  <text x="550" y="54" text-anchor="middle" font-size="12" fill="#666">路由器 + N100 均为 12V 常电供电（DCDC 输出，见 04-power-system）· DHCP 池 192.168.8.150-250</text>
+
+  <!-- WAN -->
+  <rect x="60" y="80" width="180" height="54" rx="8" fill="#e0f2f1" stroke="#00897b" stroke-width="2.5"/>
+  <text x="150" y="103" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#00695c">4G / 5G 网络</text>
+  <text x="150" y="121" text-anchor="middle" font-size="10.5" fill="#333">CPE 插卡 或 手机热点</text>
+  <line x1="240" y1="115" x2="296" y2="115" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 路由器 -->
+  <rect x="300" y="80" width="200" height="110" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="3"/>
+  <text x="400" y="106" text-anchor="middle" font-size="14" font-weight="bold" fill="#0d47a1">GL.iNet / Cudy 路由器</text>
+  <text x="400" y="126" text-anchor="middle" font-size="11" fill="#333">MT3000 / WR3000 · 4G/5G CPE</text>
+  <text x="400" y="144" text-anchor="middle" font-size="11" font-weight="bold" fill="#0d47a1">192.168.8.1（网关 + DHCP）</text>
+  <text x="400" y="166" text-anchor="middle" font-size="10.5" fill="#777">12V 常电 · 行车/驻车网络底座</text>
+
+  <!-- 有线段 -->
+  <g stroke="#333" stroke-width="3" fill="none">
+    <path d="M500,120 H560 V150 H600"/>
+    <path d="M500,160 H560 V420 H600"/>
+  </g>
+  <text x="548" y="140" font-size="10.5" fill="#333">有线</text>
+  <text x="548" y="432" font-size="10.5" fill="#333">有线</text>
+
+  <!-- N100 -->
+  <rect x="604" y="96" width="280" height="150" rx="10" fill="#f1f8e9" stroke="#558b2f" stroke-width="3"/>
+  <text x="744" y="120" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#33691e">N100（PVE 虚拟化）</text>
+  <text x="744" y="138" text-anchor="middle" font-size="11" fill="#555" font-weight="bold">192.168.8.10（PVE 管理口）</text>
+  <g font-size="11">
+    <rect x="620" y="150" width="120" height="40" rx="5" fill="#fff" stroke="#7cb342" stroke-width="2"/>
+    <text x="680" y="167" text-anchor="middle" font-weight="bold" fill="#33691e">HAOS（.11）</text>
+    <text x="680" y="182" text-anchor="middle" font-size="9.5" fill="#558b2f">Dashboard/能源/远程</text>
+    <rect x="748" y="150" width="120" height="40" rx="5" fill="#fff" stroke="#7cb342" stroke-width="2" stroke-dasharray="5,3"/>
+    <text x="808" y="167" text-anchor="middle" font-weight="bold" fill="#33691e">Frigate（.12）</text>
+    <text x="808" y="182" text-anchor="middle" font-size="9.5" fill="#558b2f">后期 · AI 监控</text>
+    <rect x="620" y="198" width="248" height="34" rx="5" fill="#fff" stroke="#7cb342" stroke-width="2"/>
+    <text x="744" y="219" text-anchor="middle" fill="#33691e" font-weight="bold">Mosquitto MQTT（.13）— OBD/传感器数据汇聚</text>
+  </g>
+
+  <!-- DVR -->
+  <rect x="604" y="404" width="200" height="56" rx="8" fill="#fafafa" stroke="#9e9e9e" stroke-width="2.5" stroke-dasharray="6,4"/>
+  <text x="704" y="427" text-anchor="middle" font-size="12" font-weight="bold" fill="#616161">DVR 编码器（.100）</text>
+  <text x="704" y="445" text-anchor="middle" font-size="10" fill="#777">AHD→RTSP · 后期</text>
+
+  <!-- WiFi 段 -->
+  <text x="940" y="92" font-size="12.5" font-weight="bold" fill="#1565c0">WiFi（固定 IP 分配）</text>
+  <g stroke="#1565c0" stroke-width="2.5" fill="none">
+    <path d="M500,135 H585 V260 H600"/>
+    <path d="M585,260 V330 H600"/>
+    <path d="M585,260 V400 H600"/>
+    <path d="M585,260 V470 H600"/>
+  </g>
+  <g font-size="11.5">
+    <rect x="604" y="246" width="240" height="44" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+    <text x="724" y="266" text-anchor="middle" font-weight="bold" fill="#0d47a1">ESP32 网关（.20）</text>
+    <text x="724" y="282" text-anchor="middle" font-size="10" fill="#555">ESPHome 节点 · 中门配电箱</text>
+
+    <rect x="604" y="312" width="240" height="44" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+    <text x="724" y="332" text-anchor="middle" font-weight="bold" fill="#0d47a1">安卓车机（.30）</text>
+    <text x="724" y="348" text-anchor="middle" font-size="10" fill="#555">Fully Kiosk · 生活区中控大屏</text>
+
+    <rect x="604" y="384" width="240" height="44" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+    <text x="724" y="404" text-anchor="middle" font-weight="bold" fill="#0d47a1">小米平板4</text>
+    <text x="724" y="420" text-anchor="middle" font-size="10" fill="#555">副驾/后床旁快拆 · Frigate 查看 + 控制</text>
+
+    <rect x="604" y="456" width="240" height="44" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+    <text x="724" y="476" text-anchor="middle" font-weight="bold" fill="#0d47a1">手机（DHCP）</text>
+    <text x="724" y="492" text-anchor="middle" font-size="10" fill="#555">Companion App · 推送通知</text>
+  </g>
+
+  <!-- Tailscale 远程 -->
+  <rect x="900" y="300" width="180" height="56" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="2.5"/>
+  <text x="990" y="323" text-anchor="middle" font-size="12" font-weight="bold" fill="#f57f17">车外手机 / PC</text>
+  <text x="990" y="341" text-anchor="middle" font-size="10" fill="#555">Tailscale 虚拟组网（车外远程）</text>
+  <path d="M900,328 H830 V246" fill="none" stroke="#f9a825" stroke-width="2.5" stroke-dasharray="7,4" marker-end="url(#arrow)"/>
+  <text x="880" y="300" font-size="10.5" fill="#f57f17">Tailscale（add-on）</text>
+
+  <!-- OBD 路径 -->
+  <g>
+    <rect x="60" y="500" width="960" height="60" rx="8" fill="#fffde7" fill-opacity="0.8" stroke="#f9a825" stroke-width="2"/>
+    <text x="76" y="524" font-size="12.5" font-weight="bold" fill="#f57f17">OBD-II 数据路径（不经 485）</text>
+    <text x="76" y="546" font-size="11.5" fill="#333">车辆 OBD 口 → ELM327（蓝牙）→ 安卓车机（Torque App）→ MQTT → Mosquitto（.13）→ HA（行车判定/迎宾/能耗）</text>
+  </g>
+
+  <!-- IP 表 -->
+  <g>
+    <rect x="60" y="576" width="980" height="50" rx="8" fill="#ffffff" fill-opacity="0.95" stroke="#555" stroke-width="2"/>
+    <text x="76" y="596" font-size="11.5" font-weight="bold" fill="#333">IP 规划</text>
+    <text x="150" y="596" font-size="11" fill="#333">.1 路由器 · .10 PVE · .11 HA · .12 Frigate · .13 Mosquitto · .20 ESP32 · .30 车机 · .100 DVR · .150-250 DHCP 池</text>
+    <text x="76" y="616" font-size="10.5" fill="#777">固定 IP 在路由器 DHCP 保留里按 MAC 绑定；规划源：docs/deployment/README.md</text>
+  </g>
+</svg>
