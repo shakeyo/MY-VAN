@@ -18,12 +18,20 @@
 
 | Notion 页 | git 源 | 备注 |
 |-----------|--------|------|
-| 04 · 电力系统 | `modules/04-power-system/build-guide.md`<br>`…/design-distribution-box.md`<br>`…/switch-assignment.md` | 主干施工+箱内详设+开关/通道 |
-| └─ 材料清单 bom | `modules/04-power-system/bom.md` | 采购 |
-| 10 · 智能控制 | `modules/10-smart-control/build-guide.md` | 智能控制主线 0-9 阶段；子模块源索引见页内 callout |
-| 01 · 整车布局 | `modules/01-vehicle-layout/{design,build-flooring,build-framework,build-windows}.md` | 布局决策 + 地板/框架/遮阳 |
+| 00 · 底盘与车外施工 | `modules/00-chassis/{design,build-chassis,build-rear-mount}.md` | 防锈/装甲/拖车杠 |
+| 01 · 整车布局 | `modules/01-vehicle-layout/{design,build-flooring,build-framework,build-windows}.md` | 布局 + 地板/框架/遮阳 |
+| 02 · 车外部件 | `modules/02-external/{design-platform,design-rear-storage,design-solar,...}.md` | 平台/尾箱/太阳能 |
+| 03 · 外观装饰 | `modules/03-exterior-appearance/design.md` | 拉花/贴纸/装饰 |
+| 04 · 电力系统 | `modules/04-power-system/{build-guide,design-distribution-box,switch-assignment}.md` | 施工+箱内+开关通道 |
+| └─ 材料清单 bom | `modules/04-power-system/bom.md` | 采购（独立子页） |
+| 05 · 用水系统 | `modules/05-water-system/{design,bom}.md` | 水路+泵+排水 |
+| 06 · HVAC 暖通 | `modules/06-hvac/{design,bom}.md` | 空调/暖风/换气/温控风 |
+| 07 · 柜体 | `modules/07-cabinetry/{design-countertop,design-overhead,design-bed-cabinet}.md` | 台面/额头柜/床柜 |
+| 08 · 床与卡座 | `modules/08-bed-and-seat/{design-bed,design-dinette}.md` | 折叠横床/卡座 |
+| 09 · 淋浴模块 | `modules/09-shower-module/{design,bom}.md` | 软隔离防水/年审 |
+| 10 · 智能控制 | `modules/10-smart-control/build-guide.md` | 智能控制 0-9 阶段 |
+| 11 · 影音娱乐 | `modules/11-entertainment/{design,design-audio}.md` | 投影/显示/音响 DSP |
 | 施工进度·任务勾选 TODO | `TODO.md` | 任务状态镜像 |
-| (待铺) 其余 00~11 | 各 `modules/XX-*/…` | 分批，见 notion-rollout.md |
 
 ## 一、任务 TODO 回写流程（Notion → git）
 
@@ -68,7 +76,7 @@ dsh/API 无法把本地 SVG/PNG 上传进页面，正文内以「配图见 git `
 
 - Git 工作区：`/Users/fung/Workspace/VAN-PROJECT`
 - 镜像父页：`📐 VAN 施工手册` = page `3d4e2159-512c-81cc-ad90-e1fa2c107c8d`
-- 子页：`04 · 电力系统`=`3d4e2159-512c-819f-a321-ded7d846814c`；`bom`=`3d4e2159-512c-8140-8bf8-f1354c115474`；`10 · 智能控制`=`3d4e2159-512c-819e-9491-dc3f82d2289c`；`01 · 整车布局`=`3d4e2159-512c-8165-bf23-ce1d562751c2`；`TODO看板`=`3d4e2159-512c-813f-b80c-d269059dec91`
+- 子页：`00·底盘`=`3d4e2159-512c-810c-bc40-ed64296bd1f1`；`01·整车布局`=`3d4e2159-512c-8165-bf23-ce1d562751c2`；`02·车外`=`3d4e2159-512c-816e-8c34-ff9fa287ef2f`；`03·外观`=`3d4e2159-512c-81e9-a902-f91f4e7c5e19`；`04·电力`=`3d4e2159-512c-819f-a321-ded7d846814c`(bom=`3d4e2159-512c-8140-8bf8-f1354c115474`)；`05·用水`=`3d4e2159-512c-819b-97af-e0277daa8c28`；`06·HVAC`=`3d4e2159-512c-81e3-a302-f6d24ea6e3ce`；`07·柜体`=`3d4e2159-512c-81ef-a085-d0d12099fe7f`；`08·床与卡座`=`3d4e2159-512c-8131-a26a-db4a859ba5cb`；`09·淋浴`=`3d4e2159-512c-8119-8886-eda094915052`；`10·智能控制`=`3d4e2159-512c-819e-9491-dc3f82d2289c`；`11·影音`=`3d4e2159-512c-81c4-ba09-ec979ea28d3a`；`TODO看板`=`3d4e2159-512c-813f-b80c-d269059dec91`
 - Notion 展示给用户的完整 URL 见各工具返回。
 
 > 追加镜像新模块时，先在「VAN 施工手册」页建对映子页并回填本表“(待铺)”行。勿全量越权覆写其它模块—每批征求用户归属。
