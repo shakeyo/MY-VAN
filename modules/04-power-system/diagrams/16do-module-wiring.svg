@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1400" width="1400" height="1400" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text x="700" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#222">16DO 模块 · 全部 LED · 对线接线图（上半端子 · 下半说明）</text>
+  <text x="700" y="58" text-anchor="middle" font-size="12.5" fill="#666">16DO = 16路继电器全做LED(吸地开关·无DI·5A·一个485地址) · 12现用+4预留 · 485=对绞黑白 · 电源=红黑</text>
+
+  <!-- ============ 上排 Y1~Y8 ============ -->
+  <text x="40" y="92" font-size="14" font-weight="bold" fill="#00695c">【上排】Y1~Y8 · 入口4键 + 主控键1-4 LED（吸地开关：COM=LED阴 · NO=GND）</text>
+
+  <g font-size="9" text-anchor="middle">
+    <rect x="40" y="104" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="117" y="124" font-size="11" font-weight="bold" fill="#00695c">Y1 入口排水</text>
+    <text x="117" y="144" fill="#333">COM=LED阴(14A芯9蓝)</text>
+    <text x="117" y="162" fill="#333">NO=GND(黑)</text>
+    <text x="117" y="192" font-size="8" fill="#00897b">跟踪中8.Y5水阀</text>
+
+    <rect x="203" y="104" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="280" y="124" font-size="11" font-weight="bold" fill="#00695c">Y2 入口户外灯</text>
+    <text x="280" y="144" fill="#333">COM=LED阴(14A芯10黑白)</text>
+    <text x="280" y="162" fill="#333">NO=GND(黑)</text>
+    <text x="280" y="192" font-size="8" fill="#00897b">跟踪额头.R2</text>
+
+    <rect x="366" y="104" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="443" y="124" font-size="11" font-weight="bold" fill="#00695c">Y3 入口上水泵</text>
+    <text x="443" y="144" fill="#333">COM=LED阴(14A芯11粉)</text>
+    <text x="443" y="162" fill="#333">NO=GND(黑)</text>
+    <text x="443" y="192" font-size="8" fill="#00897b">跟踪中8.Y4泵</text>
+
+    <rect x="529" y="104" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="606" y="124" font-size="11" font-weight="bold" fill="#00695c">Y4 入口离车驻车</text>
+    <text x="606" y="144" fill="#333">COM=LED阴(14A芯12橙)</text>
+    <text x="606" y="162" fill="#333">NO=GND(黑)</text>
+    <text x="606" y="192" font-size="8" fill="#00897b">单色(亮=场景)</text>
+
+    <rect x="692" y="104" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="769" y="124" font-size="11" font-weight="bold" fill="#00695c">Y5 主控主灯</text>
+    <text x="769" y="144" fill="#333">COM=LED阴(14B芯9蓝)</text>
+    <text x="769" y="162" fill="#333">NO=GND(黑)</text>
+    <text x="769" y="192" font-size="8" fill="#00897b">跟踪中8.Y1主灯</text>
+
+    <rect x="855" y="104" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="932" y="124" font-size="11" font-weight="bold" fill="#00695c">Y6 主控氛围</text>
+    <text x="932" y="144" fill="#333">COM=LED阴(14B芯10黑白)</text>
+    <text x="932" y="162" fill="#333">NO=GND(黑)</text>
+    <text x="932" y="192" font-size="8" fill="#00897b">跟踪中8.Y2氛围</text>
+
+    <rect x="1018" y="104" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="1095" y="124" font-size="11" font-weight="bold" fill="#00695c">Y7 主控排气扇</text>
+    <text x="1095" y="144" fill="#333">COM=LED阴(14B芯11粉)</text>
+    <text x="1095" y="162" fill="#333">NO=GND(黑)</text>
+    <text x="1095" y="192" font-size="8" fill="#00897b">跟踪中8.Y3排气扇</text>
+
+    <rect x="1181" y="104" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="1258" y="124" font-size="11" font-weight="bold" fill="#00695c">Y8 主控上水泵</text>
+    <text x="1258" y="144" fill="#333">COM=LED阴(14B芯12橙)</text>
+    <text x="1258" y="162" fill="#333">NO=GND(黑)</text>
+    <text x="1258" y="192" font-size="8" fill="#00897b">跟踪中8.Y4泵</text>
+  </g>
+
+  <!-- ============ 中排 Y9~Y12 ============ -->
+  <text x="40" y="220" font-size="14" font-weight="bold" fill="#00695c">【中排】Y9~Y12 · 主控键5-6 + 车尾2键 LED</text>
+
+  <g font-size="9" text-anchor="middle">
+    <rect x="40" y="232" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="117" y="252" font-size="11" font-weight="bold" fill="#00695c">Y9 主控冰箱</text>
+    <text x="117" y="272" fill="#333">COM=LED阴(8P位5灰)</text>
+    <text x="117" y="290" fill="#333">NO=GND(黑)</text>
+    <text x="117" y="320" font-size="8" fill="#00897b">跟踪中8.Y6冰箱</text>
+
+    <rect x="203" y="232" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="280" y="252" font-size="11" font-weight="bold" fill="#00695c">Y10 主控灯光模式</text>
+    <text x="280" y="272" fill="#333">COM=LED阴(8P位6棕)</text>
+    <text x="280" y="290" fill="#333">NO=GND(黑)</text>
+    <text x="280" y="320" font-size="8" fill="#00897b">单色(亮=场景)</text>
+
+    <rect x="366" y="232" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="443" y="252" font-size="11" font-weight="bold" fill="#00695c">Y11 车尾扩展1</text>
+    <text x="443" y="272" fill="#333">COM=LED阴(预留)</text>
+    <text x="443" y="290" fill="#333">NO=GND(黑)</text>
+    <text x="443" y="320" font-size="8" fill="#78909c">未来负载</text>
+
+    <rect x="529" y="232" width="155" height="92" rx="5" fill="#e0f2f1" stroke="#00897b" stroke-width="2"/>
+    <text x="606" y="252" font-size="11" font-weight="bold" fill="#00695c">Y12 车尾扩展2</text>
+    <text x="606" y="272" fill="#333">COM=LED阴(预留)</text>
+    <text x="606" y="290" fill="#333">NO=GND(黑)</text>
+    <text x="606" y="320" font-size="8" fill="#78909c">未来负载</text>
+
+    <rect x="692" y="232" width="155" height="92" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="769" y="252" font-size="11" font-weight="bold" fill="#757575">Y13 预留</text>
+    <text x="769" y="280" fill="#999">空</text>
+    <text x="769" y="320" font-size="8" fill="#9e9e9e">未来按钮</text>
+
+    <rect x="855" y="232" width="155" height="92" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="932" y="252" font-size="11" font-weight="bold" fill="#757575">Y14 预留</text>
+    <text x="932" y="280" fill="#999">空</text>
+    <text x="932" y="320" font-size="8" fill="#9e9e9e">未来按钮</text>
+
+    <rect x="1018" y="232" width="155" height="92" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="1095" y="252" font-size="11" font-weight="bold" fill="#757575">Y15 预留</text>
+    <text x="1095" y="280" fill="#999">空</text>
+    <text x="1095" y="320" font-size="8" fill="#9e9e9e">未来按钮</text>
+
+    <rect x="1181" y="232" width="155" height="92" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="1258" y="252" font-size="11" font-weight="bold" fill="#757575">Y16 预留</text>
+    <text x="1258" y="280" fill="#999">空</text>
+    <text x="1258" y="320" font-size="8" fill="#9e9e9e">未来按钮</text>
+  </g>
+
+  <!-- ============ 下排：485 + 电源 ============ -->
+  <text x="40" y="348" font-size="14" font-weight="bold" fill="#00695c">【下排】485 A B GND · 电源（无 DI 输入）</text>
+
+  <g font-size="9" text-anchor="middle">
+    <rect x="40" y="360" width="60" height="100" rx="3" fill="#fff" stroke="#00897b" stroke-width="2"/>
+    <text x="70" y="384" font-size="12" font-weight="bold" fill="#00695c">A</text>
+    <circle cx="70" cy="408" r="7" fill="#ffffff" stroke="#999"/>
+    <text x="70" y="438" font-size="7" fill="#333">485白</text>
+
+    <rect x="108" y="360" width="60" height="100" rx="3" fill="#fff" stroke="#00897b" stroke-width="2"/>
+    <text x="138" y="384" font-size="12" font-weight="bold" fill="#00695c">B</text>
+    <circle cx="138" cy="408" r="7" fill="#263238"/>
+    <text x="138" y="438" font-size="7" fill="#333">485黑</text>
+
+    <rect x="176" y="360" width="70" height="100" rx="3" fill="#fff" stroke="#00897b" stroke-width="2"/>
+    <text x="211" y="380" font-size="9" font-weight="bold" fill="#00695c">GND</text>
+    <text x="211" y="398" font-size="7.5" fill="#00695c">485地</text>
+    <text x="211" y="418" font-size="7" fill="#78909c">独立</text>
+    <text x="211" y="444" font-size="7" fill="#78909c">屏蔽单端</text>
+
+    <rect x="254" y="360" width="70" height="100" rx="3" fill="#fff" stroke="#c62828" stroke-width="2.5"/>
+    <text x="289" y="380" font-size="9.5" font-weight="bold" fill="#b71c1c">VCC+</text>
+    <circle cx="289" cy="408" r="7" fill="#c62828"/>
+    <text x="289" y="434" font-size="7.5" fill="#b71c1c">红12V</text>
+    <text x="289" y="454" font-size="7" fill="#78909c">12V控+</text>
+
+    <rect x="332" y="360" width="70" height="100" rx="3" fill="#fff" stroke="#111" stroke-width="2.5"/>
+    <text x="367" y="380" font-size="9.5" font-weight="bold" fill="#111">GND-</text>
+    <circle cx="367" cy="408" r="7" fill="#263238"/>
+    <text x="367" y="434" font-size="7.5" fill="#111">黑0V</text>
+    <text x="367" y="454" font-size="7" fill="#78909c">负极排</text>
+  </g>
+
+  <!-- ============ 下半：接线说明 ============ -->
+  <text x="40" y="496" font-size="15" font-weight="bold" fill="#f57f17">接线说明</text>
+
+  <g font-size="11" fill="#333">
+    <text x="40" y="520" font-size="12.5" font-weight="bold" fill="#00695c">16DO = 全部 LED 的唯一模块（16路 DO，5A，一个485地址，ESPhome一个设备）</text>
+    <text x="40" y="542">· LED 回路：LED阳极(共阳)→+12V控+；LED阴极→电阻(裸LED串1-3.3kΩ)→Y的COM；Y的NO→GND</text>
+    <text x="40" y="564">· Y 吸合 = COM-NO 导通 = LED 阴极经触点回 GND = 灯亮（软件 ESPhome 跟踪对应负载同步亮灭）</text>
+    <text x="40" y="586">· 入口4键 LED阴走 14A芯9/10/11/12（蓝/黑白/粉/橙）· 主控1-4走 14B芯9/10/11/12 · 键5-6走 8P位5/6</text>
+    <text x="40" y="608">· 16DO 无 DI（16路全继电器），按钮 DI 在中8(入口+主控1-4)、中4(键5-6)上</text>
+  </g>
+
+  <rect x="720" y="508" width="640" height="140" rx="8" fill="#ffffff" stroke="#b0bec5" stroke-width="2"/>
+  <text x="740" y="532" font-size="12.5" font-weight="bold" fill="#0d47a1">LED 阴线 → 16DO 对应表</text>
+  <g font-size="10.5" fill="#333">
+    <text x="740" y="554">入口：14A芯9蓝→Y1排水 · 芯10黑白→Y2户外 · 芯11粉→Y3泵 · 芯12橙→Y4离车驻车</text>
+    <text x="740" y="574">主控：14B芯9蓝→Y5主灯 · 芯10黑白→Y6氛围 · 芯11粉→Y7排气扇 · 芯12橙→Y8泵</text>
+    <text x="740" y="594">主控5-6：8P位5灰→Y9冰箱 · 8P位6棕→Y10灯光模式</text>
+    <text x="740" y="614">车尾：Y11/Y12 预留 · Y13-16 未来按钮</text>
+  </g>
+
+  <!-- 底部 -->
+  <rect x="40" y="672" width="1300" height="180" rx="10" fill="#fffde7" fill-opacity="0.85" stroke="#f9a825" stroke-width="2"/>
+  <text x="64" y="700" font-size="14" font-weight="bold" fill="#f57f17">要点</text>
+  <text x="64" y="728" font-size="12.5" fill="#333">◆ 16DO 只有继电器(5A)，只走 LED 小电流，绝不接大功率负载（负载在中8/中4，10A）</text>
+  <text x="64" y="752" font-size="12.5" fill="#333">◆ 供电 VCC+红/GND-黑（12V，从中门柜控制区取）；485 A=白 B=黑 对绞，485GND 独立，屏蔽单端接</text>
+  <text x="64" y="776" font-size="12.5" fill="#333">◆ LED 并线点：GND(NO端)、12V(共阳) 公共；其余每颗 LED 阴独立压各自 Y.COM，不并</text>
+  <text x="64" y="800" font-size="12.5" fill="#333">⚠ 场景键(键4离车驻车、键6灯光模式)已降单色；双控泵两键各占 Y3/Y8 两颗 LED；Y13-16 预留未来按钮</text>
+  <text x="64" y="824" font-size="10.5" fill="#78909c">完整 LED 分配见 switch-assignment.md「LED策略」；两端标签格式 模块-性质-去向。</text>
+</svg>

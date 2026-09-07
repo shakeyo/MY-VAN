@@ -49,26 +49,26 @@
     <text x="90" y="277" font-size="16" font-weight="bold" fill="#fff">8</text>
     <text x="90" y="328" font-size="11.5" fill="#333">棕</text>
     <text x="90" y="346" font-size="12" font-weight="bold" fill="#777">预留 DI6</text>
-    <!-- 9 蓝 OUT1 -->
+    <!-- 9 蓝 LED阴 -->
     <circle cx="230" cy="270" r="34" fill="#1e88e5"/>
     <text x="230" y="277" font-size="16" font-weight="bold" fill="#fff">9</text>
     <text x="230" y="328" font-size="11.5" fill="#333">蓝</text>
-    <text x="230" y="346" font-size="12" font-weight="bold" fill="#333">OUT1</text>
-    <!-- 10 黑白 OUT2 -->
+    <text x="230" y="346" font-size="12" font-weight="bold" fill="#333">LED阴</text>
+    <!-- 10 黑白 LED阴 -->
     <circle cx="370" cy="270" r="34" fill="#fafafa" stroke="#222" stroke-width="4" stroke-dasharray="8,6"/>
     <text x="370" y="277" font-size="16" font-weight="bold" fill="#333">10</text>
     <text x="370" y="328" font-size="11.5" fill="#333">黑白</text>
-    <text x="370" y="346" font-size="12" font-weight="bold" fill="#333">OUT2</text>
-    <!-- 11 粉 OUT3 -->
+    <text x="370" y="346" font-size="12" font-weight="bold" fill="#333">LED阴</text>
+    <!-- 11 粉 LED阴 -->
     <circle cx="510" cy="270" r="34" fill="#f48fb1"/>
     <text x="510" y="277" font-size="16" font-weight="bold" fill="#333">11</text>
     <text x="510" y="328" font-size="11.5" fill="#333">粉</text>
-    <text x="510" y="346" font-size="12" font-weight="bold" fill="#333">OUT3</text>
-    <!-- 12 橙 OUT4 -->
+    <text x="510" y="346" font-size="12" font-weight="bold" fill="#333">LED阴</text>
+    <!-- 12 橙 LED阴 -->
     <circle cx="650" cy="270" r="34" fill="#fb8c00"/>
     <text x="650" y="277" font-size="16" font-weight="bold" fill="#fff">12</text>
     <text x="650" y="328" font-size="11.5" fill="#333">橙</text>
-    <text x="650" y="346" font-size="12" font-weight="bold" fill="#333">OUT4</text>
+    <text x="650" y="346" font-size="12" font-weight="bold" fill="#333">LED阴</text>
     <!-- 13 红白 键4红阴(A)/预留(B) -->
     <circle cx="790" cy="270" r="34" fill="#fafafa" stroke="#d32f2f" stroke-width="4" stroke-dasharray="8,6"/>
     <text x="790" y="277" font-size="16" font-weight="bold" fill="#333">13</text>

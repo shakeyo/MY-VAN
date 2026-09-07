@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 980" width="1200" height="980" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text x="600" y="36" text-anchor="middle" font-size="20" font-weight="bold" fill="#222">中门无走线槽 · 走线分层图（四束独立轨道 · 互不交叉）</text>
+  <text x="600" y="60" text-anchor="middle" font-size="12.5" fill="#666">按「束」分层：每束一条水平轨道，485 单飞在最上、信号与功率严格分离 · 点对点定长，不做等长并排</text>
+
+  <!-- ============ 设备列（左） ============ -->
+  <text x="30" y="110" font-size="14" font-weight="bold" fill="#37474f">设备</text>
+  <rect x="30" y="126" width="170" height="46" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2.5"/>
+  <text x="115" y="146" text-anchor="middle" font-size="12" font-weight="bold" fill="#1b5e20">ESP32 网关</text>
+  <text x="115" y="162" text-anchor="middle" font-size="9.5" fill="#555">485主站 · 120Ω近端</text>
+
+  <rect x="30" y="184" width="170" height="46" rx="6" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
+  <text x="115" y="204" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">中8 模块</text>
+  <text x="115" y="220" text-anchor="middle" font-size="9.5" fill="#555">纯负载 · X1-8=DI · Y1-8=DO</text>
+
+  <rect x="30" y="242" width="170" height="46" rx="6" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
+  <text x="115" y="262" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">中4 模块</text>
+  <text x="115" y="278" text-anchor="middle" font-size="9.5" fill="#555">未来负载 · DI1-2</text>
+
+  <rect x="30" y="300" width="170" height="42" rx="6" fill="#fff3e0" stroke="#ef6c00" stroke-width="2.5"/>
+  <text x="115" y="318" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#e65100">16DO 模块(待购)</text>
+  <text x="115" y="334" text-anchor="middle" font-size="9.5" fill="#555">全部LED · 120Ω末端</text>
+
+  <rect x="30" y="380" width="170" height="46" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="3"/>
+  <text x="115" y="406" text-anchor="middle" font-size="12" font-weight="bold" fill="#0d47a1">入口面板</text>
+  <text x="115" y="420" text-anchor="middle" font-size="9.5" fill="#555">4键 · 14芯A</text>
+
+  <rect x="30" y="438" width="170" height="46" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="3"/>
+  <text x="115" y="464" text-anchor="middle" font-size="12" font-weight="bold" fill="#0d47a1">主控面板</text>
+  <text x="115" y="478" text-anchor="middle" font-size="9.5" fill="#555">6键 · 14芯B + 8P</text>
+
+  <rect x="30" y="496" width="170" height="46" rx="6" fill="#eceff1" stroke="#546e7a" stroke-width="2.5"/>
+  <text x="115" y="516" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#37474f">控制区端子排</text>
+  <text x="115" y="532" text-anchor="middle" font-size="9.5" fill="#555">控+/控- · 485-A/B</text>
+
+  <rect x="30" y="554" width="170" height="46" rx="6" fill="#eceff1" stroke="#546e7a" stroke-width="2.5"/>
+  <text x="115" y="574" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#37474f">负载端子排</text>
+  <text x="115" y="590" text-anchor="middle" font-size="9.5" fill="#555">功率正/负极区</text>
+
+  <text x="30" y="640" font-size="10.5" fill="#78909c">↑ 设备列只标起点/终点，</text>
+  <text x="30" y="656" font-size="10.5" fill="#78909c">   下方分层轨道画「线」</text>
+
+  <!-- ============ 分层轨道背景 ============ -->
+  <!-- 束① 485 -->
+  <rect x="230" y="126" width="940" height="56" rx="6" fill="#e0f2f1" opacity="0.45"/>
+  <text x="246" y="148" font-size="12" font-weight="bold" fill="#00695c">束① 485 总线（单飞 · RVSP 2×0.5 · 最上层 · 菊花链）</text>
+  <text x="246" y="168" font-size="9.5" fill="#00695c">A并A · B并B · 屏蔽层单端接地(仅ESP32) · 与任何 12V/面板线不同束 · 间距≥15cm</text>
+
+  <!-- 束② 供电 -->
+  <rect x="230" y="190" width="940" height="56" rx="6" fill="#fff8e1" opacity="0.55"/>
+  <text x="246" y="212" font-size="12" font-weight="bold" fill="#e65100">束② 模块 12V 供电（黄 · F12-1 → 控+/控-）</text>
+  <text x="246" y="232" font-size="9.5" fill="#e65100">中8 取箱内 · 中4 走跨箱短线（控B/控D · 已接保险未插）</text>
+
+  <!-- 束③ 信号 -->
+  <rect x="230" y="252" width="940" height="56" rx="6" fill="#f5f5f5" opacity="0.9"/>
+  <text x="246" y="274" font-size="12" font-weight="bold" fill="#616161">束③ 面板信号线（灰 · 按钮 DI / LED 阴）</text>
+  <text x="246" y="294" font-size="9.5" fill="#616161">14芯A → 中8.DI1-4 · 14芯B → 中8.DI5-8 · 8P → 中4.DI1-2 · LED阴全走 16DO 的 Y</text>
+
+  <!-- 束④ 功率 -->
+  <rect x="230" y="314" width="940" height="56" rx="6" fill="#ffebee" opacity="0.6"/>
+  <text x="246" y="336" font-size="12" font-weight="bold" fill="#b71c1c">束④ 负载功率线（红 · 保险→继电器→端子→负载）</text>
+  <text x="246" y="356" font-size="9.5" fill="#b71c1c">走箱底 · 与信号区彻底分开 · 每负载 2P 成对</text>
+
+  <!-- ============ 束① 485 线（蓝，在轨道① y=162 中心） ============ -->
+  <g stroke-linecap="round" fill="none">
+    <line x1="228" y1="150" x2="360" y2="150" stroke="#00a" stroke-width="4"/>
+    <line x1="360" y1="150" x2="360" y2="150" stroke="#00a" stroke-width="0"/>
+    <!-- 主站 → 中8 → 中4 → 16DO -->
+    <line x1="200" y1="150" x2="700" y2="150" stroke="#00a" stroke-width="4"/>
+    <circle cx="200" cy="150" r="6" fill="#00a"/>
+    <circle cx="420" cy="150" r="6" fill="#00a"/>
+    <circle cx="700" cy="150" r="6" fill="#00a"/>
+    <line x1="700" y1="150" x2="1120" y2="150" stroke="#00a" stroke-width="4" stroke-dasharray="9,5"/>
+    <circle cx="1120" cy="150" r="6" fill="#00a"/>
+  </g>
+  <!-- 设备的485抽头（细线向下） -->
+  <g stroke="#00a" stroke-width="2" fill="none">
+    <line x1="200" y1="144" x2="200" y2="124"/>
+    <line x1="420" y1="144" x2="420" y2="184"/>
+    <line x1="700" y1="144" x2="700" y2="242"/>
+    <line x1="1120" y1="144" x2="1120" y2="300"/>
+  </g>
+  <text x="115" y="150" text-anchor="end" font-size="9" fill="#00a">485</text>
+  <text x="320" y="140" text-anchor="middle" font-size="9" fill="#00a">中8</text>
+  <text x="560" y="140" text-anchor="middle" font-size="9" fill="#00a">中4</text>
+  <text x="920" y="140" text-anchor="middle" font-size="9" fill="#00a">16DO(待购)</text>
+
+  <!-- ============ 束② 供电（黄，轨道② y=218 中心） ============ -->
+  <g stroke-linecap="round" fill="none">
+    <line x1="200" y1="218" x2="530" y2="218" stroke="#f57c00" stroke-width="4"/>
+    <line x1="530" y1="218" x2="530" y2="218" stroke="#f57c00" stroke-width="0"/>
+  </g>
+  <g stroke="#f57c00" stroke-width="2" fill="none">
+    <line x1="200" y1="212" x2="200" y2="184"/>
+    <line x1="530" y1="212" x2="530" y2="190"/>
+  </g>
+  <circle cx="530" cy="218" r="6" fill="#f57c00"/>
+  <!-- 中4 跨箱 -->
+  <line x1="530" y1="218" x2="700" y2="218" stroke="#f57c00" stroke-width="4" stroke-dasharray="6,4"/>
+  <line x1="700" y1="212" x2="700" y2="242" stroke="#f57c00" stroke-width="2" stroke-dasharray="6,4"/>
+  <circle cx="700" cy="218" r="6" fill="#f57c00"/>
+  <text x="530" y="240" text-anchor="middle" font-size="9" fill="#e65100">控+/控-</text>
+  <text x="590" y="236" text-anchor="middle" font-size="9" fill="#e65100">中4跨箱(虚线)</text>
+
+  <!-- ============ 束③ 信号（灰，轨道③ y=280 中心） ============ -->
+  <g stroke-linecap="round" fill="none">
+    <!-- 14芯A 入口→中8 -->
+    <line x1="200" y1="280" x2="200" y2="408" stroke="#9e9e9e" stroke-width="3.5"/>
+    <!-- 14芯B 主控→中8 -->
+    <line x1="200" y1="280" x2="200" y2="466" stroke="#9e9e9e" stroke-width="3.5"/>
+    <!-- 8P 主控键5-6 → 中4 -->
+    <line x1="700" y1="280" x2="700" y2="466" stroke="#9e9e9e" stroke-width="3.5"/>
+  </g>
+  <g stroke="#9e9e9e" stroke-width="2" fill="none">
+    <line x1="200" y1="274" x2="200" y2="244"/>
+    <line x1="700" y1="274" x2="700" y2="266"/>
+  </g>
+  <circle cx="200" cy="280" r="6" fill="#9e9e9e"/>
+  <circle cx="700" cy="280" r="6" fill="#9e9e9e"/>
+  <text x="120" y="350" text-anchor="end" font-size="9" fill="#616161">14芯A(入口)</text>
+  <text x="226" y="446" font-size="9" fill="#616161">14芯B(主控键1-4)</text>
+  <text x="726" y="446" font-size="9" fill="#616161">8P(主控键5-6)</text>
+
+  <!-- ============ 束④ 功率（红，轨道④ y=342 中心） ============ -->
+  <g stroke-linecap="round" fill="none">
+    <line x1="700" y1="342" x2="700" y2="580" stroke="#c62828" stroke-width="3.5"/>
+    <line x1="700" y1="580" x2="1120" y2="580" stroke="#c62828" stroke-width="3.5" marker-end="url(#arrow)"/>
+  </g>
+  <g stroke="#c62828" stroke-width="2" fill="none">
+    <line x1="200" y1="336" x2="200" y2="244"/>
+  </g>
+  <circle cx="700" cy="342" r="6" fill="#c62828"/>
+  <text x="726" y="560" font-size="9" fill="#c62828">→ 各负载 2P（正进功率区 · 负进负极桥）</text>
+  <text x="920" y="600" font-size="9" fill="#c62828" text-anchor="middle">负载（灯/风扇/冰箱/水阀…）</text>
+
+  <!-- ============ 无槽替代方案 说明 ============ -->
+  <rect x="230" y="620" width="260" height="80" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="2.5"/>
+  <ellipse cx="270" cy="658" rx="24" ry="18" fill="none" stroke="#795548" stroke-width="3"/>
+  <ellipse cx="270" cy="658" rx="24" ry="10" fill="none" stroke="#a1887f" stroke-width="2"/>
+  <text x="310" y="646" font-size="11" font-weight="bold" fill="#e65100">螺旋缠绕管</text>
+  <text x="310" y="662" font-size="9.5" fill="#555">余长/等长盘进去 · 管口散出</text>
+  <text x="310" y="678" font-size="9.5" fill="#555">多线并排套一根 = 等效槽</text>
+
+  <rect x="505" y="620" width="260" height="80" rx="8" fill="#f3e5f5" stroke="#8e24aa" stroke-width="2.5"/>
+  <rect x="522" y="640" width="18" height="14" rx="3" fill="#8e24aa"/>
+  <rect x="522" y="658" width="18" height="14" rx="3" fill="#8e24aa"/>
+  <circle cx="531" cy="647" r="6" fill="#fff" stroke="#333" stroke-width="2"/>
+  <circle cx="531" cy="665" r="6" fill="#fff" stroke="#333" stroke-width="2"/>
+  <text x="600" y="646" font-size="11" font-weight="bold" fill="#6a1b9a">自粘扎带座</text>
+  <text x="600" y="662" font-size="9.5" fill="#555">贴背板固定线束 · 间距拉开</text>
+  <text x="600" y="678" font-size="9.5" fill="#555">代走线槽的固定点</text>
+
+  <rect x="780" y="620" width="260" height="80" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="2.5"/>
+  <text x="910" y="648" font-size="11" font-weight="bold" fill="#b71c1c">F形 / PVC 线槽（可选）</text>
+  <text x="910" y="666" font-size="9.5" fill="#555">网购几元/米 · 3M 胶贴背板</text>
+  <text x="910" y="682" font-size="9.5" fill="#555">最接近成品走线槽效果</text>
+
+  <!-- ============ 底部规则 ============ -->
+  <rect x="230" y="716" width="940" height="240" rx="10" fill="#fffde7" fill-opacity="0.88" stroke="#f9a825" stroke-width="2"/>
+  <text x="250" y="742" font-size="13.5" font-weight="bold" fill="#f57f17">无槽走线规则（对照家里施工 · 详见 design-distribution-box.md §11）</text>
+  <text x="250" y="768" font-size="12" fill="#333">① 点对点定长：散线按「出线点→对应端子」实际路径量 + 3~5cm 余量，不做等长并排 —— 等长=交叉跨度大，才是乱的根源</text>
+  <text x="250" y="792" font-size="12" fill="#333">② 485 永远单飞：RVSP 屏蔽双绞单独最上一条轨道，绝不与 12V/面板线同束，间距 ≥15cm</text>
+  <text x="250" y="816" font-size="12" fill="#333">③ 四束独立轨道、上下分层贴边：485(顶) → 供电 → 面板信号 → 负载功率(底)，中间留空，谁都不横跨谁</text>
+  <text x="250" y="840" font-size="12" fill="#333">④ 没槽怎么装：缠绕管代槽(余长盘进去) + 扎带座定背板代槽口 + 每根线两端贴标签代槽口标识 · 485 先定位，其余再动</text>
+  <text x="250" y="864" font-size="12" fill="#333">⑤ 并线点：中8 GND/VCC 各 3 线焊并（电源 + 两根14P 芯1/芯2 → 1 根压端子）· 中4 上 2 线并压 —— 见 §6.7</text>
+  <text x="250" y="888" font-size="11" fill="#777">⑥ 双控泵 LED：入口键3 LED阴 → 16DO.Y3、主控键4 LED阴 → 16DO.Y8（各一颗，ESPhome 软件同步，不并线）</text>
+  <text x="250" y="912" font-size="11" fill="#777">⑦ 左列设备只标端点，右列四轨道画「线」的实际走法；现场按车型尺寸量取线长，本图为相对拓扑非真实比例</text>
+  <text x="250" y="936" font-size="11" fill="#777">配色对号：蓝=485 · 黄=供电 · 灰=面板信号 · 红=负载功率 · 虚线=后期/跨箱/未通电</text>
+</svg>

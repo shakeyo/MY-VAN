@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1160" width="1400" height="1160" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text x="700" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#222">中8 模块 · 纯负载 · 对线接线图（上半端子 · 下半说明）</text>
+  <text x="700" y="58" text-anchor="middle" font-size="12.5" fill="#666">中8 = 纯负载模块(7路负载) · 485=对绞黑白 · 电源=红黑 · Y4 上水泵走48V(隔离触点已实测) · 色点=线色</text>
+
+  <!-- ============ 上半：模块端子整排 ============ -->
+  <text x="40" y="92" font-size="14" font-weight="bold" fill="#4527a0">【上排】继电器 Y1~Y6（切负载 · NO/COM/NC）</text>
+
+  <g font-size="10" text-anchor="middle">
+    <rect x="40" y="104" width="210" height="92" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="145" y="124" font-size="12" font-weight="bold" fill="#4527a0">Y1 · 主灯</text>
+    <text x="145" y="142" fill="#c62828">NO = 主灯+ 红0.75</text>
+    <text x="145" y="160" fill="#c62828">COM = F12-2+ 红1.5</text>
+    <text x="145" y="178" fill="#999">NC = 空</text>
+    <text x="145" y="192" font-size="8" fill="#78909c">12V · 键1</text>
+
+    <rect x="258" y="104" width="210" height="92" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="363" y="124" font-size="12" font-weight="bold" fill="#4527a0">Y2 · 氛围/睡眠</text>
+    <text x="363" y="142" fill="#c62828">NO = 氛围+×4 红2.5</text>
+    <text x="363" y="160" fill="#c62828">COM = F12-2+ 红1.5</text>
+    <text x="363" y="178" fill="#999">NC = 空</text>
+    <text x="363" y="192" font-size="8" fill="#78909c">12V · 键2</text>
+
+    <rect x="476" y="104" width="210" height="92" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="581" y="124" font-size="12" font-weight="bold" fill="#4527a0">Y3 · 后窗排气扇</text>
+    <text x="581" y="142" fill="#c62828">NO = 排气扇+ 红1.0</text>
+    <text x="581" y="160" fill="#c62828">COM = F12-3+ 红0.75</text>
+    <text x="581" y="178" fill="#999">NC = 空</text>
+    <text x="581" y="192" font-size="8" fill="#78909c">12V · 键3</text>
+
+    <rect x="694" y="104" width="210" height="92" rx="5" fill="#ffe0b2" stroke="#ef6c00" stroke-width="2"/>
+    <text x="799" y="124" font-size="12" font-weight="bold" fill="#e65100">Y4 · 上水泵(48V)</text>
+    <text x="799" y="142" fill="#b71c1c" font-weight="bold">NO = 水泵+ 红2.5 48V</text>
+    <text x="799" y="160" fill="#b71c1c" font-weight="bold">COM = F48-2+ 红2.5 48V</text>
+    <text x="799" y="178" fill="#999">NC = 空</text>
+    <text x="799" y="192" font-size="8" fill="#e65100">隔离触点 · 续流二极管</text>
+
+    <rect x="912" y="104" width="210" height="92" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="1017" y="124" font-size="12" font-weight="bold" fill="#4527a0">Y5 · 电控水阀</text>
+    <text x="1017" y="142" fill="#c62828">NO = 水阀+ 红0.75</text>
+    <text x="1017" y="160" fill="#c62828">COM = F12-1+ 红1.0</text>
+    <text x="1017" y="178" fill="#999">NC = 空</text>
+    <text x="1017" y="192" font-size="8" fill="#78909c">12V · 入口键1</text>
+
+    <rect x="1130" y="104" width="210" height="92" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="1235" y="124" font-size="12" font-weight="bold" fill="#4527a0">Y6 · 冰箱</text>
+    <text x="1235" y="142" fill="#c62828">NO = 冰箱+ 红1.5</text>
+    <text x="1235" y="160" fill="#c62828">COM = F12-4+ 红1.5</text>
+    <text x="1235" y="178" fill="#999">NC = 空</text>
+    <text x="1235" y="192" font-size="8" fill="#78909c">12V · 键5</text>
+  </g>
+
+  <text x="40" y="220" font-size="14" font-weight="bold" fill="#4527a0">【下排】Y7 倒车灯 · Y8 预留 · 数字量输入 X8~X1 · COM · A B · 485GND · 电源</text>
+
+  <g font-size="9" text-anchor="middle">
+    <!-- Y7 倒车灯 -->
+    <rect x="40" y="232" width="90" height="100" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="85" y="252" font-size="11" font-weight="bold" fill="#4527a0">Y7倒车灯</text>
+    <text x="85" y="270" fill="#c62828">NO=倒车灯+红0.75</text>
+    <text x="85" y="286" fill="#c62828">COM=F12-6+红0.75</text>
+    <text x="85" y="302" fill="#999">NC=空</text>
+    <text x="85" y="322" font-size="8" fill="#78909c">拉线到车尾</text>
+
+    <!-- Y8 预留 -->
+    <rect x="138" y="232" width="90" height="100" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="183" y="252" font-size="11" font-weight="bold" fill="#757575">Y8 预留</text>
+    <text x="183" y="272" fill="#999">NO / COM / NC</text>
+    <text x="183" y="290" fill="#999">全部空</text>
+    <text x="183" y="316" font-size="8" fill="#9e9e9e">未来扩展负载</text>
+
+    <!-- X8~X1 -->
+    <rect x="236" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="262" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X8</text>
+    <text x="262" y="270" font-size="8" fill="#333">DI8</text>
+    <circle cx="248" cy="286" r="7" fill="#aed581" stroke="#558b2f"/>
+    <text x="262" y="304" font-size="7.5" fill="#33691e">14B芯6</text>
+    <text x="262" y="318" font-size="7.5" fill="#33691e">淡绿</text>
+    <text x="262" y="330" font-size="7" fill="#78909c">主控泵</text>
+
+    <rect x="296" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="322" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X7</text>
+    <text x="322" y="270" font-size="8" fill="#333">DI7</text>
+    <circle cx="308" cy="286" r="7" fill="#9e9e9e" stroke="#616161"/>
+    <text x="322" y="304" font-size="7.5" fill="#424242">14B芯5</text>
+    <text x="322" y="318" font-size="7.5" fill="#424242">灰</text>
+    <text x="322" y="330" font-size="7" fill="#78909c">主控排气扇</text>
+
+    <rect x="356" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="382" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X6</text>
+    <text x="382" y="270" font-size="8" fill="#333">DI6</text>
+    <circle cx="368" cy="286" r="7" fill="#fbc02d" stroke="#f57f17"/>
+    <text x="382" y="304" font-size="7.5" fill="#e65100">14B芯4</text>
+    <text x="382" y="318" font-size="7.5" fill="#e65100">黄</text>
+    <text x="382" y="330" font-size="7" fill="#78909c">主控氛围</text>
+
+    <rect x="416" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="442" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X5</text>
+    <text x="442" y="270" font-size="8" fill="#333">DI5</text>
+    <circle cx="428" cy="286" r="7" fill="#ffffff" stroke="#999"/>
+    <text x="442" y="304" font-size="7.5" fill="#424242">14B芯3</text>
+    <text x="442" y="318" font-size="7.5" fill="#424242">白</text>
+    <text x="442" y="330" font-size="7" fill="#78909c">主控主灯</text>
+
+    <rect x="476" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="502" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X4</text>
+    <text x="502" y="270" font-size="8" fill="#333">DI4</text>
+    <circle cx="488" cy="286" r="7" fill="#aed581" stroke="#558b2f"/>
+    <text x="502" y="304" font-size="7.5" fill="#33691e">14A芯6</text>
+    <text x="502" y="318" font-size="7.5" fill="#33691e">淡绿</text>
+    <text x="502" y="330" font-size="7" fill="#78909c">入口离车</text>
+
+    <rect x="536" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="562" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X3</text>
+    <text x="562" y="270" font-size="8" fill="#333">DI3</text>
+    <circle cx="548" cy="286" r="7" fill="#9e9e9e" stroke="#616161"/>
+    <text x="562" y="304" font-size="7.5" fill="#424242">14A芯5</text>
+    <text x="562" y="318" font-size="7.5" fill="#424242">灰</text>
+    <text x="562" y="330" font-size="7" fill="#78909c">入口泵</text>
+
+    <rect x="596" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="622" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X2</text>
+    <text x="622" y="270" font-size="8" fill="#333">DI2</text>
+    <circle cx="608" cy="286" r="7" fill="#fbc02d" stroke="#f57f17"/>
+    <text x="622" y="304" font-size="7.5" fill="#e65100">14A芯4</text>
+    <text x="622" y="318" font-size="7.5" fill="#e65100">黄</text>
+    <text x="622" y="330" font-size="7" fill="#78909c">入口户外</text>
+
+    <rect x="656" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+    <text x="682" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X1</text>
+    <text x="682" y="270" font-size="8" fill="#333">DI1</text>
+    <circle cx="668" cy="286" r="7" fill="#ffffff" stroke="#999"/>
+    <text x="682" y="304" font-size="7.5" fill="#424242">14A芯3</text>
+    <text x="682" y="318" font-size="7.5" fill="#424242">白</text>
+    <text x="682" y="330" font-size="7" fill="#78909c">入口排水</text>
+
+    <!-- DI-COM -->
+    <rect x="716" y="232" width="52" height="100" rx="3" fill="#eceff1" stroke="#546e7a" stroke-width="2"/>
+    <text x="742" y="252" font-size="9" font-weight="bold" fill="#37474f">DI-COM</text>
+    <text x="742" y="278" font-size="7.5" fill="#555">输入公共</text>
+    <circle cx="728" cy="298" r="7" fill="#263238"/>
+    <text x="742" y="318" font-size="7.5" fill="#333">GND黑</text>
+    <text x="742" y="332" font-size="7" fill="#78909c">内部上拉</text>
+
+    <!-- 485 A B GND -->
+    <rect x="776" y="232" width="34" height="100" rx="3" fill="#fff" stroke="#00897b" stroke-width="2"/>
+    <text x="793" y="256" font-size="11" font-weight="bold" fill="#00695c">A</text>
+    <circle cx="793" cy="278" r="7" fill="#ffffff" stroke="#999"/>
+    <text x="793" y="304" font-size="7" fill="#333">485白</text>
+
+    <rect x="818" y="232" width="34" height="100" rx="3" fill="#fff" stroke="#00897b" stroke-width="2"/>
+    <text x="835" y="256" font-size="11" font-weight="bold" fill="#00695c">B</text>
+    <circle cx="835" cy="278" r="7" fill="#263238"/>
+    <text x="835" y="304" font-size="7" fill="#333">485黑</text>
+
+    <rect x="860" y="232" width="40" height="100" rx="3" fill="#fff" stroke="#00897b" stroke-width="2"/>
+    <text x="880" y="252" font-size="8.5" font-weight="bold" fill="#00695c">GND</text>
+    <text x="880" y="270" font-size="7" fill="#00695c">485地</text>
+    <text x="880" y="290" font-size="7" fill="#78909c">独立</text>
+    <text x="880" y="316" font-size="7" fill="#78909c">屏蔽单端</text>
+
+    <!-- 电源 -->
+    <rect x="908" y="232" width="44" height="100" rx="3" fill="#fff" stroke="#c62828" stroke-width="2.5"/>
+    <text x="930" y="252" font-size="9" font-weight="bold" fill="#b71c1c">VCC+</text>
+    <circle cx="930" cy="276" r="7" fill="#c62828"/>
+    <text x="930" y="298" font-size="7.5" fill="#b71c1c">红12V</text>
+    <text x="930" y="322" font-size="7" fill="#78909c">F12-1</text>
+
+    <rect x="960" y="232" width="44" height="100" rx="3" fill="#fff" stroke="#111" stroke-width="2.5"/>
+    <text x="982" y="252" font-size="9" font-weight="bold" fill="#111">GND-</text>
+    <circle cx="982" cy="276" r="7" fill="#263238"/>
+    <text x="982" y="298" font-size="7.5" fill="#111">黑0V</text>
+    <text x="982" y="322" font-size="7" fill="#78909c">负极排</text>
+  </g>
+
+  <!-- ============ 下半：接线说明 ============ -->
+  <text x="40" y="366" font-size="15" font-weight="bold" fill="#f57f17">接线说明</text>
+
+  <g font-size="11" fill="#333">
+    <text x="40" y="390" font-size="12.5" font-weight="bold" fill="#4527a0">中8 = 纯负载模块（7 负载 + 1 预留，不再塞 LED）</text>
+    <text x="40" y="412">· 负载继电器接法：COM = 保险盒正极、NO = 负载正极、NC = 空（常闭不用）</text>
+    <text x="40" y="434" fill="#b71c1c">· 线径单位 mm²：红=功率正极（独立2P线，非14芯）、黑=功率负极（直回负排）；NO/COM 后数字即该路负载线径</text>
+    <text x="40" y="456" fill="#b71c1c">· Y4 上水泵：48V 直切（隔离触点已实测），COM=F48-2+、NO=泵+，负极回48V汇流排；感性负载必须并续流二极管1N5408（阴极朝正）</text>
+    <text x="40" y="478" fill="#00796b">· 隔离触点 → 48V(Y4) 与 12V(其余Y) 同板块安全，各有独立COM，48V+ 绝不搭模块12V/GND</text>
+    <text x="40" y="500">· DI 输入：14A 给入口 X1-4、14B 给主控 X5-8，白/黄/灰/淡绿四色各两根，一芯对一口</text>
+  </g>
+
+  <rect x="720" y="378" width="640" height="160" rx="8" fill="#ffffff" stroke="#b0bec5" stroke-width="2"/>
+  <text x="740" y="402" font-size="12.5" font-weight="bold" fill="#0d47a1">14芯 A / B 线色定义</text>
+  <g font-size="10.5" fill="#333">
+    <text x="740" y="424" font-weight="bold" fill="#0d47a1">14芯A（入口）→ X1-4</text>
+    <text x="740" y="442">芯3白=排水→X1 · 芯4黄=户外→X2 · 芯5灰=泵→X3 · 芯6淡绿=离车→X4</text>
+    <text x="740" y="460">芯1黑=GND · 芯2红=+12V（LED共阳，现改接+12V控+）</text>
+    <text x="740" y="478" font-weight="bold" fill="#0d47a1">14芯B（主控）→ X5-8</text>
+    <text x="740" y="496">芯3白=主灯→X5 · 芯4黄=氛围→X6 · 芯5灰=排气扇→X7 · 芯6淡绿=泵→X8</text>
+    <text x="740" y="514">芯1黑=GND · 芯2红=+12V · LED阴芯(9-12) → 接 16DO 的 Y（Y5-Y8）</text>
+  </g>
+
+  <!-- 底部 -->
+  <rect x="40" y="566" width="1320" height="180" rx="10" fill="#fffde7" fill-opacity="0.85" stroke="#f9a825" stroke-width="2"/>
+  <text x="64" y="594" font-size="14" font-weight="bold" fill="#f57f17">要点 + 并线点</text>
+  <text x="64" y="622" font-size="12.5" fill="#333">◆ DI：白/黄/灰/淡绿四色各两根（14A入口X1-4、14B主控X5-8），每芯单独压一个X口</text>
+  <text x="64" y="646" font-size="12.5" fill="#333">◆ 供电 VCC+红/GND-黑（12V，F12-1）；485GND 独立，与电源黑不并；485 A=白 B=黑 同对绞，屏蔽单端接地</text>
+  <text x="64" y="670" font-size="12.5" fill="#333">◆ 48V 上水泵(Y4)：COM=F48-2+、NO=泵+，泵负回48V汇流排；续流二极管1N5408 阴极朝正并联在泵线圈两端</text>
+  <text x="64" y="694" font-size="12.5" fill="#333">⚠ 并线点：GND(14A芯1+14B芯1+电源负) · VCC(14A芯2+14B芯2+电源正) —— 其余一芯对一口；NC 一律空</text>
+  <text x="64" y="722" font-size="10.5" fill="#78909c">LED 指示不接中8，全走 16DO 模块（独立DO驱动，ESPhome绑定）。见 16do-module-wiring.svg 及 switch-assignment.md「LED策略」。</text>
+</svg>
