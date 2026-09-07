@@ -8,13 +8,13 @@
 |---|---|
 | 04 · 电力系统 | `modules/04-power-system/{build-guide,design-distribution-box,switch-assignment}.md` |
 | └─ 材料清单 bom | `modules/04-power-system/bom.md` |
+| 10 · 智能控制 | `modules/10-smart-control/build-guide.md`（阶段0-9+拍摄+扩展）；子模块(energy/gateway/media/n100-ha/robot/sensors)以源索引 callout 呈现，深铺另开子页 |
 | 施工进度·任务勾选 TODO | `TODO.md`（回写流程另见 notion-sync.md） |
 
 ## 待铺开模块（按源 md 存在度高→低排序，便于挑重点先做）
 
 | # | 模块目录（git） | 推荐源 doc（顶层 md） | 附 bom? |
 |---|---|---|---|
-| 10 | `10-smart-control` 智能控制（485/网关/HA） | `build-guide.md`（主）,还可是 README | 无独立 bom，跳过 |
 | 00 | `00-chassis` 底盘 | `build-chassis.md`,`build-rear-mount.md`,`design.md` | 无 |
 | 01 | `01-vehicle-layout` 整车布局（地板/框架/窗） | `build-flooring.md`,`build-framework.md`,`build-windows.md`,`design.md` | 无 |
 | 02 | `02-external` 外部（太阳能/平台/照明/后仓） | `design-*.md` 组（platform/rear-storage/solar/lighting/storage/spoiler） | `bom.md` |
