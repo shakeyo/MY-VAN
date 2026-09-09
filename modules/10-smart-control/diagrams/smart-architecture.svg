@@ -68,13 +68,13 @@
   <text x="830" y="314" text-anchor="middle" font-size="14" font-weight="bold" fill="#37474f">物理按键（3 个面板）— 最终冗余入口（机械，永远可用）</text>
   <g font-size="11.5">
     <text x="620" y="340" fill="#333" font-weight="bold">驾驶室 6 键</text>
-    <text x="830" y="340" fill="#555">→ 额头模块（同柜直连，14 芯）</text>
+    <text x="830" y="340" fill="#555">→ 额头模块（同柜直连）</text>
     <text x="620" y="366" fill="#333" font-weight="bold">入口 4 键</text>
-    <text x="830" y="366" fill="#555">→ 中8（14 芯 A：排水/户外灯/水泵/离车）</text>
+    <text x="830" y="366" fill="#555">→ 入口A 8P (DI→中8) + 入口B 6P (LED→16DO)</text>
     <text x="620" y="392" fill="#333" font-weight="bold">主控 6 键</text>
-    <text x="830" y="392" fill="#555">→ 键1-4 中8（14 芯 B）+ 键5-6 中4（8P 短跳线）</text>
+    <text x="830" y="392" fill="#555">→ 主控A 10P (DI): 键1-4 中8 + 键5-6 中4</text>
   </g>
-  <text x="830" y="412" text-anchor="middle" font-size="10.5" fill="#777">按钮线走线槽，与功率线分槽；线色/芯位见 04-power-system/14core-cable.svg</text>
+  <text x="830" y="412" text-anchor="middle" font-size="10.5" fill="#777">4 线方案：A 线 DI→配电箱 · B 线 LED→16DO；线色/芯位见 switch-assignment.md §七</text>
 
   <!-- 面板 → 模块（DI 键） -->
   <g stroke="#1565c0" stroke-width="2" fill="none">

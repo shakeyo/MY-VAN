@@ -11,7 +11,7 @@
 | 1 | [build-guide.md](build-guide.md) | **施工主线**：6 个阶段按序执行，每阶段有入口条件 / 验收点 / 配图 |
 | 2 | [design.md](design.md) | 设计原则：为什么 48V、为什么星型、源头保护链路、施工红线 |
 | 3 | [design-distribution-box.md](design-distribution-box.md) | 中门配电箱：箱内布局、48V/12V 保险分配、继电器与端子排、箱内施工步骤 1-10 |
-| 4 | [switch-assignment.md](switch-assignment.md) | 面板按键 ↔ IO 通道 ↔ 负载继电器对照、14 芯线线色、端子排位 |
+| 4 | [switch-assignment.md](switch-assignment.md) | 面板按键 ↔ IO 通道 ↔ 负载继电器对照、中门柜汇总方案面板线缆定义、端子排位 |
 | 5 | [bom.md](bom.md) | 材料清单：开工前照单采购（含液压压线钳等工具） |
 
 ## 🏗️ 施工主线（6 阶段，详见 [build-guide.md](build-guide.md)）
@@ -21,7 +21,7 @@
 | 0 准备 | 采购齐 + **家里预制负载线束**（裁线/压端子/焊并/贴标签） | 每根线两端有标签，端子排/保险盒就位 |
 | 1 电池与总保护 | 电池安装 + 源头熔断 150A + 主断 125A（电池侧） | 绝缘无碰壳、铜鼻扭矩达标、主断可分断 |
 | 2 中门配电箱 | 按箱内步骤 1-10 接线（负汇流 → 48V 主干 → DCDC → 12V 分配 → 继电器 → 控制 → 信号 → 出线 → 整理标识） | §十二安全检查清单全过 + 未通电逐路测短路 |
-| 3 面板与线缆 | 按钮接线、焊并点、14P/8P 插头压接、入面板插座 | 逐芯通断测试通过，LED 极性确认 |
+| 3 面板与线缆 | 按钮接线、焊并点、JST 信号线压接（DI主干14P / 入口复合12P / 主控复合14P）、入面板插座 | 逐芯通断测试通过，LED 极性确认 |
 | 4 485 总线 + ESP32 | 菊花链并线、两端 120Ω、强弱电分离 | 总线 A/B 无短接，模块地址正确 |
 | 5 分阶段通电 | 48V 总进线 → DCDC 输出 → 控制模块 → 灯 → 风扇 → 冰箱 → **水泵最后** | 逐段电压正常，水泵试车（二极管方向已核） |
 
@@ -32,8 +32,10 @@
 | 整车电力架构单线图 | [power-architecture.svg](./diagrams/power-architecture.svg) | 开工前理解全局电流走向 |
 | 中门箱内布局（正视图） | [box-layout.svg](./diagrams/box-layout.svg) | 阶段 2：箱内器件定位 |
 | 48V 水泵主回路 + 控制回路 | [pump-48v.svg](./diagrams/pump-48v.svg) | 阶段 2/5：核心安全回路 |
-| 单按键 3 回路（含"两个 COM"辨析） | [button-wiring.svg](./diagrams/button-wiring.svg) | 阶段 3：面板接线前 |
-| 14 芯线线色/芯位对照 | [14core-cable.svg](./diagrams/14core-cable.svg) | 阶段 3：压插头、按色找芯 |
+| 单按键 3 回路（含"三个 COM"辨析） | [button-wiring.svg](./diagrams/button-wiring.svg) | 阶段 3：面板接线前 |
+| 中门柜汇总方案面板线缆定义 | [switch-assignment.md §七](switch-assignment.md#七、面板线缆定义中门柜汇总方案) | 阶段 3：压 JST 插头、按色找芯 |
+| 16DO 模块接线图 | [16do-module-wiring.svg](./diagrams/16do-module-wiring.svg) | 阶段 3：16DO 接 LED |
+| 中门走线分层（DI 主干 / 面板复合线分离） | [mid-door-wiring.svg](./diagrams/mid-door-wiring.svg) | 阶段 3：中门柜走线 |
 | 端子排布局（功率区 + 控制区） | [terminal-block.svg](./diagrams/terminal-block.svg) | 阶段 2/3：对位接线 |
 | 485 总线拓扑 | [485-bus.svg](./diagrams/485-bus.svg) | 阶段 4：总线布线 |
 | 早期手绘总图（存档） | [assets/wiring/房车电路.png](./assets/wiring/房车电路.png) | 历史参考 |
@@ -46,8 +48,8 @@
 |------|------|------|
 | [build-guide.md](build-guide.md) | **整车施工主线**：6 阶段步骤、通电顺序、照片规范 | 施工中 |
 | [design.md](design.md) | 系统架构：48V 电池、充放电、布线规范 | 设计中 |
-| [design-distribution-box.md](design-distribution-box.md) | 中门智能配电箱：48V/12V 配电、继电器、端子排、14 芯线标准 | 设计中 |
-| [switch-assignment.md](switch-assignment.md) | 面板开关分配 & IO 通道分配、14 芯线色定义 | 施工中 |
+| [design-distribution-box.md](design-distribution-box.md) | 中门智能配电箱：48V/12V 配电、继电器、端子排、中门柜汇总方案 | 设计中 |
+| [switch-assignment.md](switch-assignment.md) | 面板开关分配 & IO 通道分配、中门柜汇总方案面板线缆定义 | 施工中 |
 | [bom.md](bom.md) | 材料清单 | 待补充 |
 
 ## 子系统

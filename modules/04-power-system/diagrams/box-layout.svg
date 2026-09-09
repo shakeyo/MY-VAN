@@ -115,7 +115,7 @@
 
   <!-- 信号走线槽（右侧边） -->
   <rect x="756" y="96" width="18" height="448" rx="5" fill="#e0e0e0" stroke="#9e9e9e" stroke-width="2"/>
-  <text x="800" y="300" font-size="11.5" fill="#616161" transform="rotate(90 800 300)">14 芯信号线走线槽（贴右边缘 · 槽口出线到 DI/OUT/控+）</text>
+  <text x="800" y="300" font-size="11.5" fill="#616161" transform="rotate(90 800 300)">DI 主干信号走线槽（贴右边缘 · 槽口出线到中8/中4 DI/GND/控+）</text>
 
   <!-- 走线分区说明 -->
   <g>

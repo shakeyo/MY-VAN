@@ -59,7 +59,7 @@
 
 ### 2. 智能控制
 
-控制逻辑、485 总线、双控策略见 [10-smart-control](../10-smart-control/)；面板按键/IO 通道分配与 14 芯线定义见 [switch-assignment.md](switch-assignment.md)（配 [14core-cable.svg](./diagrams/14core-cable.svg) / [485-bus.svg](./diagrams/485-bus.svg) 阅读）。
+控制逻辑、485 总线、双控策略见 [10-smart-control](../10-smart-control/)；面板按键/IO 通道分配与中门柜汇总方案面板线缆定义见 [switch-assignment.md](switch-assignment.md)（配 [16do-module-wiring.svg](./diagrams/16do-module-wiring.svg) / [mid-door-wiring.svg](./diagrams/mid-door-wiring.svg) / [485-bus.svg](./diagrams/485-bus.svg) 阅读）。
 
 ## 安全与维护
 

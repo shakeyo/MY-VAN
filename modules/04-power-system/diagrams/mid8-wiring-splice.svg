@@ -91,11 +91,11 @@
   <rect x="60" y="480" width="1280" height="430" rx="10" fill="#fffde7" fill-opacity="0.85" stroke="#f9a825" stroke-width="2"/>
   <text x="84" y="508" font-size="14" font-weight="bold" fill="#f57f17">并线点总表（全车只有这些，其余一律独立压接）</text>
 
-  <text x="84" y="540" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">中8 GND</tspan>：14A芯1黑 + 14B芯1黑 + 电源负 → 3并1</text>
-  <text x="84" y="564" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">中8 VCC</tspan>：14A芯2红 + 14B芯2红 + 电源正 → 3并1</text>
-  <text x="84" y="588" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">LED 共阳（16DO）</tspan>：入口4键红 + 主控6键红 → 并到 +12V 控+（公共阳极）</text>
-  <text x="84" y="612" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">16DO GND</tspan>：所有 LED Y.NO 端 → 并到模块 GND</text>
-  <text x="84" y="636" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">中4 GND/12V</tspan>：8P位1黑+电源负、8P位2红+电源正 → 各2并1</text>
+  <text x="84" y="540" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">DI 主干 GND</tspan>：主干位1黑（公共 COM）+ 电源负 → 并1（干接点公共地）</text>
+  <text x="84" y="564" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">中门柜汇总排 +12V</tspan>：主干位2红（从控+取）+ 各面板 LED 阳极 → 并到汇总排 +12V</text>
+  <text x="84" y="588" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">汇总排 GND</tspan>：DI 公共 GND 与 16DO Y.NO 公共 GND 默认合并为一个 GND 端子（可拆）</text>
+  <text x="84" y="612" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">16DO 阴极限</tspan>：Y1-Y10 就地并进汇总排 LED 区，各接面板复合线对应 LED 阴芯</text>
+  <text x="84" y="636" font-size="12.5" fill="#333">✅ <tspan font-weight="bold">中8/中4 模块供电</tspan>：模块 VCC/GND 仍在配电箱内并电源（控+），不随 DI 主干搬</text>
 
   <line x1="84" y1="654" x2="1320" y2="654" stroke="#e0e0e0" stroke-width="1.5"/>
 

@@ -60,17 +60,17 @@
     <rect x="160" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
     <text x="186" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X2</text>
     <text x="186" y="270" font-size="8" fill="#333">DI2</text>
-    <circle cx="172" cy="286" r="7" fill="#fbc02d" stroke="#f57f17"/>
-    <text x="186" y="304" font-size="7.5" fill="#e65100">8P位4</text>
-    <text x="186" y="318" font-size="7.5" fill="#e65100">黄</text>
+    <circle cx="172" cy="286" r="7" fill="#795548" stroke="#5d4037"/>
+    <text x="186" y="304" font-size="7.5" fill="#e65100">主干位12</text>
+    <text x="186" y="318" font-size="7.5" fill="#795548">棕</text>
     <text x="186" y="330" font-size="7" fill="#78909c">键6灯光</text>
 
     <rect x="220" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
     <text x="246" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X1</text>
     <text x="246" y="270" font-size="8" fill="#333">DI1</text>
-    <circle cx="232" cy="286" r="7" fill="#ffffff" stroke="#999"/>
-    <text x="246" y="304" font-size="7.5" fill="#424242">8P位3</text>
-    <text x="246" y="318" font-size="7.5" fill="#424242">白</text>
+    <circle cx="232" cy="286" r="7" fill="#388e3c" stroke="#2e7d32"/>
+    <text x="246" y="304" font-size="7.5" fill="#424242">主干位11</text>
+    <text x="246" y="318" font-size="7.5" fill="#388e3c">深绿</text>
     <text x="246" y="330" font-size="7" fill="#78909c">键5冰箱</text>
 
     <rect x="280" y="232" width="52" height="100" rx="3" fill="#eceff1" stroke="#546e7a" stroke-width="2"/>
@@ -78,7 +78,7 @@
     <text x="306" y="278" font-size="7" fill="#555">输入公共</text>
     <circle cx="292" cy="298" r="7" fill="#263238"/>
     <text x="306" y="318" font-size="7" fill="#333">GND黑</text>
-    <text x="306" y="332" font-size="7" fill="#78909c">8P位1</text>
+    <text x="306" y="332" font-size="7" fill="#78909c">主干位1</text>
 
     <!-- 485 A B GND -->
     <rect x="340" y="232" width="34" height="100" rx="3" fill="#fff" stroke="#00897b" stroke-width="2"/>
@@ -123,15 +123,15 @@
   </g>
 
   <rect x="720" y="378" width="640" height="150" rx="8" fill="#ffffff" stroke="#b0bec5" stroke-width="2"/>
-  <text x="740" y="402" font-size="12.5" font-weight="bold" fill="#0d47a1">8P 短线线色定义（主控键5-6）</text>
+  <text x="740" y="402" font-size="12.5" font-weight="bold" fill="#0d47a1">DI 主干位定义（主控键5-6 经主干到汇总排）</text>
   <g font-size="10.5" fill="#333">
-    <text x="740" y="424">位1黑=GND（并电源负）· 位2红=+12V（并电源正）</text>
-    <text x="740" y="442">位3白=键5冰箱NO→X1 · 位4黄=键6灯光NO→X2</text>
-    <text x="740" y="460">位5灰=键5LED阴(→16DO.Y9) · 位6棕=键6LED阴(→16DO.Y10)</text>
-    <text x="740" y="478">位7绿=备用（空）· 位8蓝=备用（空）</text>
+    <text x="740" y="424">主干位1黑=GND（并电源负）· 主干位2红=+12V（控+）</text>
+    <text x="740" y="442">中4.DI1(键5冰箱NO)→主干位11 · 中4.DI2(键6灯光NO)→主干位12</text>
+    <text x="740" y="460">中4.DI3/DI4(预留)→主干位13/14 · 搬干接点到中门柜汇总排 DI9-12</text>
+    <text x="740" y="478">键5-6 的 LED 阴走主控复合线(14P)位13/14 → 汇总排 → 16DO.Y9/Y10</text>
     <line x1="740" y1="488" x2="1340" y2="488" stroke="#e0e0e0" stroke-width="1.5"/>
-    <text x="740" y="504" font-size="10.5" font-weight="bold" fill="#00695c">按键 → 8P</text>
-    <text x="740" y="520" fill="#555">键5单色：白→位3 · COM并 · 红→阳极并 · 黑→位5（LED阴→16DO.Y9冰箱LED）</text>
+    <text x="740" y="504" font-size="10.5" font-weight="bold" fill="#00695c">键5-6 → 主控复合线</text>
+    <text x="740" y="520" fill="#555">键5单色：DI→复合线位7、LED阴→复合线位13；键6：DI→位8、LED阴→位14（都进中门柜汇总排）</text>
   </g>
 
   <!-- 底部 -->
@@ -139,7 +139,7 @@
   <text x="64" y="594" font-size="14" font-weight="bold" fill="#f57f17">中4 要点</text>
   <text x="64" y="622" font-size="12.5" fill="#333">◆ Y1-Y4 = 未来负载(10A)，现在全空；配电箱 DO 稀缺，全留负载，不接 LED</text>
   <text x="64" y="646" font-size="12.5" fill="#333">◆ 供电 VCC+红/GND-黑 从箱内「控B/控D」跨箱引出；485 A=白 B=黑，485GND 独立，屏蔽单端</text>
-  <text x="64" y="670" font-size="12.5" fill="#333">◆ DI：X1键5冰箱(8P位3白)、X2键6灯光(8P位4黄)；X3/X4 预留未来按钮</text>
-  <text x="64" y="694" font-size="12.5" fill="#333">⚠ 8P位5/6 是 LED 阴（键5→16DO.Y9、键6→16DO.Y10），别当 DI 接；LED 全在 16DO</text>
+  <text x="64" y="670" font-size="12.5" fill="#333">◆ DI：X1键5冰箱(主干位11深绿)、X2键6灯光(主干位12棕)；X3/X4 预留未来按钮(主干位13/14)</text>
+  <text x="64" y="694" font-size="12.5" fill="#333">⚠ 键5-6 的 LED 阴在 主控复合线 位13(灰)→16DO.Y9、位14(棕)→16DO.Y10，不随 DI 主干；LED 全在 16DO</text>
   <text x="64" y="722" font-size="10.5" fill="#78909c">中4 的 Y1-4 只做负载，不含 LED。完整分配见 switch-assignment.md「LED策略」。</text>
 </svg>

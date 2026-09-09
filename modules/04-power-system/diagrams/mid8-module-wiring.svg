@@ -79,7 +79,7 @@
     <text x="262" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X8</text>
     <text x="262" y="270" font-size="8" fill="#333">DI8</text>
     <circle cx="248" cy="286" r="7" fill="#aed581" stroke="#558b2f"/>
-    <text x="262" y="304" font-size="7.5" fill="#33691e">14B芯6</text>
+    <text x="262" y="304" font-size="7.5" fill="#33691e">主干位10</text>
     <text x="262" y="318" font-size="7.5" fill="#33691e">淡绿</text>
     <text x="262" y="330" font-size="7" fill="#78909c">主控泵</text>
 
@@ -87,7 +87,7 @@
     <text x="322" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X7</text>
     <text x="322" y="270" font-size="8" fill="#333">DI7</text>
     <circle cx="308" cy="286" r="7" fill="#9e9e9e" stroke="#616161"/>
-    <text x="322" y="304" font-size="7.5" fill="#424242">14B芯5</text>
+    <text x="322" y="304" font-size="7.5" fill="#424242">主干位9</text>
     <text x="322" y="318" font-size="7.5" fill="#424242">灰</text>
     <text x="322" y="330" font-size="7" fill="#78909c">主控排气扇</text>
 
@@ -95,7 +95,7 @@
     <text x="382" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X6</text>
     <text x="382" y="270" font-size="8" fill="#333">DI6</text>
     <circle cx="368" cy="286" r="7" fill="#fbc02d" stroke="#f57f17"/>
-    <text x="382" y="304" font-size="7.5" fill="#e65100">14B芯4</text>
+    <text x="382" y="304" font-size="7.5" fill="#e65100">主干位8</text>
     <text x="382" y="318" font-size="7.5" fill="#e65100">黄</text>
     <text x="382" y="330" font-size="7" fill="#78909c">主控氛围</text>
 
@@ -103,7 +103,7 @@
     <text x="442" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X5</text>
     <text x="442" y="270" font-size="8" fill="#333">DI5</text>
     <circle cx="428" cy="286" r="7" fill="#ffffff" stroke="#999"/>
-    <text x="442" y="304" font-size="7.5" fill="#424242">14B芯3</text>
+    <text x="442" y="304" font-size="7.5" fill="#424242">主干位7</text>
     <text x="442" y="318" font-size="7.5" fill="#424242">白</text>
     <text x="442" y="330" font-size="7" fill="#78909c">主控主灯</text>
 
@@ -111,7 +111,7 @@
     <text x="502" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X4</text>
     <text x="502" y="270" font-size="8" fill="#333">DI4</text>
     <circle cx="488" cy="286" r="7" fill="#aed581" stroke="#558b2f"/>
-    <text x="502" y="304" font-size="7.5" fill="#33691e">14A芯6</text>
+    <text x="502" y="304" font-size="7.5" fill="#33691e">主干位6</text>
     <text x="502" y="318" font-size="7.5" fill="#33691e">淡绿</text>
     <text x="502" y="330" font-size="7" fill="#78909c">入口离车</text>
 
@@ -119,7 +119,7 @@
     <text x="562" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X3</text>
     <text x="562" y="270" font-size="8" fill="#333">DI3</text>
     <circle cx="548" cy="286" r="7" fill="#9e9e9e" stroke="#616161"/>
-    <text x="562" y="304" font-size="7.5" fill="#424242">14A芯5</text>
+    <text x="562" y="304" font-size="7.5" fill="#424242">主干位5</text>
     <text x="562" y="318" font-size="7.5" fill="#424242">灰</text>
     <text x="562" y="330" font-size="7" fill="#78909c">入口泵</text>
 
@@ -127,7 +127,7 @@
     <text x="622" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X2</text>
     <text x="622" y="270" font-size="8" fill="#333">DI2</text>
     <circle cx="608" cy="286" r="7" fill="#fbc02d" stroke="#f57f17"/>
-    <text x="622" y="304" font-size="7.5" fill="#e65100">14A芯4</text>
+    <text x="622" y="304" font-size="7.5" fill="#e65100">主干位4</text>
     <text x="622" y="318" font-size="7.5" fill="#e65100">黄</text>
     <text x="622" y="330" font-size="7" fill="#78909c">入口户外</text>
 
@@ -135,7 +135,7 @@
     <text x="682" y="252" font-size="10" font-weight="bold" fill="#0d47a1">X1</text>
     <text x="682" y="270" font-size="8" fill="#333">DI1</text>
     <circle cx="668" cy="286" r="7" fill="#ffffff" stroke="#999"/>
-    <text x="682" y="304" font-size="7.5" fill="#424242">14A芯3</text>
+    <text x="682" y="304" font-size="7.5" fill="#424242">主干位3</text>
     <text x="682" y="318" font-size="7.5" fill="#424242">白</text>
     <text x="682" y="330" font-size="7" fill="#78909c">入口排水</text>
 
@@ -184,29 +184,29 @@
   <g font-size="11" fill="#333">
     <text x="40" y="390" font-size="12.5" font-weight="bold" fill="#4527a0">中8 = 纯负载模块（7 负载 + 1 预留，不再塞 LED）</text>
     <text x="40" y="412">· 负载继电器接法：COM = 保险盒正极、NO = 负载正极、NC = 空（常闭不用）</text>
-    <text x="40" y="434" fill="#b71c1c">· 线径单位 mm²：红=功率正极（独立2P线，非14芯）、黑=功率负极（直回负排）；NO/COM 后数字即该路负载线径</text>
+    <text x="40" y="434" fill="#b71c1c">· 线径单位 mm²：红=功率正极（独立2P线，非 DI 主干线）、黑=功率负极（直回负排）；NO/COM 后数字即该路负载线径</text>
     <text x="40" y="456" fill="#b71c1c">· Y4 上水泵：48V 直切（隔离触点已实测），COM=F48-2+、NO=泵+，负极回48V汇流排；感性负载必须并续流二极管1N5408（阴极朝正）</text>
     <text x="40" y="478" fill="#00796b">· 隔离触点 → 48V(Y4) 与 12V(其余Y) 同板块安全，各有独立COM，48V+ 绝不搭模块12V/GND</text>
-    <text x="40" y="500">· DI 输入：14A 给入口 X1-4、14B 给主控 X5-8，白/黄/灰/淡绿四色各两根，一芯对一口</text>
+    <text x="40" y="500">· DI 输入：DI 主干(14P) 从配电箱把中8 X1-8(入口X1-4 + 主控X5-8) + 中4.DI1-2 搬到中门柜汇总排，白/黄/灰/淡绿四色各两根，一芯对一口</text>
   </g>
 
   <rect x="720" y="378" width="640" height="160" rx="8" fill="#ffffff" stroke="#b0bec5" stroke-width="2"/>
-  <text x="740" y="402" font-size="12.5" font-weight="bold" fill="#0d47a1">14芯 A / B 线色定义</text>
+  <text x="740" y="402" font-size="12.5" font-weight="bold" fill="#0d47a1">DI 主干芯色定义（中门柜汇总方案）</text>
   <g font-size="10.5" fill="#333">
-    <text x="740" y="424" font-weight="bold" fill="#0d47a1">14芯A（入口）→ X1-4</text>
-    <text x="740" y="442">芯3白=排水→X1 · 芯4黄=户外→X2 · 芯5灰=泵→X3 · 芯6淡绿=离车→X4</text>
-    <text x="740" y="460">芯1黑=GND · 芯2红=+12V（LED共阳，现改接+12V控+）</text>
-    <text x="740" y="478" font-weight="bold" fill="#0d47a1">14芯B（主控）→ X5-8</text>
-    <text x="740" y="496">芯3白=主灯→X5 · 芯4黄=氛围→X6 · 芯5灰=排气扇→X7 · 芯6淡绿=泵→X8</text>
-    <text x="740" y="514">芯1黑=GND · 芯2红=+12V · LED阴芯(9-12) → 接 16DO 的 Y（Y5-Y8）</text>
+    <text x="740" y="424" font-weight="bold" fill="#0d47a1">中8.DI1-4（入口）→ 主干位3-6</text>
+    <text x="740" y="442">位3白=排水→X1 · 位4黄=户外→X2 · 位5灰=泵→X3 · 位6淡绿=离车→X4</text>
+    <text x="740" y="460">主干位1黑=GND · 位2红=+12V(汇总排电源) · 位13/14=中4预留</text>
+    <text x="740" y="478" font-weight="bold" fill="#0d47a1">中8.DI5-8（主控）→ 主干位7-10</text>
+    <text x="740" y="496">位7白=主灯→X5 · 位8黄=氛围→X6 · 位9灰=排气扇→X7 · 位10淡绿=泵→X8</text>
+    <text x="740" y="514">中4.DI1-2(键5冰箱/键6灯光)→主干位11/12；主干另一头并进中门柜汇总排 DI1-12</text>
   </g>
 
   <!-- 底部 -->
   <rect x="40" y="566" width="1320" height="180" rx="10" fill="#fffde7" fill-opacity="0.85" stroke="#f9a825" stroke-width="2"/>
   <text x="64" y="594" font-size="14" font-weight="bold" fill="#f57f17">要点 + 并线点</text>
-  <text x="64" y="622" font-size="12.5" fill="#333">◆ DI：白/黄/灰/淡绿四色各两根（14A入口X1-4、14B主控X5-8），每芯单独压一个X口</text>
+  <text x="64" y="622" font-size="12.5" fill="#333">◆ DI：白/黄/灰/淡绿四色各两根（中8 X1-4 入口、X5-8 主控），主干每芯单独压一个X口；中4键5-6 走主干位11/12</text>
   <text x="64" y="646" font-size="12.5" fill="#333">◆ 供电 VCC+红/GND-黑（12V，F12-1）；485GND 独立，与电源黑不并；485 A=白 B=黑 同对绞，屏蔽单端接地</text>
   <text x="64" y="670" font-size="12.5" fill="#333">◆ 48V 上水泵(Y4)：COM=F48-2+、NO=泵+，泵负回48V汇流排；续流二极管1N5408 阴极朝正并联在泵线圈两端</text>
-  <text x="64" y="694" font-size="12.5" fill="#333">⚠ 并线点：GND(14A芯1+14B芯1+电源负) · VCC(14A芯2+14B芯2+电源正) —— 其余一芯对一口；NC 一律空</text>
+  <text x="64" y="694" font-size="12.5" fill="#333">⚠ 并线点：DI-COM(主干位1黑)+电源负并、主干位2红(汇总排电源)从控+取 —— DI 干接点 12 路各自独立芯，不可并；NC 一律空</text>
   <text x="64" y="722" font-size="10.5" fill="#78909c">LED 指示不接中8，全走 16DO 模块（独立DO驱动，ESPhome绑定）。见 16do-module-wiring.svg 及 switch-assignment.md「LED策略」。</text>
 </svg>
