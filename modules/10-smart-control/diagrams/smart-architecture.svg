@@ -70,11 +70,11 @@
     <text x="620" y="340" fill="#333" font-weight="bold">驾驶室 6 键</text>
     <text x="830" y="340" fill="#555">→ 额头模块（同柜直连）</text>
     <text x="620" y="366" fill="#333" font-weight="bold">入口 4 键</text>
-    <text x="830" y="366" fill="#555">→ 入口A 8P (DI→中8) + 入口B 6P (LED→16DO)</text>
+    <text x="830" y="366" fill="#555">→ 入口复合线 14P → 中门柜汇总排（DI1-4 + Y1-Y4）</text>
     <text x="620" y="392" fill="#333" font-weight="bold">主控 6 键</text>
-    <text x="830" y="392" fill="#555">→ 主控A 10P (DI): 键1-4 中8 + 键5-6 中4</text>
+    <text x="830" y="392" fill="#555">→ 主控复合线 14P → 汇总排（DI5-10 + Y5-Y10）</text>
   </g>
-  <text x="830" y="412" text-anchor="middle" font-size="10.5" fill="#777">4 线方案：A 线 DI→配电箱 · B 线 LED→16DO；线色/芯位见 switch-assignment.md §七</text>
+  <text x="830" y="412" text-anchor="middle" font-size="10.5" fill="#777">中门柜汇总方案：DI 主干(14P) 配电箱→汇总排 · 面板复合线(14P) 汇总排→面板 · 全车统一 14P，见 switch-assignment.md §七</text>
 
   <!-- 面板 → 模块（DI 键） -->
   <g stroke="#1565c0" stroke-width="2" fill="none">
