@@ -41,6 +41,7 @@
 | Tailscale | add-on | 远程访问（定稿，见待定决策） | 待装 |
 | Mosquitto broker | add-on | MQTT 消息总线（OBD-II 车机数据、传感器、ESPHome 备选通道） | 待装 |
 | ESPHome | 集成 | ESP32 网关 native API，上线后自动发现实体 | 待装 |
+| Passive BLE monitor / Xiaomi BLE | 集成 | **收 BLE 温湿度**（经 ESP32 蓝牙代理），见 [sensors/ble-sensors.md](../sensors/ble-sensors.md) | 待装 |
 | System Monitor | 集成 | 系统状态卡片（CPU/磁盘/网络） | 待装 |
 | HA Companion | 手机 App | 通知推送 + 移动控制 | 待装 |
 | Fully Kiosk | 安卓 App | 车机/平板固定显示 Dashboard（见 安卓车机、tablet.md） | 待装 |

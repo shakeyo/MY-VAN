@@ -256,7 +256,7 @@ esphome run test-channel-mapping.yaml
 | 项 | 原因 |
 |----|------|
 | PZEM-017（0x11） | 未到货；到货后 485 并线 + 地址改 0x11 + 进能源面板 |
-| 传感器接入 | 型号未定（温湿度/水位/门磁/漏水），选型后补 DI 或 485 |
+| 传感器接入 | 温湿度走 **BLE**（方案已定，见 [sensors/ble-sensors.md](sensors/ble-sensors.md)）；水位/门磁/漏水选型后补 DI 或 485。**BLE 代理独立一台 ESP32**，不阻塞本计划 |
 | 床头面板 | 规划中，暂不实施（§三之二） |
 | N100/HA 部署 | 见 [10-smart-control/build-guide.md 阶段 0](build-guide.md)，与 ESP32 总线解耦，可并行 |
 | 影音/监控 | 见 [10-smart-control/build-guide.md 阶段 8](build-guide.md) |
