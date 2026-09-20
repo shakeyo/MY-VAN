@@ -1,0 +1,235 @@
+# 中门 16DO 模块（中门柜内，地址 0x05，一个 485 地址 = 一个设备）—— 全部 LED
+#
+# 【硬件定稿】LED 全集中到这一台（见 04-power-system/switch-assignment.md §LED 策略）：
+#   每个开关配一颗 LED，12 现用 + 4 预留；16DO = 16 路 DO（5A，无 DI）。
+#   接线：LED 阳极 → +12V；LED 阴极 → 电阻 → 本模块对应 Y 的 COM；Y 的 NO → 模块 GND。
+#   即「独立 Y 的 COM/NO 当吸地开关用」，Y 吸合 → LED 阴极回 GND → 灯亮。
+#
+# 【地址】0x05 —— 现有占用：继电器模块 1/2/3/4（4 预留未装）、MPPT=0x10、PZEM=0x11、
+#   485 传感器建议 0x20 起，故 0x05 空闲（规划源 design.md「485 总线规范」）。
+#   ⚠ 到货后必须用厂家软件把地址改成 5、波特率改成与全车一致（4.7 改造后为 9600），
+#     否则本文件所有帧的站号都不对。
+#
+# 【线圈地址规律】与中8/中4 同系列：线圈 0000H = 通道 1，通道 N = 地址 N-1
+#   （手册「汇控数字量输入输出系列」表 2.1 已确认）。
+#
+# 【LED 映射】（switch-assignment.md §LED 策略 表）
+#   Y1  入口键1 排水 LED    ← 中8.Y5 水阀
+#   Y2  入口键2 户外灯 LED  ← 额头.R2
+#   Y3  入口键3 上水泵 LED  ← 中8.Y4 泵（与主控键4 共用）
+#   Y4  入口键4 离车/驻车 LED（单色，场景驱动：亮=已进入模式）
+#   Y5  主控键1 主灯 LED    ← 中8.Y1
+#   Y6  主控键2 氛围 LED    ← 中8.Y2
+#   Y7  主控键3 排气扇 LED  ← 中8.Y3
+#   Y8  主控键4 上水泵 LED  ← 中8.Y4（与入口键3 共用，软件同步）
+#   Y9  主控键5 冰箱 LED    ← 中8.Y6
+#   Y10 主控键6 灯光模式 LED（单色，场景驱动：亮=场景激活）
+#   Y11-Y12 车尾扩展 LED（未来负载）
+#   Y13-Y16 预留（未来加按钮）
+#
+# 【状态跟踪方式】LED 用 internal template switch + lambda 解析帧，全部 optimistic。
+#   负载侧在 on_state 里调用对应的 led_* 脚本（定义在本文件底部），
+#   场景侧（scenes.yaml）直接调用同一脚本 —— 单一真源，避免两处各写一份。
+
+switch:
+  # ============ Y1-Y10：跟踪真实负载状态 ============
+  - platform: template
+    name: "LedY1 入口排水LED"
+    id: sw_led_y1
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xBE]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x4E]
+  - platform: template
+    name: "LedY2 入口户外灯LED"
+    id: sw_led_y2
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDC, 0x7E]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9D, 0x8E]
+  - platform: template
+    name: "LedY3 入口上水泵LED"
+    id: sw_led_y3
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2C, 0x7E]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0x8E]
+  - platform: template
+    name: "LedY4 离车驻车LED"
+    id: sw_led_y4
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7D, 0xBE]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3C, 0x4E]
+  - platform: template
+    name: "LedY5 主控主灯LED"
+    id: sw_led_y5
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x04, 0xFF, 0x00, 0xCC, 0x7F]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x04, 0x00, 0x00, 0x8D, 0x8F]
+  - platform: template
+    name: "LedY6 主控氛围LED"
+    id: sw_led_y6
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x05, 0xFF, 0x00, 0x9D, 0xBF]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x05, 0x00, 0x00, 0xDC, 0x4F]
+  - platform: template
+    name: "LedY7 主控排气扇LED"
+    id: sw_led_y7
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x06, 0xFF, 0x00, 0x6D, 0xBF]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x06, 0x00, 0x00, 0x2C, 0x4F]
+  - platform: template
+    name: "LedY8 主控上水泵LED"
+    id: sw_led_y8
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x07, 0xFF, 0x00, 0x3C, 0x7F]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x07, 0x00, 0x00, 0x7D, 0x8F]
+  - platform: template
+    name: "LedY9 主控冰箱LED"
+    id: sw_led_y9
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x08, 0xFF, 0x00, 0x0C, 0x7C]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x08, 0x00, 0x00, 0x4D, 0x8C]
+  - platform: template
+    name: "LedY10 主控灯光模式LED"
+    id: sw_led_y10
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x09, 0xFF, 0x00, 0x5D, 0xBC]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x05, 0x00, 0x09, 0x00, 0x00, 0x1C, 0x4C]
+
+  # ============ Y11-Y16：预留（未来负载 / 未来按钮 LED） ============
+  # 需要时按上面同样的格式追加：Y11=0x000A、Y12=0x000B ... Y16=0x000F
+  # 帧生成：站号 05 + FC05 + 线圈地址(高/低) + FF00(开)/0000(关) + CRC16-Modbus(低字节在前)
+
+# ============ LED 控制脚本（负载与场景共用的唯一入口） ============
+script:
+  - id: led_drain          # 入口键1 排水 LED ← 中8.Y5 水阀
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(sw_valve).state;'}
+          then: [switch.turn_on: sw_led_y1]
+          else: [switch.turn_off: sw_led_y1]
+  - id: led_outdoor        # 入口键2 户外灯 LED ← 额头.R2
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(sw_outdoor).state;'}
+          then: [switch.turn_on: sw_led_y2]
+          else: [switch.turn_off: sw_led_y2]
+  - id: led_pump           # 入口键3 + 主控键4 上水泵 LED ← 中8.Y4（两颗一起亮灭）
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(sw_pump).state;'}
+          then:
+            - switch.turn_on: sw_led_y3
+            - switch.turn_on: sw_led_y8
+          else:
+            - switch.turn_off: sw_led_y3
+            - switch.turn_off: sw_led_y8
+  - id: led_main           # 主控键1 主灯 LED ← 中8.Y1
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(sw_main_light).state;'}
+          then: [switch.turn_on: sw_led_y5]
+          else: [switch.turn_off: sw_led_y5]
+  - id: led_ambient        # 主控键2 氛围 LED ← 中8.Y2
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(sw_ambient).state;'}
+          then: [switch.turn_on: sw_led_y6]
+          else: [switch.turn_off: sw_led_y6]
+  - id: led_fan            # 主控键3 排气扇 LED ← 中8.Y3
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(sw_fan_rear).state;'}
+          then: [switch.turn_on: sw_led_y7]
+          else: [switch.turn_off: sw_led_y7]
+  - id: led_fridge         # 主控键5 冰箱 LED ← 中8.Y6
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(sw_fridge).state;'}
+          then: [switch.turn_on: sw_led_y9]
+          else: [switch.turn_off: sw_led_y9]

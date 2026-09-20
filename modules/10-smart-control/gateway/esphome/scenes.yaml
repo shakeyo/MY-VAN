@@ -1,5 +1,10 @@
 # 场景自动化脚本（按键动作 / 灯光模式 / 离车驻车 / 排气扇 / 主控键1 长按）
-# 按键动作 act_xxx：mapping.yaml 用 keys-mapping.yaml 替换为日志版（只读验证）
+#
+# 【LED 变更】LED 全部在中门 16DO（地址 0x05），见 do16.yaml。
+#   场景键 LED 为**单色**（switch-assignment.md §LED 策略：亮=进入模式，灭=正常）：
+#     离车/驻车 LED = 16DO.Y4（sw_led_y4）
+#     灯光模式 LED  = 16DO.Y10（sw_led_y10）
+#   原红绿双色脚本（sw_led_camp_red/green、sw_led_scene_red/green）已废弃。
 
 script:
   # ---- 按键动作（每键一个，对应各模块文件 on_press 的 script.execute）----
@@ -9,6 +14,9 @@ script:
   - id: act_dsp
     then:
       - switch.toggle: sw_dsp
+  - id: act_reverse          # 驾驶室键2 → 跨模块切 中8.Y7 倒车灯（纯手动）
+    then:
+      - switch.toggle: sw_reverse
   - id: act_scene
     then:
       - script.execute: light_scene_next
@@ -55,31 +63,28 @@ script:
             lambda: 'return id(light_scene) == 1;'
           then:
             - logger.log: "场景: 灯光-明亮"
-            # 明亮：主灯 + 氛围灯全开；绿亮、红灭
+            # 明亮：主灯 + 氛围灯全开；模式 LED 亮
             - switch.turn_on: sw_main_light
             - switch.turn_on: sw_ambient
-            - switch.turn_off: sw_led_scene_red
-            - switch.turn_on: sw_led_scene_green
+            - switch.turn_on: sw_led_y10
       - if:
           condition:
             lambda: 'return id(light_scene) == 2;'
           then:
             - logger.log: "场景: 灯光-夜灯"
-            # 夜灯：仅氛围灯；红+绿亮（橙）
+            # 夜灯：仅氛围灯；模式 LED 亮（单色无法区分档位，亮=已进入模式）
             - switch.turn_off: sw_main_light
             - switch.turn_on: sw_ambient
-            - switch.turn_on: sw_led_scene_red
-            - switch.turn_on: sw_led_scene_green
+            - switch.turn_on: sw_led_y10
       - if:
           condition:
             lambda: 'return id(light_scene) == 0;'
           then:
             - logger.log: "场景: 灯光-全关"
-            # 全关
+            # 全关；模式 LED 灭
             - switch.turn_off: sw_main_light
             - switch.turn_off: sw_ambient
-            - switch.turn_off: sw_led_scene_red
-            - switch.turn_off: sw_led_scene_green
+            - switch.turn_off: sw_led_y10
 
   # 离车/驻车：0 正常 → 1 离车 → 2 驻车 循环
   - id: camp_scene_next
@@ -96,7 +101,7 @@ script:
             lambda: 'return id(camp_scene) == 1;'
           then:
             - logger.log: "场景: 离车"
-            # 离车：全关（冰箱不断电，后续由 HA 远程控制）；红亮、绿灭
+            # 离车：负载全关（冰箱不断电，后续由 HA 远程控制）；模式 LED 亮
             - switch.turn_off: sw_main_light
             - switch.turn_off: sw_ambient
             - switch.turn_off: sw_fan_rear
@@ -106,37 +111,34 @@ script:
             - switch.turn_off: sw_outdoor
             - switch.turn_off: sw_dsp
             - switch.turn_off: sw_fan_pass
-            - switch.turn_on: sw_led_camp_red
-            - switch.turn_off: sw_led_camp_green
+            - switch.turn_off: sw_reverse
+            - switch.turn_on: sw_led_y4
             # 灯光/排气扇场景同步为全关
             - lambda: 'id(light_scene) = 0;'
-            - switch.turn_off: sw_led_scene_red
-            - switch.turn_off: sw_led_scene_green
+            - switch.turn_off: sw_led_y10
             - lambda: 'id(fan_scene) = 0;'
       - if:
           condition:
             lambda: 'return id(camp_scene) == 2;'
           then:
             - logger.log: "场景: 驻车"
-            # 驻车：主灯 + 氛围灯开（暖光需灯自身支持，继电器只能开关）；绿亮、红灭
+            # 驻车：主灯 + 氛围灯开（暖光需灯自身支持，继电器只能开关）；模式 LED 亮
             - switch.turn_on: sw_main_light
             - switch.turn_on: sw_ambient
-            - switch.turn_off: sw_led_camp_red
-            - switch.turn_on: sw_led_camp_green
+            - switch.turn_on: sw_led_y4
             # 灯光场景同步为明亮
             - lambda: 'id(light_scene) = 1;'
-            - switch.turn_off: sw_led_scene_red
-            - switch.turn_on: sw_led_scene_green
+            - switch.turn_on: sw_led_y10
       - if:
           condition:
             lambda: 'return id(camp_scene) == 0;'
           then:
             - logger.log: "场景: 正常"
-            # 正常：LED 全灭，不动继电器
-            - switch.turn_off: sw_led_camp_red
-            - switch.turn_off: sw_led_camp_green
+            # 正常：模式 LED 灭，不动负载
+            - switch.turn_off: sw_led_y4
 
-  # 排气扇：0 全关 → 1 仅后窗 → 2 全开 循环（LED 由 OUT4 硬件跟随 R4）
+  # 排气扇：0 全关 → 1 仅后窗 → 2 全开 循环
+  # （LED 由 led_fan 脚本跟随 sw_fan_rear 状态，见 do16.yaml）
   - id: fan_scene_next
     mode: single
     then:
@@ -173,5 +175,4 @@ script:
       - switch.turn_off: sw_main_light
       - switch.turn_off: sw_ambient
       - lambda: 'id(light_scene) = 0;'
-      - switch.turn_off: sw_led_scene_red
-      - switch.turn_off: sw_led_scene_green
+      - switch.turn_off: sw_led_y10

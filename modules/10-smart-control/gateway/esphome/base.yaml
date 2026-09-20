@@ -1,8 +1,18 @@
 # 基础配置：网络 / 串口 / 上电策略 / 场景状态 / DI 上传驱动（所有固件变体共用）
+#
+# ⚠ 波特率（baud_rate）当前为 38400 —— 模块出厂默认值，桌面联调阶段使用。
+#   全车终局为 9600（MPPT 最高只支持 9600，见 build-guide.md §4.7）。
+#   执行完 §4.7 总线改造后，必须把本文件的 baud_rate 及 3 个 test-*.yaml 的
+#   baud_rate 一起改为 9600 并重烧 prod；漏改的模块会乱码。保留手改是为了
+#   让“改造前 38400 / 改造后 9600”与施工步骤一一对应，避免误烧。
 
 substitutions:
   name: myvan-485-gateway
   friendly_name: 485网关
+  # 485 收发器使能脚（DE+RE 并接）：高=发送、低=接收
+  # 2026-09 由 GPIO5 改到 GPIO17（紧邻 RX 16，S3 DevKitC-1 排针，不与 TX/RX 冲突）
+  # rs485.yaml 用 ${de_pin} 引用；再换引脚只改这一处
+  de_pin: GPIO_NUM_17
 
 esphome:
   name: ${name}
@@ -11,32 +21,32 @@ esphome:
   on_boot:
     - priority: -100
       then:
-        - lambda: 'gpio_set_direction(GPIO_NUM_5, GPIO_MODE_OUTPUT);'
+        - lambda: 'gpio_set_direction(${de_pin}, GPIO_MODE_OUTPUT);'
         - delay: 3s          # 等模块上电就绪
         # 三个模块输入主动上传开启（保持寄存器 0031H=1；掉电保存状态不确定，每次上电写一次）
-        - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+        - lambda: 'gpio_set_level(${de_pin}, 1);'
         - delay: 1ms
         - uart.write:
             id: rs485_bus
             data: [0x01, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xC5]
         - lambda: 'id(rs485_bus).flush();'
-        - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+        - lambda: 'gpio_set_level(${de_pin}, 0);'
         - delay: 10ms
-        - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+        - lambda: 'gpio_set_level(${de_pin}, 1);'
         - delay: 1ms
         - uart.write:
             id: rs485_bus
             data: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
         - lambda: 'id(rs485_bus).flush();'
-        - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+        - lambda: 'gpio_set_level(${de_pin}, 0);'
         - delay: 10ms
-        - lambda: 'gpio_set_level(GPIO_NUM_5, 1);'
+        - lambda: 'gpio_set_level(${de_pin}, 1);'
         - delay: 1ms
         - uart.write:
             id: rs485_bus
             data: [0x03, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x27]
         - lambda: 'id(rs485_bus).flush();'
-        - lambda: 'gpio_set_level(GPIO_NUM_5, 0);'
+        - lambda: 'gpio_set_level(${de_pin}, 0);'
         - delay: 10ms
         # 安全负载：每次上电强制关（覆盖 restore 恢复值）
         - switch.turn_off: sw_spot
@@ -46,13 +56,11 @@ esphome:
         - switch.turn_off: sw_fan_rear
         - switch.turn_off: sw_pump
         - switch.turn_off: sw_valve
-        # LED DO：强制灭，与场景 globals 初始值（全关/正常）保持一致
-        - switch.turn_off: sw_led_outdoor
-        - switch.turn_off: sw_led_camp_green
-        - switch.turn_off: sw_led_camp_red
-        - switch.turn_off: sw_led_scene_red
-        - switch.turn_off: sw_led_scene_green
-        - switch.turn_off: sw_led_fridge
+        # 倒车灯：纯手动，上电强制关（防止熄火前状态残留）
+        - switch.turn_off: sw_reverse
+        # LED DO（全部在中门 16DO 模块，地址 0x05）：强制灭，
+        # 与场景 globals 初始值（全关/正常）保持一致
+        - script.execute: led_all_off
 
 api:
   encryption:
@@ -108,47 +116,77 @@ script:
             uint8_t b;
             if (id(rs485_bus).read_byte(&b)) buf[len++] = b;
           }
-          // 上传帧: <模块地址> 04 02 <16位位图> <CRC低> <CRC高>，位图 bit0=X1 ... bit7=X8，按下/释放各一次
-          for (int i = 0; i + 6 < len; i++) {
-            if (buf[i+1] == 0x04 && buf[i+2] == 0x02) {
-              uint16_t crc = 0xFFFF;
-              for (int k = i; k < i + 5; k++) {
-                crc ^= buf[k];
-                for (int bit = 0; bit < 8; bit++) {
-                  if (crc & 1) crc = (crc >> 1) ^ 0xA001;
-                  else crc >>= 1;
-                }
-              }
-              if ((uint8_t) crc == buf[i+5] && (uint8_t) (crc >> 8) == buf[i+6]) {
-                uint16_t r = ((uint16_t) buf[i+3] << 8) | buf[i+4];
-                ESP_LOGI("di", "keys addr=%02X: %04X", buf[i], r);
-                switch (buf[i]) {
-                  case 0x01:  // 额头
-                    id(bs_cabin_spot).publish_state(r & 0x01);
-                    id(bs_cabin_reverse).publish_state(r & 0x02);
-                    id(bs_cabin_dsp).publish_state(r & 0x04);
-                    id(bs_cabin_fan).publish_state(r & 0x08);
-                    id(bs_cabin_scene).publish_state(r & 0x20);
-                    break;
-                  case 0x02:  // 中8
-                    id(bs_door_drain).publish_state(r & 0x01);
-                    id(bs_door_outdoor).publish_state(r & 0x02);
-                    id(bs_door_pump).publish_state(r & 0x04);
-                    id(bs_door_camp).publish_state(r & 0x08);
-                    id(bs_bed_light).publish_state(r & 0x10);
-                    id(bs_bed_ambient).publish_state(r & 0x20);
-                    id(bs_bed_fan).publish_state(r & 0x40);
-                    id(bs_bed_pump).publish_state(r & 0x80);
-                    break;
-                  case 0x03:  // 中4
-                    id(bs_bed_fridge).publish_state(r & 0x01);
-                    id(bs_bed_scene).publish_state(r & 0x02);
-                    break;
-                }
-                break;
+          // 上传帧格式（手册「数字量输入输出系列」+ 实测）：
+          //   <模块地址> 04 <字节数N> <N 字节位图> <CRC低> <CRC高>
+          // 位图 bit0 = 该模块 X1，按下/释放各发一次。
+          //
+          // 【为什么按“字节数”自适应而不是写死 04 02】
+          // 手册 §2.3：位图寄存器 0032H 表示通道 1~16（16 位 = 2 字节），
+          // 但模块实际按**自身通道数**决定字节数——中8(8DI) 实测为 04 02，
+          // 中4(4DI) 可能为 04 01。早期代码统一按 04 02 解析，
+          // 中4 一旦上报 1 字节就会整体错位、CRC 校验失败而丢帧（按键失灵）。
+          // 现改为：读帧内自带的字节数 N，按 3+N+2 算帧长，再校验 CRC。
+          for (int i = 0; i + 4 < len; i++) {
+            if (buf[i] != 0x01 && buf[i] != 0x02 && buf[i] != 0x03) continue;  // 只要已知模块地址
+            if (buf[i+1] != 0x04) continue;                                    // FC04 输入寄存器
+            uint8_t n = buf[i+2];
+            if (n < 1 || n > 2) continue;                                      // 位图 1~2 字节
+            if (i + 3 + n + 2 > len) continue;                                 // 帧未收全，等下次
+            uint16_t crc = 0xFFFF;
+            for (int k = i; k < i + 3 + n; k++) {
+              crc ^= buf[k];
+              for (int bit = 0; bit < 8; bit++) {
+                if (crc & 1) crc = (crc >> 1) ^ 0xA001;
+                else crc >>= 1;
               }
             }
+            // CRC16-Modbus 低字节在前
+            if ((uint8_t) crc != buf[i+3+n] || (uint8_t) (crc >> 8) != buf[i+3+n+1]) continue;
+            // 位图按大端拼成 16 位（n=1 时只有低 8 位有效）
+            uint16_t r = 0;
+            for (int k = 0; k < n; k++) r = (r << 8) | buf[i+3+k];
+            ESP_LOGI("di", "keys addr=%02X n=%d: %04X", buf[i], n, r);
+            switch (buf[i]) {
+              case 0x01:  // 额头
+                id(bs_cabin_spot).publish_state(r & 0x01);
+                id(bs_cabin_reverse).publish_state(r & 0x02);
+                id(bs_cabin_dsp).publish_state(r & 0x04);
+                id(bs_cabin_fan).publish_state(r & 0x08);
+                id(bs_cabin_scene).publish_state(r & 0x20);
+                break;
+              case 0x02:  // 中8
+                id(bs_door_drain).publish_state(r & 0x01);
+                id(bs_door_outdoor).publish_state(r & 0x02);
+                id(bs_door_pump).publish_state(r & 0x04);
+                id(bs_door_camp).publish_state(r & 0x08);
+                id(bs_bed_light).publish_state(r & 0x10);
+                id(bs_bed_ambient).publish_state(r & 0x20);
+                id(bs_bed_fan).publish_state(r & 0x40);
+                id(bs_bed_pump).publish_state(r & 0x80);
+                break;
+              case 0x03:  // 中4（4 路 DI，位图可能只有 1 字节）
+                id(bs_bed_fridge).publish_state(r & 0x01);
+                id(bs_bed_scene).publish_state(r & 0x02);
+                break;
+            }
+            break;
           }
+
+  # LED 全灭（上电初始化共用入口）。16DO 全部在用 LED 一次性关掉；
+  # 新增 LED 通道时只需在此加一行（配合 do16.yaml 的 sw_led_* 定义）。
+  - id: led_all_off
+    mode: restart
+    then:
+      - switch.turn_off: sw_led_y1
+      - switch.turn_off: sw_led_y2
+      - switch.turn_off: sw_led_y3
+      - switch.turn_off: sw_led_y4
+      - switch.turn_off: sw_led_y5
+      - switch.turn_off: sw_led_y6
+      - switch.turn_off: sw_led_y7
+      - switch.turn_off: sw_led_y8
+      - switch.turn_off: sw_led_y9
+      - switch.turn_off: sw_led_y10
 
 # ============ 场景状态（重启后回到初始值，与 LED 初始态一致） ============
 globals:

@@ -1,0 +1,34 @@
+# 485 写帧公共件：DE 方向控制 + 校验和工具
+#
+# 【为什么需要这个文件】
+# 早期每个开关的 on_turn_on/off 都手抄 5 行（DE 置 1 → delay → uart.write → flush → DE 置 0），
+# 全车 30+ 个通道 = 数百行重复，且每个帧的 CRC 靠手算，改一处通道极易漏改。
+# 现改为「一个脚本 + 一个 lambda 助手」，通道定义只写一条帧：
+#
+#   - script.execute:
+#       id: rs485_write
+#       frame: [0x02, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x09]
+#
+# 【DE/RE 时序】使能脚（DE+RE 并接）高 = 发送、低 = 接收。
+#   当前接 **GPIO17**（紧邻 RX 16）——2026-09 由 GPIO5 改到 17。
+#   ⚠ 引脚号集中在 base.yaml 的 substitutions（de_pin），本文件用 ${de_pin} 引用，
+#     再换引脚只改一处。
+# ESPHome 2026.7 下 digitalWrite 是静默空操作，必须用 gpio_set_level（历史踩坑）。
+# 发送后不能长延迟占住发送模式：模块回包在请求后 ~10ms 内到达，flush() 保证最后
+# 一个字节移出移位寄存器后立即切回接收，避免回包整个落在接收器关闭的窗口里。
+
+script:
+  # 发一帧 485（含 DE 切换）。调用方只管给帧，时序全在这里。
+  - id: rs485_write
+    mode: queued          # 多路按键几乎同时触发时不丢帧，串行排队发送
+    parameters:
+      frame: std::vector<uint8_t>
+    then:
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: !lambda 'return frame;'
+      - lambda: 'id(rs485_bus).flush();'
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
+      - delay: 10ms

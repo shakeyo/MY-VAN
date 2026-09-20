@@ -7,7 +7,7 @@ ESP32-S3 + MAX3485 单板网关，ESPHome 固件统一集中编译，负责 485 
 | [design.md](design.md) | 架构、485 总线规范、ESP32↔MAX3485 接线、供电 |
 | [build-guide.md](build-guide.md) | 制作步骤、烧录与调试、总线改造操作 |
 | [bom.md](bom.md) | 材料清单 |
-| [esphome/](esphome/) | 固件 YAML（base/prod/forehead/mid4/mid8/scenes/测试件） |
+| [esphome/](esphome/) | 固件 YAML（rs485/base/prod/forehead/mid4/mid8/do16/scenes/测试件） |
 
 ## 边界
 

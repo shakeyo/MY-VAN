@@ -52,8 +52,8 @@ uart:
 
 output:
   - platform: gpio
-    id: de_pin
-    pin: GPIO5
+    id: de_out              # DE+RE 使能脚（高=发送、低=接收）
+    pin: GPIO17             # 2026-09 由 GPIO5 改到 GPIO17（紧邻 RX 16）
 
 globals:
   - id: relay1_on
@@ -65,7 +65,7 @@ script:
     mode: single
     then:
       - logger.log: "切换到发送模式 (EN=HIGH)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - if:
           condition:
@@ -84,7 +84,7 @@ script:
             - lambda: 'id(relay1_on) = false;'
       - lambda: 'id(rs485_bus).flush();'  # 等最后一个字节真正离开总线（38400 下约 2ms），兼容旧版 ESPHome
       - logger.log: "切换到接收模式 (EN=LOW)"
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 200ms                    # 等待回环数据到达 RX 缓冲区
       - lambda: |-
           uint8_t buf[64];
@@ -107,7 +107,7 @@ script:
   - id: listen_bus
     mode: single
     then:
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - logger.log: "=== 开始监听总线 3 秒，请在 PC 软件里读一次模块 ==="
       - lambda: |-
           unsigned int total = 0;
@@ -127,13 +127,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC04 读输入寄存器 0x0000 (DI1)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x04, 0x00, 0x00, 0x00, 0x01, 0x31, 0xCA]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -154,13 +154,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC04 读输入寄存器 0x0032 (按位DI)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x04, 0x00, 0x32, 0x00, 0x01, 0x90, 0x05]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -181,13 +181,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC03 读保持寄存器 0x0000 (DO1)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x0A, 0x84]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -208,13 +208,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC06 写保持寄存器 0x0000=1 (DO1开)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x06, 0x00, 0x00, 0x00, 0x01, 0x0A, 0x48]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -235,13 +235,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC05 写线圈 0x0000=1 (DO1开)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -262,13 +262,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC05 写线圈 0x0000=0 (DO1关)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -289,13 +289,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC01 读线圈 0x0000 (DO1)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0xCA]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -316,13 +316,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC01 读线圈 0x0001 (DO2)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x01, 0x00, 0x01, 0x00, 0x01, 0xAC, 0x0A]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -343,13 +343,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC05 写线圈 0x0001=1 (DO2开)"
-      - output.turn_on: de_pin
+      - output.turn_on: de_out
       - delay: 1ms
       - uart.write:
           id: rs485_bus
           data: [0x01, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xFA]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_pin
+      - output.turn_off: de_out
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];

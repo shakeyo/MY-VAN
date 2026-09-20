@@ -1,0 +1,61 @@
+# =============================================================
+# BLE 蓝牙代理（独立 ESP32，专收温湿度等 BLE 广播后转给 HA）
+#
+# 【为什么要独立一台】
+# 主网关（myvan-485-gateway）已跑 485 轮询 + MPPT + 场景，实测再加
+# bluetooth_proxy 时 Flash 从 53% → 75%（+398KB）、RAM 33% → 43%，偏紧；
+# 且 BLE 长期占射频/CPU 可能干扰 485 时序。
+# 拆独立一台后：主网关保持干净，BLE 崩了也不影响全车控制（安全边界清晰）。
+#
+# 【硬件】任意 ESP32（S3/C3 均可，几十元）；12V→5V 供电（车内常电）
+# 【烧录】esphome run ble-proxy.yaml
+# 【位置】车体居中位置——房车金属壳对 BLE 衰减大，装好后实测覆盖再定
+#
+# 【HA 侧】
+#   1. 装集成：Passive BLE monitor（通用，支持品牌最多）或 Xiaomi BLE
+#   2. 传感器上电 → HA 自动发现 → 添加实体
+#   3. ⚠ 必做失联检测（纽扣电池没电是静默失效），见 sensors/ble-sensors.md §六
+# =============================================================
+
+substitutions:
+  name: myvan-ble-proxy
+  friendly_name: BLE蓝牙代理
+
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf          # BLE 在 esp-idf 下更省资源（arduino 亦可，但占更多 Flash）
+
+logger:
+  level: INFO
+
+api:
+  encryption:
+    key: "BTGcLeExk4xanEi/1zwV6fVzQJiULFGZDbkXac4eFCw="
+
+ota:
+
+wifi:
+  networks:
+    - ssid: "ooxx"            # 占位符，改成车内路由
+      password: www.baidu.com
+  ap:
+    ssid: "myvan-ble"
+    password: "12345678"
+captive_portal:
+
+# ============ BLE 扫描与代理 ============
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms      # interval=window 时为连续扫描；想省电可把 window 调小
+    window: 1100ms
+    active: false         # 被动扫描即可：只收广播，不主动连外设（更省电、更兼容）
+
+bluetooth_proxy:
+  active: true            # 允许 HA 主动连接设备（部分温湿度计需要读 GATT）
+  # 若只收广播即可（多数 BLE 温湿度计），可改 false 更省资源
