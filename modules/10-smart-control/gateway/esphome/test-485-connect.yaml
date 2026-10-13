@@ -31,12 +31,20 @@ web_server:
   port: 80
 
 wifi:
-  ssid: "ooxx"
-  password: www.baidu.com
-  use_address: 192.168.5.18
+  # 按顺序尝试；都连不上则自动开下方 AP（车上无路由器时直接可用）
+  networks:
+    - ssid: !secret wifi_home_ssid       # 家里 wifi ooxx（192.168.5.x）
+      password: !secret wifi_home_password
+    - ssid: !secret wifi_phone_ssid      # 手机热点 iWife（172.20.10.x）——车上无路由器时用
+      password: !secret wifi_phone_password
+    # - ssid: !secret wifi_van_ssid      # 车上 GL.iNet（192.168.8.x）——路由器到位后启用
+    #   password: !secret wifi_van_password
+  # ⚠ 不要设 use_address：写死 IP 会让 OTA 在其他网段失效，交给 mDNS 自动发现
   ap:
     ssid: "my-van"
     password: "12345678"
+    # 车上无网：上电立即开 AP，不等扫描超时（默认 90s 会白等一轮才开热点）
+    ap_timeout: 0s
 captive_portal:
 
 logger:
@@ -50,10 +58,14 @@ uart:
   rx_pin: GPIO16
   baud_rate: 38400
 
+# DE 使能脚 = GPIO17（与 base.yaml / 其他固件一致）。
+# 2026-10 曾因怀疑 GPIO17 拉不高而临时改 GPIO5，实测两者均可正常收发，
+# 结论：GPIO17 无问题，统一回到 17。改此引脚必须同步挪线。
 output:
   - platform: gpio
     id: de_out              # DE+RE 使能脚（高=发送、低=接收）
     pin: GPIO17             # 2026-09 由 GPIO5 改到 GPIO17（紧邻 RX 16）
+    inverted: false         # 上电默认低电平 = 接收态
 
 globals:
   - id: relay1_on

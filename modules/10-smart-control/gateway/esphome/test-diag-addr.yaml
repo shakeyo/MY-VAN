@@ -1,0 +1,263 @@
+# =============================================================
+# 485 诊断固件（地址扫描 + DE 验证）
+#
+# 目的：定位「开关无反应」到底卡在哪一环
+#   1. 扫地址：对地址 1~6 依次发 FC01 读线圈，看哪个地址有回应
+#      → 确定新买的 8 路纯 DO 模块的实际站号
+#   2. DE 验证：DE 用 gpio_set_level（不用 output 组件）+ on_boot 初始化
+#      → 排除「output 组件驱动失效」的可能
+#   3. 写线圈测试：对「扫出来的地址」发开关帧，听继电器 / 看 LED
+#
+# 烧录: esphome run test-diag-addr.yaml
+# 接线: S3 GPIO15→MAX3485.DI、GPIO16→RO、GPIO17→DE+RE、3V3/GND
+#       模块 12V 供电、A/B 上总线、GND 共地
+#
+# 判读：
+#   扫地址收到「非 8 字节原帧」的短帧 → 该地址有模块在应答（真应答）
+#   收到和发出去一模一样的 8 字节            → 是回显（GPIO15/16 短接了，或 RO 接错）
+#   收到一堆 0x00/0xFF/0xFC 乱码             → 总线悬空噪声，模块没应答
+#   缓冲区为空                                → 完全没收到（RO 没接 / DE 时序问题）
+# =============================================================
+
+substitutions:
+  name: myvan-485-gateway
+  friendly_name: 485诊断
+  # ============================ DE 使能脚 ============================
+  # ⚠⚠ 改这一行【必须同步挪线】，否则 DE 全程不被驱动、RX 只收到持续 0x00，
+  #     现象和"接线坏了"一模一样，会白白排查很久（2026-10 已踩过一次）。
+  #
+  # 当前值 GPIO17：与 base.yaml / rs485.yaml / 其他测试固件一致。
+  # 2026-10 曾为验证 GPIO17 是否异常临时改 GPIO5 并挪线，实测【两者都能正常
+  # 收发】——GPIO17 无问题，故统一回 17。当初"GPIO17 电压不到 3.3V"的读数
+  # 应是万用表抓不到 1ms 窄脉冲所致，非真实故障。
+  de_pin: GPIO_NUM_17
+  # ==================================================================
+
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+  on_boot:
+    - priority: -100
+      then:
+        # 与 base.yaml 一致：先把 DE 脚显式配成输出，再拉低（=接收态）
+        - lambda: 'gpio_set_direction(${de_pin}, GPIO_MODE_OUTPUT);'
+        - lambda: 'gpio_set_level(${de_pin}, 0);'
+        - logger.log: "DE 引脚已初始化为输出（低=接收）"
+        # 打印实际使用的 DE 引脚号，便于核对与实体接线是否一致
+        - logger.log: "⚠ 本固件 DE 引脚 = GPIO17 —— 请确认 DE+RE 的线插在 S3 的 GPIO17 上"
+        - lambda: 'ESP_LOGI("diag", "DE 引脚编号 = %d", (int) ${de_pin});'
+
+api:
+  encryption:
+    key: "BTGcLeExk4xanEi/1zwV6fVzQJiULFGZDbkXac4eFCw="
+
+ota:
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+web_server:
+  port: 80
+
+wifi:
+  networks:
+    - ssid: !secret wifi_home_ssid       # 家里 wifi ooxx（192.168.5.x）
+      password: !secret wifi_home_password
+    - ssid: !secret wifi_phone_ssid      # 手机热点 iWife（172.20.10.x）
+      password: !secret wifi_phone_password
+  # ⚠ 不要设 use_address：写死 IP 会让 OTA 在其他网段失效，交给 mDNS
+  ap:
+    ssid: "my-van"
+    password: "12345678"
+    ap_timeout: 0s
+captive_portal:
+
+logger:
+  level: DEBUG
+  logs:
+    uart: DEBUG
+
+uart:
+  id: rs485_bus
+  tx_pin: GPIO15
+  rx_pin: GPIO16
+  baud_rate: 38400  # 与 base.yaml / 其他测试固件一致（模块出厂默认）。
+                    # 2026-10 诊断备注：曾试 9600，FF/00 交替乱码消失但变成
+                    # 持续 0x00 流；后证实那次 DE 引脚与接线错配（固件 GPIO5 / 线在 17），
+                    # 结论作废 —— 波特率仍以 38400 为准，未确认模块是 9600。
+                    # 全车终局 9600 见 build-guide.md §4.7。
+
+globals:
+  - id: write_state
+    type: bool
+    initial_value: 'false'
+
+script:
+  # ---- 底层：发一帧并读回响应（DE 时序与 rs485.yaml 一致）----
+  - id: send_frame
+    mode: queued
+    max_runs: 8
+    parameters:
+      frame: std::vector<uint8_t>
+    then:
+      - lambda: 'gpio_set_level(${de_pin}, 1);'   # 发送模式
+      - delay: 1ms
+      - uart.write:
+          id: rs485_bus
+          data: !lambda 'return frame;'
+      - lambda: 'id(rs485_bus).flush();'          # 等最后字节离开发完
+      - lambda: 'gpio_set_level(${de_pin}, 0);'   # 立即切回接收
+      - delay: 300ms
+      - lambda: |-
+          uint8_t buf[128];
+          int len = 0;
+          while (id(rs485_bus).available() && len < (int)sizeof(buf)) {
+            uint8_t b;
+            if (id(rs485_bus).read_byte(&b)) buf[len++] = b;
+          }
+          if (len > 0) {
+            ESP_LOGI("diag", "响应 %d 字节:", len);
+            char line[256]; int p = 0;
+            for (int i = 0; i < len && p < 200; i++) p += snprintf(line+p, sizeof(line)-p, "%02X ", buf[i]);
+            ESP_LOGI("diag", "  %s", line);
+            if (len == 5) ESP_LOGI("diag", "  → 异常帧! 异常码 0x%02X", buf[2]);
+          } else {
+            ESP_LOGI("diag", "无响应（缓冲区为空）");
+          }
+
+  # ---- 扫地址：对地址 1~6 依次发 FC01 读线圈 0x0000 ----
+  # mode: single（不排队）——每个 send_frame 自带 300ms 等待，用 queued 会导致
+  # 后续实例排队而首帧尚未执行，6 帧挤在一起，日志与响应错位。
+  - id: scan_addresses
+    mode: single
+    then:
+      - logger.log: "======== 开始扫地址 1~6（FC01 读线圈 0x0000）========"
+      - script.execute:
+          id: send_frame
+          frame: [0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0xCA]
+      - script.execute:
+          id: send_frame
+          frame: [0x02, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0xF9]
+      - script.execute:
+          id: send_frame
+          frame: [0x03, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFC, 0x28]
+      - script.execute:
+          id: send_frame
+          frame: [0x04, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0x9F]
+      - script.execute:
+          id: send_frame
+          frame: [0x05, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFC, 0x4E]
+      - script.execute:
+          id: send_frame
+          frame: [0x06, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFC, 0x7D]
+      - logger.log: "======== 扫地址结束 ========"
+
+  # ---- 写线圈：切换 第1路 开/关（发到地址 1；其他地址见下方按钮）----
+  - id: toggle_coil1_a1
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(write_state);'
+          then:
+            - logger.log: "地址1 写线圈1 = 开"
+            - script.execute:
+                id: send_frame
+                frame: [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A]
+            - lambda: 'id(write_state) = true;'
+          else:
+            - logger.log: "地址1 写线圈1 = 关"
+            - script.execute:
+                id: send_frame
+                frame: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
+            - lambda: 'id(write_state) = false;'
+
+  - id: toggle_coil1_a2
+    mode: single
+    then:
+      - logger.log: "地址2 写线圈1 = 开"
+      - script.execute:
+          id: send_frame
+          frame: [0x02, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x09]
+
+  - id: toggle_coil1_a3
+    mode: single
+    then:
+      - logger.log: "地址3 写线圈1 = 开"
+      - script.execute:
+          id: send_frame
+          frame: [0x03, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xD8]
+
+  - id: toggle_coil1_a5
+    mode: single
+    then:
+      - logger.log: "地址5 写线圈1 = 开"
+      - script.execute:
+          id: send_frame
+          frame: [0x05, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xBE]
+
+  # ---- 读 8 路线圈状态（判断整块模块在不在线）----
+  - id: read_coils_a1
+    mode: single
+    then:
+      - logger.log: "地址1 读 8 路线圈状态"
+      - script.execute:
+          id: send_frame
+          frame: [0x01, 0x01, 0x00, 0x00, 0x00, 0x08, 0x3D, 0xCC]
+
+  # ---- TTL 回环自检（确认 S3 串口本身正常）----
+  - id: ttl_loopback
+    mode: single
+    then:
+      - logger.log: "TTL 回环自检：请把 GPIO15 与 GPIO16 短接后再按"
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
+      - uart.write:
+          id: rs485_bus
+          data: [0xAA, 0x55, 0x12, 0x34]
+      - lambda: 'id(rs485_bus).flush();'
+      - delay: 200ms
+      - lambda: |-
+          uint8_t buf[64]; int len = 0;
+          while (id(rs485_bus).available() && len < (int)sizeof(buf)) {
+            uint8_t b; if (id(rs485_bus).read_byte(&b)) buf[len++] = b;
+          }
+          if (len == 4 && buf[0]==0xAA && buf[1]==0x55 && buf[2]==0x12 && buf[3]==0x34) {
+            ESP_LOGI("diag", "✅ TTL 回环通过（收到 AA 55 12 34）");
+          } else if (len > 0) {
+            ESP_LOGI("diag", "收到 %d 字节（非预期）", len);
+          } else {
+            ESP_LOGI("diag", "❌ 回环失败：缓冲区为空（15/16 没短接？）");
+          }
+
+button:
+  - platform: template
+    name: "① 扫地址 1-6"
+    on_press:
+      - script.execute: scan_addresses
+  - platform: template
+    name: "② 写线圈1 地址1"
+    on_press:
+      - script.execute: toggle_coil1_a1
+  - platform: template
+    name: "② 写线圈1 地址2"
+    on_press:
+      - script.execute: toggle_coil1_a2
+  - platform: template
+    name: "② 写线圈1 地址3"
+    on_press:
+      - script.execute: toggle_coil1_a3
+  - platform: template
+    name: "② 写线圈1 地址5"
+    on_press:
+      - script.execute: toggle_coil1_a5
+  - platform: template
+    name: "③ 读8路线圈 地址1"
+    on_press:
+      - script.execute: read_coils_a1
+  - platform: template
+    name: "④ TTL回环自检"
+    on_press:
+      - script.execute: ttl_loopback

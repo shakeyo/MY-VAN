@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(openscad -o stl/base-wedge-22deg.stl -D 'PART=\"base\"' -D 'mod=\"wall\"' -D 'tilt=22' tablet-mount.scad)",
+      "Bash(openscad -o stl/base-wedge-20deg.stl -D 'PART=\"base\"' -D 'mod=\"wall\"' -D 'tilt=20' tablet-mount.scad)",
+      "Bash(python3 *)",
+      "Read(//private/tmp/**)"
+    ]
+  }
+}

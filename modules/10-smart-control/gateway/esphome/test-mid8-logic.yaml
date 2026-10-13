@@ -54,9 +54,15 @@ web_server:
   port: 80
 
 wifi:
-  ssid: "ooxx"
-  password: www.baidu.com
-  use_address: 192.168.5.18
+  # 按顺序尝试；都连不上则自动开下方 AP（车上无路由器时直接可用）
+  networks:
+    - ssid: !secret wifi_home_ssid       # 家里 wifi ooxx（192.168.5.x）
+      password: !secret wifi_home_password
+    - ssid: !secret wifi_phone_ssid      # 手机热点 iWife（172.20.10.x）——车上无路由器时用
+      password: !secret wifi_phone_password
+    # - ssid: !secret wifi_van_ssid      # 车上 GL.iNet（192.168.8.x）——路由器到位后启用
+    #   password: !secret wifi_van_password
+  # ⚠ 不要设 use_address：写死 IP 会让 OTA 在其他网段失效，交给 mDNS 自动发现
   ap:
     ssid: "my-van"
     password: "12345678"

@@ -13,7 +13,11 @@ const modulesSidebar = [
   ]},
   { text: '管线系统', items: [
     { text: '04 电力系统', link: '/modules/04-power-system/' },
-    { text: '05 用水系统', link: '/modules/05-water-system/' },
+    { text: '05 用水系统', link: '/modules/05-water-system/', items: [
+      { text: '施工指导（水路上车）', link: '/modules/05-water-system/build-guide' },
+      { text: '设计决策（双水源）', link: '/modules/05-water-system/design' },
+      { text: '材料清单', link: '/modules/05-water-system/bom' },
+    ]},
     { text: '06 HVAC 系统', link: '/modules/06-hvac/' },
   ]},
   { text: '内饰', items: [

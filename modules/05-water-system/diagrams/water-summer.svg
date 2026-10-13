@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 880" width="1280" height="880" font-family="sans-serif">
+  <defs>
+    <marker id="fc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1565c0"/>
+    </marker>
+    <marker id="fh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c62828"/>
+    </marker>
+    <marker id="fcy" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#00838f"/>
+    </marker>
+  </defs>
+
+  <text x="640" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#222">夏季状态图（拆掉/关闭小厨宝）</text>
+  <text x="640" y="58" text-anchor="middle" font-size="12.5" fill="#666">球H 关 · 球O 关 · 球D 开　→　冷水经阀D 灌入热水主干，全车热水点都能出冷水</text>
+
+  <!-- 顶部三阀状态条 -->
+  <rect x="30" y="76" width="1220" height="66" rx="6" fill="#fffde7" stroke="#f9a825" stroke-width="2.5"/>
+  <text x="48" y="112" font-size="13" font-weight="bold" fill="#f57f17">夏季阀门状态：</text>
+
+  <rect x="210" y="92" width="30" height="24" fill="#fff" stroke="#ef6c00" stroke-width="3"/>
+  <text x="225" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">H</text>
+  <text x="252" y="110" font-size="12" font-weight="bold" fill="#c62828">关 ✕</text>
+
+  <rect x="340" y="92" width="30" height="24" fill="#fff" stroke="#ef6c00" stroke-width="3"/>
+  <text x="355" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">O</text>
+  <text x="382" y="110" font-size="12" font-weight="bold" fill="#c62828">关 ✕</text>
+
+  <rect x="470" y="92" width="30" height="24" fill="#fff" stroke="#00838f" stroke-width="3"/>
+  <text x="485" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="#006064">D</text>
+  <text x="512" y="110" font-size="12" font-weight="bold" fill="#2e7d32">开 ✓</text>
+
+  <text x="620" y="110" font-size="11.5" fill="#333">结果：热水主干里流的是<b>冷水</b>　→　水槽热水口 / 恒温阀热入口 / 车尾热水预留 <b>都有水</b></text>
+
+  <!-- ════════ 冷水主干 ════════ -->
+  <text x="30" y="188" font-size="14" font-weight="bold" fill="#1565c0">冷水主干</text>
+  <line x1="30" y1="230" x2="1250" y2="230" stroke="#1565c0" stroke-width="7"/>
+  <text x="640" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="#1565c0">冷 水 主 干（供水正常）</text>
+
+  <!-- 冷水分支 -->
+  <line x1="400" y1="230" x2="400" y2="300" stroke="#1565c0" stroke-width="5" marker-end="url(#fc)"/>
+  <circle cx="400" cy="230" r="12" fill="#1565c0"/>
+  <text x="400" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">3</text>
+  <rect x="320" y="306" width="160" height="42" rx="5" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+  <text x="400" y="332" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0d47a1">水槽冷水口 ✓</text>
+
+  <line x1="760" y1="230" x2="760" y2="300" stroke="#1565c0" stroke-width="5" marker-end="url(#fc)"/>
+  <circle cx="760" cy="230" r="12" fill="#1565c0"/>
+  <text x="760" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">4</text>
+  <rect x="680" y="306" width="160" height="42" rx="5" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+  <text x="760" y="332" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0d47a1">外置取水 ✓</text>
+
+  <line x1="1020" y1="230" x2="1020" y2="300" stroke="#1565c0" stroke-width="5" marker-end="url(#fc)"/>
+  <circle cx="1020" cy="230" r="12" fill="#1565c0"/>
+  <text x="1020" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">5</text>
+  <rect x="940" y="306" width="160" height="42" rx="5" fill="#eceff1" stroke="#607d8b" stroke-width="2.5" stroke-dasharray="7,4"/>
+  <text x="1020" y="332" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#37474f">车尾冷水 ✓</text>
+
+  <!-- 主干末端 三通8 -->
+  <line x1="1180" y1="230" x2="1180" y2="330" stroke="#1565c0" stroke-width="5"/>
+  <circle cx="1180" cy="230" r="12" fill="#1565c0"/>
+  <text x="1180" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">8</text>
+
+  <!-- 阀 D 旁路（青色，主路径） -->
+  <line x1="1192" y1="230" x2="1245" y2="230" stroke="#00838f" stroke-width="7"/>
+  <line x1="1245" y1="230" x2="1245" y2="400" stroke="#00838f" stroke-width="7" marker-end="url(#fcy)"/>
+  <rect x="1230" y="400" width="30" height="24" fill="#e0f7fa" stroke="#00838f" stroke-width="3.5"/>
+  <text x="1245" y="418" text-anchor="middle" font-size="12" font-weight="bold" fill="#006064">D</text>
+  <text x="1245" y="442" text-anchor="middle" font-size="10" font-weight="bold" fill="#2e7d32">开 ✓</text>
+  <line x1="1245" y1="424" x2="1245" y2="500" stroke="#00838f" stroke-width="7"/>
+  <line x1="1245" y1="500" x2="700" y2="500" stroke="#00838f" stroke-width="7" marker-end="url(#fcy)"/>
+  <text x="980" y="490" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#006064">★ 冷水经阀D 灌入热水主干</text>
+
+  <!-- ════════ 热水侧（被隔离） ════════ -->
+  <rect x="120" y="470" width="440" height="120" rx="8" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2.5" stroke-dasharray="8,4"/>
+  <text x="340" y="500" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#616161">被隔离：小厨宝段（已断电断水）</text>
+
+  <line x1="30" y1="540" x2="150" y2="540" stroke="#c62828" stroke-width="5" stroke-dasharray="6,6"/>
+  <rect x="150" y="528" width="30" height="24" fill="#eee" stroke="#9e9e9e" stroke-width="3"/>
+  <text x="165" y="546" text-anchor="middle" font-size="12" font-weight="bold" fill="#757575">H</text>
+  <text x="165" y="572" text-anchor="middle" font-size="10" font-weight="bold" fill="#c62828">关 ✕</text>
+
+  <rect x="230" y="514" width="120" height="52" rx="6" fill="#eee" stroke="#9e9e9e" stroke-width="3"/>
+  <text x="290" y="537" text-anchor="middle" font-size="12" font-weight="bold" fill="#757575">小厨宝</text>
+  <text x="290" y="556" text-anchor="middle" font-size="9.5" fill="#757575">已拆/断电</text>
+
+  <rect x="400" y="528" width="30" height="24" fill="#eee" stroke="#9e9e9e" stroke-width="3"/>
+  <text x="415" y="546" text-anchor="middle" font-size="12" font-weight="bold" fill="#757575">O</text>
+  <text x="415" y="572" text-anchor="middle" font-size="10" font-weight="bold" fill="#c62828">关 ✕</text>
+  <line x1="430" y1="540" x2="446" y2="540" stroke="#c62828" stroke-width="4"/>
+
+  <text x="340" y="566" text-anchor="middle" font-size="10" fill="#616161">球H/球O 双关 → 厨宝彻底断水</text>
+
+  <!-- ════════ 热水主干（现在是冷水） ════════ -->
+  <line x1="700" y1="500" x2="1245" y2="500" stroke="#00838f" stroke-width="7"/>
+  <text x="900" y="522" text-anchor="middle" font-size="12" font-weight="bold" fill="#006064">热 水 主 干（实际流的是冷水）</text>
+
+  <line x1="900" y1="500" x2="900" y2="580" stroke="#00838f" stroke-width="5" marker-end="url(#fcy)"/>
+  <circle cx="900" cy="500" r="12" fill="#00838f"/>
+  <text x="900" y="505" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">6</text>
+  <rect x="820" y="586" width="160" height="42" rx="5" fill="#e0f7fa" stroke="#00838f" stroke-width="2.5"/>
+  <text x="900" y="612" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#006064">水槽热水口 ✓</text>
+
+  <line x1="1100" y1="500" x2="1100" y2="580" stroke="#00838f" stroke-width="5" stroke-dasharray="9,4" marker-end="url(#fcy)"/>
+  <circle cx="1100" cy="500" r="12" fill="#00838f"/>
+  <text x="1100" y="505" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">7</text>
+  <rect x="1020" y="586" width="160" height="42" rx="5" fill="#eceff1" stroke="#607d8b" stroke-width="2.5" stroke-dasharray="7,4"/>
+  <text x="1100" y="612" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#37474f">车尾热水预留 ✓</text>
+
+  <!-- ════════ 淋浴恒温阀 ════════ -->
+  <rect x="230" y="740" width="300" height="76" rx="8" fill="#ede7f6" stroke="#5e35b1" stroke-width="3.5"/>
+  <text x="380" y="766" text-anchor="middle" font-size="13" font-weight="bold" fill="#4527a0">[恒] 淋浴恒温混水阀</text>
+  <text x="380" y="786" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2e7d32">两入口都有水 ✓ 正常工作</text>
+  <text x="380" y="804" text-anchor="middle" font-size="9.5" fill="#4527a0">调到「全冷」即冷水澡</text>
+
+  <line x1="1180" y1="330" x2="1180" y2="706" stroke="#1565c0" stroke-width="5"/>
+  <line x1="1180" y1="706" x2="530" y2="706" stroke="#1565c0" stroke-width="5" marker-end="url(#fc)"/>
+  <text x="1000" y="698" text-anchor="middle" font-size="10" font-weight="bold" fill="#1565c0">冷入口 ✓</text>
+
+  <line x1="1150" y1="500" x2="1150" y2="726" stroke="#00838f" stroke-width="5"/>
+  <line x1="1150" y1="726" x2="530" y2="726" stroke="#00838f" stroke-width="5" marker-end="url(#fcy)"/>
+  <text x="1000" y="746" text-anchor="middle" font-size="10" font-weight="bold" fill="#006064">热入口 ✓（流的是冷水）</text>
+
+  <!-- 底部结论 -->
+  <rect x="640" y="740" width="610" height="76" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2.5"/>
+  <text x="658" y="764" font-size="11.5" font-weight="bold" fill="#1b5e20">✓ 夏季无需任何淋浴旁路</text>
+  <text x="658" y="786" font-size="11" fill="#333">阀D 一处解决全车：淋浴/水槽/车尾热水点都有水</text>
+  <text x="658" y="806" font-size="10.5" fill="#c62828">⚠ 拆厨宝顺序：先断电 → 泄压 → 再断水拆管</text>
+</svg>
