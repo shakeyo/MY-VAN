@@ -10,11 +10,22 @@
 substitutions:
   name: myvan-485-gateway
   friendly_name: 485网关
+  # 2026-10：GPIO17 实测输出恒为 3.3V（固件明确 gpio_set_level(...,0) 无效，
+  # 疑似引脚驱动级已损坏——早期曾把 GPIO15 TX 接到 EN、GPIO17 接到 DI）。
+  # 改用 GPIO5（build-guide.md 记录：2026-09 之前用过并验证过的脚）。
+  # ⚠ 必须同步把 MAX3485 的 EN 线从 GPIO17 挪到 GPIO5！
+  de_pin: GPIO_NUM_17
 
 esphome:
   name: ${name}
   name_add_mac_suffix: false
   friendly_name: ${friendly_name}
+  on_boot:
+    - priority: -100
+      then:
+        # 显式初始化为输出并拉低 = 接收态（照 base.yaml 写法）
+        - lambda: 'gpio_set_direction(${de_pin}, GPIO_MODE_OUTPUT);'
+        - lambda: 'gpio_set_level(${de_pin}, 0);'
 
 api:
   encryption:
@@ -49,8 +60,6 @@ captive_portal:
 
 logger:
   level: DEBUG
-  logs:
-    uart: DEBUG
 
 uart:
   id: rs485_bus
@@ -58,14 +67,12 @@ uart:
   rx_pin: GPIO16
   baud_rate: 38400
 
-# DE 使能脚 = GPIO17（与 base.yaml / 其他固件一致）。
-# 2026-10 曾因怀疑 GPIO17 拉不高而临时改 GPIO5，实测两者均可正常收发，
-# 结论：GPIO17 无问题，统一回到 17。改此引脚必须同步挪线。
-output:
-  - platform: gpio
-    id: de_out              # DE+RE 使能脚（高=发送、低=接收）
-    pin: GPIO17             # 2026-09 由 GPIO5 改到 GPIO17（紧邻 RX 16）
-    inverted: false         # 上电默认低电平 = 接收态
+# DE 使能脚 = GPIO17（与 base.yaml / rs485.yaml 一致）。
+# 2026-10 诊断：改用 gpio_set_level 直接驱动（弃用 output 组件）——
+# output.turn_on 走 ESPHome 组件调度，实际生效时刻不确定，
+# 实测导致「帧头 01 05 00 丢失」（PC 侧抓到 S3 只剩后 5 字节），
+# 继电器成功率仅 10~20%。改用 gpio_set_level 立即生效。
+# 引脚号集中在 substitutions，换脚只改一处。
 
 globals:
   - id: relay1_on
@@ -77,8 +84,8 @@ script:
     mode: single
     then:
       - logger.log: "切换到发送模式 (EN=HIGH)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - if:
           condition:
             lambda: 'return !id(relay1_on);'
@@ -86,17 +93,17 @@ script:
             - logger.log: "发送：线圈1 开"
             - uart.write:
                 id: rs485_bus
-                data: [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A]
+                data: [0x03, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xD8]
             - lambda: 'id(relay1_on) = true;'
           else:
             - logger.log: "发送：线圈1 关"
             - uart.write:
                 id: rs485_bus
-                data: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
+                data: [0x03, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x28]
             - lambda: 'id(relay1_on) = false;'
       - lambda: 'id(rs485_bus).flush();'  # 等最后一个字节真正离开总线（38400 下约 2ms），兼容旧版 ESPHome
       - logger.log: "切换到接收模式 (EN=LOW)"
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 200ms                    # 等待回环数据到达 RX 缓冲区
       - lambda: |-
           uint8_t buf[64];
@@ -119,7 +126,7 @@ script:
   - id: listen_bus
     mode: single
     then:
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - logger.log: "=== 开始监听总线 3 秒，请在 PC 软件里读一次模块 ==="
       - lambda: |-
           unsigned int total = 0;
@@ -139,13 +146,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC04 读输入寄存器 0x0000 (DI1)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x04, 0x00, 0x00, 0x00, 0x01, 0x31, 0xCA]
+          data: [0x03, 0x04, 0x00, 0x00, 0x00, 0x01, 0x30, 0x28]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -166,13 +173,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC04 读输入寄存器 0x0032 (按位DI)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x04, 0x00, 0x32, 0x00, 0x01, 0x90, 0x05]
+          data: [0x03, 0x04, 0x00, 0x32, 0x00, 0x01, 0x91, 0xE7]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -193,13 +200,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC03 读保持寄存器 0x0000 (DO1)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x0A, 0x84]
+          data: [0x03, 0x03, 0x00, 0x00, 0x00, 0x01, 0x85, 0xE8]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -220,13 +227,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC06 写保持寄存器 0x0000=1 (DO1开)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x06, 0x00, 0x00, 0x00, 0x01, 0x0A, 0x48]
+          data: [0x03, 0x06, 0x00, 0x00, 0x00, 0x01, 0x49, 0xE8]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -247,13 +254,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC05 写线圈 0x0000=1 (DO1开)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A]
+          data: [0x03, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xD8]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -274,13 +281,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC05 写线圈 0x0000=0 (DO1关)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
+          data: [0x03, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x28]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -301,13 +308,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC01 读线圈 0x0000 (DO1)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0xCA]
+          data: [0x03, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFC, 0x28]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -328,13 +335,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC01 读线圈 0x0001 (DO2)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x01, 0x00, 0x01, 0x00, 0x01, 0xAC, 0x0A]
+          data: [0x03, 0x01, 0x00, 0x01, 0x00, 0x01, 0xAD, 0xE8]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];
@@ -355,13 +362,13 @@ script:
     mode: single
     then:
       - logger.log: "发 FC05 写线圈 0x0001=1 (DO2开)"
-      - output.turn_on: de_out
-      - delay: 1ms
+      - lambda: 'gpio_set_level(${de_pin}, 1);'
+      - delay: 1ms             # DE 建立（与 rs485.yaml 一致）
       - uart.write:
           id: rs485_bus
-          data: [0x01, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xFA]
+          data: [0x03, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDC, 0x18]
       - lambda: 'id(rs485_bus).flush();'
-      - output.turn_off: de_out
+      - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 300ms
       - lambda: |-
           uint8_t buf[64];

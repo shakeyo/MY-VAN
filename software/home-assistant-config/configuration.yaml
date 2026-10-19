@@ -6,7 +6,8 @@
 
 # ---- 基础设置 ----
 homeassistant:
-  name: My Van
+  # 车名定稿见 docs/design/naming.md
+  name: FORAGER 觅食者
   unit_system: metric
   time_zone: Asia/Shanghai
   country: CN

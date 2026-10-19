@@ -11,6 +11,8 @@
 | [design-overhead.md](design-overhead.md) | 额头柜面板（含喇叭开孔） | 设计中 |
 | [design-countertop.md](design-countertop.md) | 右侧台面段（水槽 + 电磁炉 + 柜体） | 待设计 |
 | [design-bed-cabinet.md](design-bed-cabinet.md) | 右侧床段柜（储物 + 夜间承床） | 待设计 |
+| [design-fridge-bay.md](design-fridge-bay.md) | 二排前冰箱位（型材框架 + 兼小孩脚踏） | 设计中 |
+| [design-wardrobe.md](design-wardrobe.md) | 中段衣帽柜（行李箱竖放 + 抽屉） | 设计中 |
 
 ## 跨模块依赖
 

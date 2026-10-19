@@ -9,7 +9,7 @@
 
 switch:
   - platform: template
-    name: "MainLight 主灯"
+    name: "[中8.Y1] 主灯"
     id: sw_main_light
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -25,7 +25,7 @@ switch:
       # 主控键1 LED（16DO.Y5）
       - script.execute: led_main
   - platform: template
-    name: "Ambient 氛围灯"
+    name: "[中8.Y2] 氛围灯"
     id: sw_ambient
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -41,55 +41,7 @@ switch:
       # 主控键2 LED（16DO.Y6）
       - script.execute: led_ambient
   - platform: template
-    name: "FanRear 后窗排气扇"
-    id: sw_fan_rear
-    restore_mode: RESTORE_DEFAULT_OFF
-    optimistic: true
-    on_turn_on:
-      - script.execute:
-          id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0xC9]
-    on_turn_off:
-      - script.execute:
-          id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x39]
-    on_state:
-      # 主控键3 LED（16DO.Y7）
-      - script.execute: led_fan
-  - platform: template
-    name: "Pump 上水泵"
-    id: sw_pump
-    restore_mode: RESTORE_DEFAULT_OFF
-    optimistic: true
-    on_turn_on:
-      - script.execute:
-          id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7C, 0x09]
-    on_turn_off:
-      - script.execute:
-          id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3D, 0xF9]
-    on_state:
-      # 双控：入口键3 LED（16DO.Y3）+ 主控键4 LED（16DO.Y8），一起亮灭
-      - script.execute: led_pump
-  - platform: template
-    name: "Valve 电控水阀"
-    id: sw_valve
-    restore_mode: RESTORE_DEFAULT_OFF
-    optimistic: true
-    on_turn_on:
-      - script.execute:
-          id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x04, 0xFF, 0x00, 0xCD, 0xC8]
-    on_turn_off:
-      - script.execute:
-          id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x04, 0x00, 0x00, 0x8C, 0x38]
-    on_state:
-      # 入口键1 排水 LED（16DO.Y1）
-      - script.execute: led_drain
-  - platform: template
-    name: "Fridge 冰箱"
+    name: "[中8.Y6] 冰箱"
     id: sw_fridge
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -105,7 +57,7 @@ switch:
       # 主控键5 冰箱 LED（16DO.Y9）
       - script.execute: led_fridge
   - platform: template
-    name: "Reverse 倒车灯"
+    name: "[中8.Y7] 倒车灯"
     id: sw_reverse
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -122,7 +74,7 @@ switch:
 # 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
 binary_sensor:
   - platform: template
-    name: "DoorDrain 入口-排水"
+    name: "[中8.DI1] 入口-排水"
     id: bs_door_drain
     filters:
       - delayed_on: 50ms
@@ -130,7 +82,7 @@ binary_sensor:
     on_press:
       - script.execute: act_drain
   - platform: template
-    name: "DoorOutdoor 入口-户外灯"
+    name: "[中8.DI2] 入口-户外灯"
     id: bs_door_outdoor
     filters:
       - delayed_on: 50ms
@@ -138,7 +90,7 @@ binary_sensor:
     on_press:
       - script.execute: act_outdoor
   - platform: template
-    name: "DoorPump 入口-上水泵"
+    name: "[中8.DI3] 入口-上水泵"
     id: bs_door_pump
     filters:
       - delayed_on: 50ms
@@ -146,7 +98,7 @@ binary_sensor:
     on_press:
       - script.execute: act_pump_in
   - platform: template
-    name: "DoorCamp 入口-离车驻车"
+    name: "[中8.DI4] 入口-离车驻车"
     id: bs_door_camp
     filters:
       - delayed_on: 50ms
@@ -154,7 +106,7 @@ binary_sensor:
     on_press:
       - script.execute: act_camp
   - platform: template
-    name: "BedLight 主控-主灯"
+    name: "[中8.DI5] 主控-主灯"
     id: bs_bed_light
     filters:
       - delayed_on: 50ms
@@ -171,7 +123,7 @@ binary_sensor:
             - switch.toggle: sw_main_light
       - lambda: 'id(hold_triggered) = false;'
   - platform: template
-    name: "BedAmbient 主控-氛围灯"
+    name: "[中8.DI6] 主控-氛围灯"
     id: bs_bed_ambient
     filters:
       - delayed_on: 50ms
@@ -179,7 +131,7 @@ binary_sensor:
     on_press:
       - script.execute: act_ambient
   - platform: template
-    name: "BedFan 主控-排气扇"
+    name: "[中8.DI7] 主控-排气扇"
     id: bs_bed_fan
     filters:
       - delayed_on: 50ms
@@ -187,7 +139,7 @@ binary_sensor:
     on_press:
       - script.execute: act_fan
   - platform: template
-    name: "BedPump 主控-上水泵"
+    name: "[中8.DI8] 主控-上水泵"
     id: bs_bed_pump
     filters:
       - delayed_on: 50ms

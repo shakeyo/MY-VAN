@@ -2,6 +2,9 @@
 
 基于 **上汽大通 V80** 的房车（Vanlife）自制改装项目。从底盘防锈、铝型材框架到全车 RS485 智能控制、Home Assistant 中控和 React 仪表盘，完整记录了一台"智能 Van"从零到一的改造过程。
 
+> **车名：FORAGER · 觅食者号** — 一台为 *Flavor Explorer* 而生的移动基地。
+> 命名方案（车名 / 系统前缀 / 行程模块）见 [docs/design/naming.md](docs/design/naming.md)。
+
 ## ✨ 核心亮点
 
 - **智能控制总线** — 基于 RS485/Modbus RTU 的全车灯光、水泵、排风扇集中控制，物理开关与 HA 双向同步，网络离线也不影响生存

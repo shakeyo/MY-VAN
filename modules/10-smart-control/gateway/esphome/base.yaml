@@ -30,6 +30,7 @@ esphome:
             id: rs485_bus
             data: [0x01, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xC5]
         - lambda: 'id(rs485_bus).flush();'
+        - delay: 2ms                # 等移位寄存器排空再释放 DE（防帧尾 CRC 截断，见 rs485.yaml）
         - lambda: 'gpio_set_level(${de_pin}, 0);'
         - delay: 10ms
         - lambda: 'gpio_set_level(${de_pin}, 1);'
@@ -38,16 +39,24 @@ esphome:
             id: rs485_bus
             data: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
         - lambda: 'id(rs485_bus).flush();'
+        - delay: 2ms                # 等移位寄存器排空再释放 DE（防帧尾 CRC 截断，见 rs485.yaml）
         - lambda: 'gpio_set_level(${de_pin}, 0);'
         - delay: 10ms
-        - lambda: 'gpio_set_level(${de_pin}, 1);'
-        - delay: 1ms
-        - uart.write:
-            id: rs485_bus
-            data: [0x03, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x27]
-        - lambda: 'id(rs485_bus).flush();'
-        - lambda: 'gpio_set_level(${de_pin}, 0);'
-        - delay: 10ms
+        # ⚠ 2026-10 桌面调试：地址 3（中4）【暂不开启】主动上传。
+        #   实测该模块 DI 引脚悬空时电平抖动 → 模块持续发上传帧 → 与写帧抢总线
+        #   → 同一开关连点 10 次会漏 1~2 次（继电器不动作）。
+        #   ✅ 装车恢复条件：接口面板 COM 接电源一极、DI 接到实际按键（电平确定）后，
+        #      取消下面这段注释即可恢复主动上传。
+        #
+        # - lambda: 'gpio_set_level(${de_pin}, 1);'
+        # - delay: 1ms
+        # - uart.write:
+        #     id: rs485_bus
+        #     data: [0x03, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x27]
+        # - lambda: 'id(rs485_bus).flush();'
+        # - delay: 2ms
+        # - lambda: 'gpio_set_level(${de_pin}, 0);'
+        # - delay: 10ms
         # 安全负载：每次上电强制关（覆盖 restore 恢复值）
         - switch.turn_off: sw_spot
         - switch.turn_off: sw_outdoor
@@ -93,6 +102,11 @@ captive_portal:
 
 logger:
   level: INFO
+  # ⚠ 2026-10 回滚：曾为在 CH340 口看日志改成 hardware_uart: UART0，
+  #   结果 GPIO16 出现持续抖动（拔掉 RO 线仍收到 299 字节/3秒），
+  #   怀疑 UART 配置串扰 485 的 RX。已改回默认 USB_SERIAL_JTAG。
+  #   → 看日志请插 ESP32 原生 USB 口（VID 0x303a，口名 usbmodem*）。
+  hardware_uart: USB_SERIAL_JTAG
 
 uart:
   id: rs485_bus

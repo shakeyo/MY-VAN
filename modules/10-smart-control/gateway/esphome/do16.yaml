@@ -34,7 +34,7 @@
 switch:
   # ============ Y1-Y10：跟踪真实负载状态 ============
   - platform: template
-    name: "LedY1 入口排水LED"
+    name: "[16DO.Y1] 入口排水LED"
     id: sw_led_y1
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -48,7 +48,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x4E]
   - platform: template
-    name: "LedY2 入口户外灯LED"
+    name: "[16DO.Y2] 入口户外灯LED"
     id: sw_led_y2
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -62,7 +62,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9D, 0x8E]
   - platform: template
-    name: "LedY3 入口上水泵LED"
+    name: "[16DO.Y3] 入口上水泵LED"
     id: sw_led_y3
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -76,7 +76,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0x8E]
   - platform: template
-    name: "LedY4 离车驻车LED"
+    name: "[16DO.Y4] 离车驻车LED"
     id: sw_led_y4
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -90,7 +90,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3C, 0x4E]
   - platform: template
-    name: "LedY5 主控主灯LED"
+    name: "[16DO.Y5] 主控主灯LED"
     id: sw_led_y5
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -104,7 +104,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x04, 0x00, 0x00, 0x8D, 0x8F]
   - platform: template
-    name: "LedY6 主控氛围LED"
+    name: "[16DO.Y6] 主控氛围LED"
     id: sw_led_y6
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -118,7 +118,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x05, 0x00, 0x00, 0xDC, 0x4F]
   - platform: template
-    name: "LedY7 主控排气扇LED"
+    name: "[16DO.Y7] 主控排气扇LED"
     id: sw_led_y7
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -132,7 +132,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x06, 0x00, 0x00, 0x2C, 0x4F]
   - platform: template
-    name: "LedY8 主控上水泵LED"
+    name: "[16DO.Y8] 主控上水泵LED"
     id: sw_led_y8
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -146,7 +146,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x07, 0x00, 0x00, 0x7D, 0x8F]
   - platform: template
-    name: "LedY9 主控冰箱LED"
+    name: "[16DO.Y9] 主控冰箱LED"
     id: sw_led_y9
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -160,7 +160,7 @@ switch:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x08, 0x00, 0x00, 0x4D, 0x8C]
   - platform: template
-    name: "LedY10 主控灯光模式LED"
+    name: "[16DO.Y10] 主控灯光模式LED"
     id: sw_led_y10
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true

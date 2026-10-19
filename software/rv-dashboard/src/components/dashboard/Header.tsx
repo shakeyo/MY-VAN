@@ -26,9 +26,9 @@ export function Header() {
       {/* Logo */}
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-gradient-to-br from-rv-primary to-blue-600 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">VF</span>
+          <span className="text-white font-bold text-sm">UM</span>
         </div>
-        <span className="text-rv-text font-semibold text-lg tracking-wide">VAN FACTORY</span>
+        <span className="text-rv-text font-semibold text-lg tracking-wide">FORAGER</span>
       </div>
 
       {/* Status Indicators */}

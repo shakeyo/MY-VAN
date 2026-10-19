@@ -30,5 +30,13 @@ script:
           id: rs485_bus
           data: !lambda 'return frame;'
       - lambda: 'id(rs485_bus).flush();'
+      # 2026-10 实测：同一开关连点 10 次会漏 1~2 次（继电器不动作）。
+      # 原因：flush() 在 uart.idf 框架下不保证移位寄存器已排空，DE 过早拉低
+      # → 帧尾 2 字节 CRC 偶发截断 → 模块按 Modbus 规范静默丢弃（CRC 错不应答）。
+      # 8 字节 @38400 = 2.08ms，此处补 2ms 余量让最后字节真正移出。
+      # ⚠ 不可再加长：模块回包在请求后约 10ms 内到达，占住发送模式会错过接收窗口。
+      - delay: 2ms
       - lambda: 'gpio_set_level(${de_pin}, 0);'
-      - delay: 10ms
+      # 帧后间隔：原 10ms → 20ms。桌面实测（2026-10）放宽到 20ms 以降低
+      # 与模块主动上传帧 / 多路连点撞车的概率；连点响应略慢但不丢帧优先。
+      - delay: 20ms

@@ -1,34 +1,81 @@
-# 中门 4 路模块（中门柜内，地址 0x03，软件设置）
-# DO: Y1-Y4 = 未来负载扩展（现空，等以后加负载）
+# 中门 4 路模块（中门柜内/桌面，地址 0x03，软件设置）
+#
+# 【2026-10 迁移】原 DO 四路全空（未来负载扩展）。现将三个低功率负载从中8(0x02)
+#   迁到本模块，腾出中8 的通道，并让桌面只有中4 一块模块时也能测负载：
+#     Y1 = 上水泵（切外部继电器的 12V 控制线圈；48V 由该外部继电器隔离）
+#     Y2 = 电控水阀（12V 常闭球阀，控制级小电流）
+#     Y3 = 后窗排气扇（4 小风扇）
+#     Y4 = 预留
+#   ⚠ 本模块 DO 为 5A 规格，**不得接 10A 级负载**（主灯/氛围灯/冰箱仍在 中8）。
+#   ⚠ switch 的 id 保持不变（sw_pump/sw_valve/sw_fan_rear），
+#     因此 base.yaml / scenes.yaml / do16.yaml 的引用无需改动。
+#
 # DI: DI1 主控键5（冰箱）/ DI2 主控键6（灯光模式）/ DI3-4 预留
 #
 # 【硬件变更】原 Y1/Y2/Y3 曾被当作「夜灯LED/明亮LED/冰箱LED」——已全部取消：
 #   LED 集中到中门 16DO 模块（地址 0x05），见 do16.yaml。
-#   本模块 4 路 DO 现全部空闲，留给未来负载（配电箱 DO 是稀缺资源，见 switch-assignment.md §四）。
 # 【按键动作】= 执行 act_xxx script（prod 在 scenes.yaml）
 
-# DO 全空，无需 switch 实体。加未来负载时按下面模板追加：
-#
-#   - platform: template
-#     name: "LoadX 未来负载X"
-#     id: sw_load_x
-#     restore_mode: RESTORE_DEFAULT_OFF
-#     optimistic: true
-#     on_turn_on:
-#       - script.execute:
-#           id: rs485_write
-#           frame: [0x03, 0x05, 0x<线圈高>, 0x<线圈低>, 0xFF, 0x00, <CRC低>, <CRC高>]
-#     on_turn_off:
-#       - script.execute:
-#           id: rs485_write
-#           frame: [0x03, 0x05, 0x<线圈高>, 0x<线圈低>, 0x00, 0x00, <CRC低>, <CRC高>]
-#
 # 线圈地址：Y1=0x0000、Y2=0x0001、Y3=0x0002、Y4=0x0003（通道 N = 地址 N-1）
+# 加未来负载时按同样格式追加（Y4 现空，线圈 0x0003）。
+switch:
+  # ---- Y1：上水泵（切外部继电器的 12V 线圈，48V 侧由外部继电器隔离）----
+  - platform: template
+    name: "[中4.Y1] 上水泵"
+    id: sw_pump
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x03, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xD8]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x03, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x28]
+    on_state:
+      # 双控：入口键3 LED（16DO.Y3）+ 主控键4 LED（16DO.Y8），一起亮灭
+      - script.execute: led_pump
+  # ---- Y2：电控水阀（12V 常闭球阀，通电开/断电关）----
+  - platform: template
+    name: "[中4.Y2] 电控水阀"
+    id: sw_valve
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x03, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDC, 0x18]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x03, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9D, 0xE8]
+    on_state:
+      # 入口键1 排水 LED（16DO.Y1）
+      - script.execute: led_drain
+  # ---- Y3：后窗排气扇（4 小风扇）----
+  - platform: template
+    name: "[中4.Y3] 后窗排气扇"
+    id: sw_fan_rear
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x03, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2C, 0x18]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x03, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0xE8]
+    on_state:
+      # 主控键3 LED（16DO.Y7）
+      - script.execute: led_fan
+  # ---- Y4：预留（线圈 0x0003，未接线）----
 
 # 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X2 位图）
 binary_sensor:
   - platform: template
-    name: "BedFridge 主控-冰箱"
+    name: "[中4.DI1] 主控-冰箱"
     id: bs_bed_fridge
     filters:
       - delayed_on: 50ms
@@ -36,7 +83,7 @@ binary_sensor:
     on_press:
       - script.execute: act_fridge
   - platform: template
-    name: "BedScene 主控-灯光模式"
+    name: "[中4.DI2] 主控-灯光模式"
     id: bs_bed_scene
     filters:
       - delayed_on: 50ms

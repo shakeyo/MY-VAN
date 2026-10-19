@@ -9,7 +9,7 @@
 
 switch:
   - platform: template
-    name: "Spot 射灯"
+    name: "[额头.R1] 射灯"
     id: sw_spot
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -22,7 +22,7 @@ switch:
           id: rs485_write
           frame: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
   - platform: template
-    name: "Outdoor 户外灯"
+    name: "[额头.R2] 户外灯"
     id: sw_outdoor
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -38,7 +38,7 @@ switch:
       # 入口键2 LED（16DO.Y2）跟户外灯状态
       - script.execute: led_outdoor
   - platform: template
-    name: "DSP"
+    name: "[额头.R3] DSP"
     id: sw_dsp
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -51,7 +51,7 @@ switch:
           id: rs485_write
           frame: [0x01, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x0A]
   - platform: template
-    name: "FanPass 副驾排气扇"
+    name: "[额头.R4] 副驾排气扇"
     id: sw_fan_pass
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -67,7 +67,7 @@ switch:
 # 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
 binary_sensor:
   - platform: template
-    name: "CabinSpot 驾驶室-射灯"
+    name: "[额头.DI1] 驾驶室-射灯"
     id: bs_cabin_spot
     filters:
       - delayed_on: 50ms
@@ -75,7 +75,7 @@ binary_sensor:
     on_press:
       - script.execute: act_spot
   - platform: template
-    name: "CabinReverse 驾驶室-倒车灯"
+    name: "[额头.DI2] 驾驶室-倒车灯"
     id: bs_cabin_reverse
     filters:
       - delayed_on: 50ms
@@ -85,7 +85,7 @@ binary_sensor:
     on_press:
       - script.execute: act_reverse
   - platform: template
-    name: "CabinDsp 驾驶室-DSP"
+    name: "[额头.DI3] 驾驶室-DSP"
     id: bs_cabin_dsp
     filters:
       - delayed_on: 50ms
@@ -93,14 +93,14 @@ binary_sensor:
     on_press:
       - script.execute: act_dsp
   - platform: template
-    name: "CabinFan 驾驶室-换气风扇"
+    name: "[额头.DI4] 驾驶室-换气风扇"
     id: bs_cabin_fan
     filters:
       - delayed_on: 50ms
       - delayed_off: 50ms
     # TODO: 蓝牙风扇，后期解析协议
   - platform: template
-    name: "CabinScene 驾驶室-灯光模式"
+    name: "[额头.DI5] 驾驶室-灯光模式"
     id: bs_cabin_scene
     filters:
       - delayed_on: 50ms
