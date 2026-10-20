@@ -50,7 +50,9 @@
 
 ### 5. 功能模块实现 (Functional Modules)
 
+- [ ] 可移动水箱 + 中门/尾门双加水口：实车量尾门格位 → 买快拆自封件与双注水口 → 阶段 1A 预制与安装 - **设计完成，待下料**，方案见 [modules/05-water-system/design-tank-portability.md](modules/05-water-system/design-tank-portability.md)
 - [ ] 淋浴模块：不锈钢接水盆安装与防水测试 - **待办**
+- [ ] 车尾横向淋浴帐（无立腿版）：实测车高/尾门/尾梯尺寸 → 挂臂与挂轨 → 顶框 + 门顶斜撑 + 底撑杆 → 卷袋与接水盘 - **设计完成，待下料**，方案见 [modules/02-external/design-shower-tent.md](modules/02-external/design-shower-tent.md)
 - [ ] 户外厨房：重型滑轨与 IGT 模块集成 - **待办**
 - [ ] 智能化排风扇系统 (PWM 调速、亚克力固定) - **待办**
 - [ ] 影音系统：Alpine R600 DSP 调试与扬声器安装 - **待办**

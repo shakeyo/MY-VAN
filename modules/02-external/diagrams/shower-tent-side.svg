@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" width="1400" height="900" font-family="sans-serif">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="900" fill="#ffffff"/>
+  <text x="700" y="34" text-anchor="middle" font-size="21" font-weight="bold" fill="#222">车尾横向淋浴帐 · 侧视（展开 / 收纳）</text>
+  <text x="700" y="56" text-anchor="middle" font-size="12.5" fill="#666">比例 1 m = 200 px ｜ 以 V80 长轴中顶 + 3060 平台、M1=2370 为例 ｜ 尺寸单位 mm</text>
+
+  <!-- ═══════════════════ A. 展开状态 ═══════════════════ -->
+  <text x="48" y="92" font-size="16" font-weight="bold" fill="#1565c0">A · 展开状态（围合 1500 × 1100，前净高 2140 / 后净高 2010）</text>
+
+  <line x1="40" y1="700" x2="700" y2="700" stroke="#999" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="48" y="724" font-size="11" fill="#888">地面（停车位）</text>
+
+  <!-- 车体 -->
+  <path d="M80,660 L80,230 Q80,214 96,214 L380,214 L380,660 Z" fill="#ececec" stroke="#333" stroke-width="2"/>
+  <circle cx="160" cy="660" r="34" fill="#444" stroke="#222" stroke-width="2"/>
+  <circle cx="160" cy="660" r="15" fill="#bbb"/>
+  <circle cx="330" cy="660" r="34" fill="#444" stroke="#222" stroke-width="2"/>
+  <circle cx="330" cy="660" r="15" fill="#bbb"/>
+  <line x1="330" y1="300" x2="380" y2="300" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="300" y1="300" x2="300" y2="314" stroke="#888" stroke-width="0.8"/>
+  <text x="252" y="328" font-size="10.5" fill="#777">后门顶 2000</text>
+  <text x="150" y="420" font-size="12" fill="#666">V80 长轴中顶</text>
+  <text x="150" y="438" font-size="10.5" fill="#999">5490 × 1998 × 2345</text>
+
+  <!-- 平台 -->
+  <rect x="180" y="214" width="210" height="12" fill="#555" stroke="#333" stroke-width="1.2"/>
+  <text x="196" y="205" font-size="10.5" fill="#444">3060 车顶平台后横梁</text>
+
+  <!-- 挂臂：从梁下 226 下探到 266（200 mm） -->
+  <path d="M344,226 L354,226 L354,238 L410,238 L410,266 L398,266 L398,250 L344,250 Z" fill="#9e9e9e" stroke="#555" stroke-width="1.5"/>
+  <line x1="356" y1="252" x2="316" y2="348" stroke="#888" stroke-width="0.8"/>
+  <text x="206" y="362" font-size="10.5" fill="#555">不锈钢挂臂（下探 200）</text>
+  <text x="206" y="378" font-size="9.5" fill="#777">挂点再后退 100–150</text>
+
+  <!-- 挂轨 -->
+  <rect x="404" y="266" width="14" height="10" rx="2" fill="#455a64" stroke="#263238" stroke-width="1.2"/>
+  <line x1="412" y1="278" x2="432" y2="292" stroke="#888" stroke-width="0.8"/>
+  <text x="436" y="298" font-size="10.5" fill="#455a64">挂轨（C 型 / keder）</text>
+
+  <!-- 布体 -->
+  <polygon points="410,266 630,298 630,700 410,700" fill="#1565c0" fill-opacity="0.08" stroke="none"/>
+  <line x1="410" y1="266" x2="630" y2="298" stroke="#c62828" stroke-width="3.5"/>
+  <text x="474" y="248" font-size="11" fill="#c62828">顶臂 ×2（1.2 m，7° 下倾）</text>
+  <circle cx="630" cy="298" r="5" fill="#c62828"/>
+  <line x1="596" y1="324" x2="626" y2="302" stroke="#c62828" stroke-width="0.8"/>
+  <text x="452" y="330" font-size="10.5" fill="#c62828">后横杆（顶布后沿 sleeve）</text>
+  <line x1="630" y1="298" x2="630" y2="700" stroke="#c62828" stroke-width="3.5"/>
+  <rect x="618" y="694" width="24" height="6" fill="#c62828"/>
+  <text x="646" y="430" font-size="11" fill="#c62828">立腿 ×2</text>
+  <text x="646" y="446" font-size="10" fill="#c62828">伸缩 1.10 → 2.01 m</text>
+  <line x1="410" y1="266" x2="410" y2="700" stroke="#1565c0" stroke-width="2.5"/>
+  <line x1="630" y1="298" x2="630" y2="700" stroke="#1565c0" stroke-width="2.5"/>
+  <text x="420" y="470" font-size="11" fill="#1565c0">布体（420D PU / 黑胶）</text>
+  <text x="420" y="486" font-size="10" fill="#1565c0">顶 + 后 + 左右 + 前（前片可卷）</text>
+
+  <!-- 拉绳 -->
+  <line x1="632" y1="308" x2="688" y2="696" stroke="#757575" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <polygon points="684,690 692,696 688,702" fill="#757575"/>
+  <text x="640" y="620" font-size="10" fill="#757575">斜拉绳 + 地钉</text>
+
+  <!-- 接水盘 -->
+  <path d="M412,700 L412,664 L628,664 L628,700" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.6"/>
+  <circle cx="618" cy="694" r="3.5" fill="#1565c0"/>
+  <text x="430" y="682" font-size="10.5" fill="#0d47a1">折叠接水盘 1550×1150×100（下摆入盘）</text>
+
+  <!-- 尺寸 -->
+  <line x1="60" y1="700" x2="60" y2="226" stroke="#555" stroke-width="1" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <line x1="52" y1="226" x2="120" y2="226" stroke="#555" stroke-width="0.8"/>
+  <line x1="52" y1="266" x2="120" y2="266" stroke="#555" stroke-width="0.8"/>
+  <text x="66" y="460" font-size="12" fill="#333" transform="rotate(-90 66 460)">H = 2370（M1 实测）</text>
+
+  <line x1="110" y1="700" x2="110" y2="266" stroke="#555" stroke-width="1" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="116" y="470" font-size="12" fill="#333" transform="rotate(-90 116 470)">挂轨 Hr = 2170</text>
+
+  <line x1="410" y1="742" x2="630" y2="742" stroke="#555" stroke-width="1" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <line x1="410" y1="704" x2="410" y2="752" stroke="#555" stroke-width="0.8"/>
+  <line x1="630" y1="704" x2="630" y2="752" stroke="#555" stroke-width="0.8"/>
+  <text x="500" y="762" font-size="12" fill="#333">D = 1100</text>
+
+  <line x1="700" y1="700" x2="700" y2="298" stroke="#555" stroke-width="1" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="708" y="500" font-size="12" fill="#333" transform="rotate(-90 708 500)">后净高 2010</text>
+
+  <line x1="380" y1="282" x2="410" y2="282" stroke="#555" stroke-width="1" marker-start="url(#arw)" marker-end="url(#arw)"/>
+
+  <!-- ═══════════════════ B. 收纳状态 ═══════════════════ -->
+  <line x1="720" y1="70" x2="720" y2="820" stroke="#ddd" stroke-width="1.5"/>
+  <text x="748" y="92" font-size="16" font-weight="bold" fill="#6a1b9a">B · 收纳状态（袋体藏在平台下，不增加车高）</text>
+
+  <line x1="740" y1="700" x2="1360" y2="700" stroke="#999" stroke-width="2" stroke-dasharray="6 5"/>
+
+  <path d="M760,660 L760,230 Q760,214 776,214 L1060,214 L1060,660 Z" fill="#ececec" stroke="#333" stroke-width="2"/>
+  <circle cx="840" cy="660" r="34" fill="#444" stroke="#222" stroke-width="2"/>
+  <circle cx="840" cy="660" r="15" fill="#bbb"/>
+  <circle cx="1010" cy="660" r="34" fill="#444" stroke="#222" stroke-width="2"/>
+  <circle cx="1010" cy="660" r="15" fill="#bbb"/>
+  <line x1="1010" y1="300" x2="1060" y2="300" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="1020" y1="300" x2="1020" y2="314" stroke="#888" stroke-width="0.8"/>
+  <text x="926" y="328" font-size="10.5" fill="#777">后门顶 2000</text>
+
+  <rect x="860" y="214" width="205" height="12" fill="#555" stroke="#333" stroke-width="1.2"/>
+  <text x="872" y="205" font-size="10.5" fill="#444">3060 后横梁</text>
+
+  <!-- 挂臂下探 200 -->
+  <path d="M1020,226 L1030,226 L1030,238 L1090,238 L1090,266 L1076,266 L1076,250 L1020,250 Z" fill="#9e9e9e" stroke="#555" stroke-width="1.5"/>
+  <line x1="1040" y1="252" x2="1000" y2="348" stroke="#888" stroke-width="0.8"/>
+  <text x="884" y="362" font-size="10.5" fill="#555">挂臂（下探 200）</text>
+
+  <!-- 挂轨 + 收纳袋截面（180 高 × 140 深） -->
+  <rect x="1084" y="256" width="14" height="10" rx="2" fill="#455a64" stroke="#263238" stroke-width="1.2"/>
+  <rect x="1092" y="230" width="36" height="36" rx="17" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="2.2"/>
+  <line x1="1098" y1="236" x2="1122" y2="260" stroke="#6a1b9a" stroke-width="1.2" stroke-dasharray="3 2"/>
+  <text x="1138" y="226" font-size="11" fill="#6a1b9a">收纳袋 180 × 140 × 1600（横向）</text>
+  <text x="1138" y="242" font-size="10" fill="#6a1b9a">内：布 + 2 顶臂；袋外：2 立腿</text>
+  <text x="1138" y="258" font-size="10" fill="#6a1b9a">袋底 = 挂轨 2170</text>
+
+  <!-- 避让 -->
+  <line x1="1068" y1="330" x2="1110" y2="330" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#arw)"/>
+  <text x="1114" y="326" font-size="10.5" fill="#2e7d32">不遮高位刹车灯 / 后摄像头 / 牌照灯</text>
+  <text x="1114" y="342" font-size="9.5" fill="#2e7d32">收纳状态留 ≥ 50 mm</text>
+
+  <!-- 尺寸 -->
+  <line x1="740" y1="700" x2="740" y2="226" stroke="#555" stroke-width="1" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="746" y="470" font-size="12" fill="#333" transform="rotate(-90 746 470)">H = 2370</text>
+  <line x1="1180" y1="700" x2="1180" y2="266" stroke="#555" stroke-width="1" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="1186" y="500" font-size="12" fill="#333" transform="rotate(-90 1186 500)">袋底 2170</text>
+  <line x1="1060" y1="282" x2="1084" y2="282" stroke="#555" stroke-width="1" marker-start="url(#arw)" marker-end="url(#arw)"/>
+
+  <text x="748" y="790" font-size="11" fill="#666">要点：袋体由不锈钢挂臂 + U 形托槽承重，布体只承担自身；顶臂铰接在挂臂上，收起贴轨、展开转 90° 锁死。</text>
+  <text x="748" y="810" font-size="11" fill="#666">袋底 2 170 mm，站地面 + 600 mm 织带拉手可操作；收卷时用 2 步折叠凳。</text>
+</svg>

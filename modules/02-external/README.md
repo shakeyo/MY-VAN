@@ -14,6 +14,8 @@
 | [design-storage.md](design-storage.md) | 车顶防水储物箱 | 待设计 |
 | [design-spoiler.md](design-spoiler.md) | 前部扰流板降噪 | 待设计 |
 | [design-rear-storage.md](design-rear-storage.md) | 车尾储物箱 + 自行车架（拖车杠方口挂载） | 待设计 |
+| [design-shower-tent.md](design-shower-tent.md) | 车尾横向淋浴帐（带立腿版，硬地/大风备选） | 设计中 |
+| [design-shower-tent-noleg.md](design-shower-tent-noleg.md) | 车尾横向淋浴帐（主推：4 杆框 + 四面 + 顶 + 前片拉链，无腿；2020/摆臂框架） | 改版设计 |
 
 ## 跨模块依赖
 
@@ -21,6 +23,7 @@
 - 拖车杠安装见 [00-chassis](../00-chassis/)
 - 太阳能电气接入 [04-power-system](../04-power-system/)（MPPT）
 - 车顶件颜色与 [03-exterior-appearance](../03-exterior-appearance/) 协调
+- 车尾淋浴帐的水/电接口见 [05-water-system](../05-water-system/design.md#未来增项预留-车尾车外淋浴)，帐体防水原则见 [09-shower-module](../09-shower-module/)
 
 ## BOM
 
