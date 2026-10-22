@@ -15,7 +15,9 @@
 | [design-spoiler.md](design-spoiler.md) | 前部扰流板降噪 | 待设计 |
 | [design-rear-storage.md](design-rear-storage.md) | 车尾储物箱 + 自行车架（拖车杠方口挂载） | 待设计 |
 | [design-shower-tent.md](design-shower-tent.md) | 车尾横向淋浴帐（带立腿版，硬地/大风备选） | 设计中 |
-| [design-shower-tent-noleg.md](design-shower-tent-noleg.md) | 车尾横向淋浴帐（主推：4 杆框 + 四面 + 顶 + 前片拉链，无腿；2020/摆臂框架） | 改版设计 |
+| [design-shower-tent-noleg.md](design-shower-tent-noleg.md) | 车尾横向淋浴帐（主推：1000 宽 4 杆 2020 框 + 四面 + 顶 + 前片拉链，无腿；后横杆 2×500 中间套管） | 改版设计 |
+
+> 淋浴帐的 **3D 收折动画**：[shower-frame-3d.html](assets/shower-frame-3d.html)（纯 canvas，无需联网，浏览器直接打开；`?t=0` 展开、`?t=1` 收好）。
 
 ## 跨模块依赖
 

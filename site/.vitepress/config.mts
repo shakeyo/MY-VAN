@@ -49,6 +49,7 @@ export default defineConfig({
           { text: 'PVE 基础环境', link: '/docs/deployment/pve-setup' },
           { text: 'Home Assistant', link: '/docs/deployment/home-assistant' },
           { text: 'Frigate NVR', link: '/docs/deployment/frigate' },
+          { text: 'Windows 调试机与核显直通', link: '/docs/deployment/n100-windows-gpu-passthrough' },
           { text: '仪表盘', link: '/docs/deployment/dashboard' },
         ]},
       ],

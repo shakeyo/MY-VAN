@@ -41,7 +41,8 @@
 1. **[PVE 基础环境](./pve-setup.md)** — 安装 Proxmox VE，配置网络与存储
 2. **[Home Assistant](./home-assistant.md)** — 安装 HA，接入 RS485/Modbus 设备
 3. **[Frigate NVR](./frigate.md)** — AI 视频监控部署
-4. **[仪表盘](./dashboard.md)** — 部署 rv-smart-dashboard
+4. **[Windows 调试机与核显直通](./n100-windows-gpu-passthrough.md)** — 车内调试 485 的 Windows 终端（RDP 远程 + HDMI 直显）
+5. **[仪表盘](./dashboard.md)** — 部署 rv-smart-dashboard
 
 ## 网络规划
 
@@ -71,8 +72,14 @@ DHCP 池: 192.168.8.150-192.168.8.250
 |------|------|------|------|
 | 家里 | `ooxx` | `192.168.5.0/24` | 已用 |
 | 车上（过渡） | `iWife`（手机热点） | `172.20.10.0/24` | 已用，无路由器时 |
+| 车上（当前调试） | `FORAGER`（AP 模式 + 手机热点） | `192.168.43.0/24` | **使用中**：PVE `.185`、Windows 调试机 `.210` |
 | 车上（终局） | GL.iNet | `192.168.8.0/24` | 待部署 |
 | Tailscale 虚拟网 | — | `100.64.0.0/10` | Tailscale 自管，**不要动** |
+
+> **当前调试网说明**：`192.168.43.0/24` 是过渡方案（FORAGER 路由器以 AP 模式接在手机热点下），
+> N100 PVE 固定 `192.168.43.185`、Windows 调试机固定 `192.168.43.210`。
+> 迁到终局 `192.168.8.0/24` 时需同步改这两处静态 IP
+> （见 [Windows 调试机与核显直通](./n100-windows-gpu-passthrough.md)）。
 
 > ⚠️ **硬约束：家里与车里的局域网网段必须不同。**
 > 若两边都是 `192.168.8.0/24`，Tailscale 子网路由会因路由表无法区分

@@ -45,14 +45,14 @@
 - [ ] 485 总线布线与继电器模块调试 - **进行中**
 - [ ] 面板线缆改中门柜汇总方案（全车统一 14P + 统一色序） - **待办**
 - [ ] 床头面板（后床 2 键：通风模式 + 灯光模式，双色）+ 床头 4DI+4DO 模块 + 车顶 8 芯屏蔽网线 485 主干 - **规划中，暂不实施**，方案见 [modules/04-power-system/switch-assignment.md](modules/04-power-system/switch-assignment.md) §三之二
-- [ ] N100 部署 PVE/HA/Frigate 环境 - **进行中**
+- [ ] N100 部署 PVE/HA/Frigate 环境 - **进行中**（PVE 8.4 已装；Windows 调试机 + 核显直通 + RDP 已通，见 [docs/deployment/n100-windows-gpu-passthrough.md](docs/deployment/n100-windows-gpu-passthrough.md)；HAOS/Frigate 因 8G 内存上限待排期）
 - [ ] 360 影像扩展与后视镜监控集成 - **待办**
 
 ### 5. 功能模块实现 (Functional Modules)
 
-- [ ] 可移动水箱 + 中门/尾门双加水口：实车量尾门格位 → 买快拆自封件与双注水口 → 阶段 1A 预制与安装 - **设计完成，待下料**，方案见 [modules/05-water-system/design-tank-portability.md](modules/05-water-system/design-tank-portability.md)
+- [ ] 车尾可移副箱 + 中门/尾门双加水口（加水/用水自由切换）：量柜下净空 → 买快拆自封件、双注水口、副箱 → 阶段 1A 预制与安装 - **设计完成，待下料**，方案见 [modules/05-water-system/design-tank-portability.md](modules/05-water-system/design-tank-portability.md)
 - [ ] 淋浴模块：不锈钢接水盆安装与防水测试 - **待办**
-- [ ] 车尾横向淋浴帐（无立腿版）：实测车高/尾门/尾梯尺寸 → 挂臂与挂轨 → 顶框 + 门顶斜撑 + 底撑杆 → 卷袋与接水盘 - **设计完成，待下料**，方案见 [modules/02-external/design-shower-tent.md](modules/02-external/design-shower-tent.md)
+- [ ] 车尾横向淋浴帐（无立腿版）：实测车高/尾门/尾梯尺寸 → 挂臂与挂轨 → 1000 宽顶框 + 后横杆 2×500 + 中间套管 → 卷袋与接水盘 - **设计完成，待下料**，方案见 [modules/02-external/design-shower-tent-noleg.md](modules/02-external/design-shower-tent-noleg.md)（含 [3D 收折动画](modules/02-external/assets/shower-frame-3d.html)）
 - [ ] 户外厨房：重型滑轨与 IGT 模块集成 - **待办**
 - [ ] 智能化排风扇系统 (PWM 调速、亚克力固定) - **待办**
 - [ ] 影音系统：Alpine R600 DSP 调试与扬声器安装 - **待办**

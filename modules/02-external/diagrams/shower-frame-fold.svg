@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" width="1400" height="900" font-family="sans-serif">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#546e7a"/>
+    </marker>
+    <marker id="arwo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ef6c00"/>
+    </marker>
+  </defs>
+  <style>
+    .prof{fill:#cfd8dc;stroke:#78909c;stroke-width:1.2}
+    .prof2{fill:#eceff1;stroke:#90a4ae;stroke-width:1;stroke-dasharray:4 3}
+    .hang{fill:#455a64}
+    .bag{fill:#546e7a;stroke:#37474f;stroke-width:1.4}
+    .fabric{fill:#1565c0;fill-opacity:.08;stroke:#1565c0;stroke-width:1.2;stroke-dasharray:5 4}
+    .dim{stroke:#546e7a;stroke-width:1}
+    .dimO{stroke:#ef6c00;stroke-width:1.1}
+    .lbl{font-size:9px;fill:#455a64}
+    .lblS{font-size:8.5px;fill:#546e7a}
+    .lblB{font-size:9.5px;font-weight:bold;fill:#1565c0}
+    .ok{fill:#2e7d32}
+    .warn{fill:#c62828}
+  </style>
+
+  <rect x="0" y="0" width="1400" height="900" fill="#ffffff"/>
+  <text x="700" y="34" text-anchor="middle" font-size="21" font-weight="bold" fill="#222">车尾淋浴帐 1000 × 1000 · 2020 折叠框折叠顺序（4 格）</text>
+  <text x="700" y="57" text-anchor="middle" font-size="12" fill="#666">前横杆 1000 ｜ 侧臂 1000 = 500+500 ｜ 后横杆 2×500（中间 160 mm 套管 + 插销）｜ 2060 平台后梁 + Z 形挂臂（后伸 200 / 下探 200）｜ 尺寸 mm</text>
+
+  <line x1="700" y1="76" x2="700" y2="862" stroke="#e0e0e0" stroke-width="1.2"/>
+  <line x1="24" y1="457" x2="1376" y2="457" stroke="#e0e0e0" stroke-width="1.2"/>
+
+  <!-- ═════════════════ A. 展开 ═════════════════ -->
+  <text x="40" y="100" font-size="15" font-weight="bold" fill="#1565c0">A · 展开：1000 × 1000 框 + 平台后梁 + 2 个 Z 形挂臂</text>
+  <text x="40" y="120" font-size="10" fill="#777">左：俯视（前横杆 1000 / 侧臂 1000 / 后横杆 2×500）　右：侧视 Z 形挂臂（后伸 200 / 下探 200）</text>
+
+  <!-- 俯视 -->
+  <rect x="90" y="210" width="180" height="180" class="fabric"/>
+  <rect x="40" y="152" width="280" height="8" fill="#b0bec5" stroke="#607d8b" stroke-width="1"/>
+  <text x="180" y="146" font-size="9" fill="#455a64" text-anchor="middle">2060 平台后梁（20×60，四面 T 槽）</text>
+  <rect x="81" y="160" width="8" height="40" class="hang"/>
+  <rect x="271" y="160" width="8" height="40" class="hang"/>
+  <text x="26" y="172" font-size="8" fill="#37474f">Z 形挂臂</text>
+  <text x="26" y="184" font-size="8" fill="#37474f">后伸 200</text>
+  <line x1="110" y1="160" x2="110" y2="200" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="104" y="184" font-size="8" fill="#455a64" transform="rotate(-90 104 184)">200</text>
+
+  <rect x="80" y="200" width="200" height="10" class="prof"/>
+  <rect x="80" y="210" width="10" height="190" class="prof"/>
+  <rect x="270" y="210" width="10" height="190" class="prof"/>
+  <rect x="80" y="390" width="100" height="10" class="prof"/>
+  <rect x="180" y="390" width="100" height="10" class="prof"/>
+  <rect x="172" y="387" width="16" height="16" fill="#cfd8dc" stroke="#78909c" stroke-width="1.2"/>
+  <circle cx="180" cy="395" r="4" fill="#2e7d32"/>
+  <text x="180" y="381" font-size="7.5" fill="#2e7d32" text-anchor="middle">中间插销</text>
+
+  <circle cx="85" cy="205" r="4.5" fill="#1565c0"/>
+  <circle cx="275" cy="205" r="4.5" fill="#1565c0"/>
+  <text x="28" y="206" font-size="7.5" fill="#1565c0">前角 90°</text>
+  <text x="300" y="198" font-size="8" fill="#1565c0">前角 90°</text>
+  <circle cx="85" cy="305" r="5" fill="#ef6c00"/>
+  <circle cx="275" cy="305" r="5" fill="#ef6c00"/>
+  <text x="85" y="324" font-size="8" fill="#ef6c00" text-anchor="middle">中折</text>
+  <text x="275" y="324" font-size="8" fill="#ef6c00" text-anchor="middle">中折</text>
+  <circle cx="85" cy="400" r="5" fill="#ef6c00"/>
+  <circle cx="275" cy="400" r="5" fill="#ef6c00"/>
+  <text x="34" y="415" font-size="8" fill="#ef6c00">后角 90°</text>
+  <text x="300" y="415" font-size="8" fill="#ef6c00">后角 90°</text>
+
+  <text x="180" y="194" font-size="9" fill="#455a64" text-anchor="middle">前横杆 1000</text>
+  <rect x="95" y="222" width="170" height="10" rx="5" class="bag"/>
+  <line x1="180" y1="244" x2="180" y2="233" stroke="#37474f" stroke-width="0.8"/>
+  <text x="180" y="256" font-size="8.5" fill="#37474f" text-anchor="middle">袋卷起（2 道魔术贴）</text>
+  <text x="180" y="336" font-size="9" fill="#1565c0" text-anchor="middle">布：四面 + 顶（宽 950）</text>
+  <text x="180" y="350" font-size="8" fill="#1565c0" text-anchor="middle">随框展开 / 收起</text>
+  <text x="52" y="308" font-size="8.5" fill="#607d8b" transform="rotate(-90 52 308)">侧臂 1000（500+500）</text>
+  <text x="135" y="384" font-size="8" fill="#546e7a" text-anchor="middle">500</text>
+  <text x="225" y="384" font-size="8" fill="#546e7a" text-anchor="middle">500</text>
+
+  <line x1="80" y1="428" x2="280" y2="428" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="180" y="446" font-size="10" fill="#333" text-anchor="middle">1000（框宽）</text>
+  <line x1="320" y1="205" x2="320" y2="400" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="313" y="302" font-size="9" fill="#333" transform="rotate(-90 313 302)">1000（进深）</text>
+
+  <!-- 侧视 inset -->
+  <rect x="396" y="132" width="300" height="312" rx="6" fill="#fbfbfb" stroke="#ececec" stroke-width="1.2"/>
+  <text x="404" y="150" font-size="9" fill="#455a64">侧面：2060 后梁（20×60）+ Z 形挂臂</text>
+  <rect x="404" y="160" width="66" height="180" fill="#eceff1"/>
+  <line x1="470" y1="160" x2="470" y2="340" stroke="#b0bec5" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="430" y="300" font-size="8.5" fill="#78909c" transform="rotate(-90 430 300)">车顶平台 / 车体</text>
+  <rect x="440" y="200" width="30" height="10" fill="#b0bec5" stroke="#607d8b" stroke-width="1"/>
+  <text x="455" y="194" font-size="7.5" fill="#607d8b" text-anchor="middle">20×60</text>
+  <circle cx="470" cy="205" r="4" fill="#37474f"/>
+  <polyline points="470,205 570,205 570,305" fill="none" stroke="#455a64" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="564" y="299" width="12" height="12" class="prof"/>
+  <circle cx="570" cy="324" r="7" class="bag"/>
+  <rect x="561" y="318" width="18" height="3" fill="#37474f"/>
+  <rect x="561" y="328" width="18" height="3" fill="#37474f"/>
+  <line x1="470" y1="178" x2="570" y2="178" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="520" y="172" font-size="9" fill="#455a64" text-anchor="middle">后伸 200</text>
+  <line x1="598" y1="205" x2="598" y2="305" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="610" y="255" font-size="9" fill="#455a64" transform="rotate(-90 610 255)">下探 200</text>
+  <text x="528" y="290" font-size="8.5" fill="#455a64" text-anchor="end">前横杆</text>
+  <text x="570" y="352" font-size="8.5" fill="#37474f" text-anchor="middle">袋卷起 + 魔术贴</text>
+  <text x="600" y="395" font-size="8.5" fill="#999" text-anchor="middle">车尾外侧 →</text>
+
+  <!-- ═════════════════ B. 折后横杆 ═════════════════ -->
+  <text x="740" y="100" font-size="14.5" font-weight="bold" fill="#1565c0">B · 拔中间插销：两段 500 各绕侧臂外端折 90° 贴侧臂</text>
+  <text x="740" y="120" font-size="10" fill="#777">后横杆两端都铰在侧臂外端、没有右后角搭扣；收放只在中间拔 / 插一次销</text>
+
+  <rect x="940" y="390" width="80" height="8" class="prof2"/>
+  <rect x="1040" y="390" width="80" height="8" class="prof2"/>
+  <rect x="930" y="200" width="200" height="10" class="prof"/>
+  <rect x="930" y="210" width="10" height="190" class="prof"/>
+  <rect x="1120" y="210" width="10" height="190" class="prof"/>
+  <rect x="944" y="300" width="8" height="90" class="prof"/>
+  <rect x="1108" y="300" width="8" height="90" class="prof"/>
+
+  <circle cx="935" cy="205" r="4.5" fill="#1565c0"/>
+  <circle cx="1125" cy="205" r="4.5" fill="#1565c0"/>
+  <circle cx="935" cy="305" r="5" fill="#ef6c00"/>
+  <circle cx="1125" cy="305" r="5" fill="#ef6c00"/>
+  <circle cx="935" cy="400" r="5" fill="#ef6c00"/>
+  <circle cx="1125" cy="400" r="5" fill="#ef6c00"/>
+  <line x1="1022" y1="387" x2="1038" y2="403" stroke="#c62828" stroke-width="2"/>
+  <line x1="1038" y1="387" x2="1022" y2="403" stroke="#c62828" stroke-width="2"/>
+  <text x="1030" y="376" font-size="9" fill="#c62828" text-anchor="middle">① 拔中间插销</text>
+
+  <path d="M 1002,386 Q 972,376 962,340" fill="none" stroke="#ef6c00" stroke-width="1.6" marker-end="url(#arwo)"/>
+  <path d="M 1058,386 Q 1088,376 1098,340" fill="none" stroke="#ef6c00" stroke-width="1.6" marker-end="url(#arwo)"/>
+  <text x="1030" y="194" font-size="9" fill="#455a64" text-anchor="middle">前横杆 1000</text>
+  <text x="986" y="330" font-size="8.5" fill="#607d8b">后横杆 500 折 90°</text>
+  <text x="1030" y="430" font-size="9" fill="#2e7d32" text-anchor="middle">折后两半都落在侧臂里（500 &lt; 1000）</text>
+  <text x="1030" y="446" font-size="8.5" fill="#607d8b" text-anchor="middle">侧臂 1000 不动</text>
+
+  <line x1="915" y1="300" x2="915" y2="400" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="908" y="352" font-size="9" fill="#455a64" transform="rotate(-90 908 352)">500</text>
+  <line x1="1145" y1="300" x2="1145" y2="400" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="1152" y="352" font-size="9" fill="#455a64" transform="rotate(-90 1152 352)">500</text>
+
+  <!-- ═════════════════ C. 中折 + 前角折回 ═════════════════ -->
+  <text x="40" y="486" font-size="14" font-weight="bold" fill="#1565c0">C · 侧臂中折 180°（1000→500）+ 前角 90° 折回贴前横杆</text>
+  <text x="40" y="506" font-size="10" fill="#777">折完两根 500 在前横杆中间正好对合（500 + 500 = 1000）；两个中折合页上下错开装，不用给杆错层</text>
+
+  <text x="330" y="552" font-size="8.5" fill="#455a64" text-anchor="middle">3 层（侧臂 2 层 + 后横杆 1 层，示意）</text>
+  <rect x="230" y="600" width="100" height="8" class="prof"/>
+  <rect x="230" y="610" width="100" height="8" class="prof"/>
+  <rect x="230" y="620" width="100" height="8" class="prof"/>
+  <rect x="330" y="600" width="100" height="8" class="prof"/>
+  <rect x="330" y="610" width="100" height="8" class="prof"/>
+  <rect x="330" y="620" width="100" height="8" class="prof"/>
+  <rect x="230" y="634" width="200" height="10" class="prof"/>
+  <circle cx="235" cy="639" r="4.5" fill="#1565c0"/>
+  <circle cx="425" cy="639" r="4.5" fill="#1565c0"/>
+  <circle cx="235" cy="600" r="4" fill="#ef6c00"/>
+  <circle cx="425" cy="600" r="4" fill="#ef6c00"/>
+
+  <path d="M 208,556 Q 186,596 214,628" fill="none" stroke="#ef6c00" stroke-width="1.6" marker-end="url(#arwo)"/>
+  <path d="M 452,556 Q 474,596 446,628" fill="none" stroke="#ef6c00" stroke-width="1.6" marker-end="url(#arwo)"/>
+  <text x="118" y="548" font-size="9" fill="#ef6c00">前角 90° 折回</text>
+  <text x="456" y="548" font-size="9" fill="#ef6c00">前角 90° 折回</text>
+  <text x="330" y="586" font-size="8.5" fill="#607d8b" text-anchor="middle">侧臂各 500（2 层叠合）</text>
+
+  <text x="330" y="658" font-size="9" fill="#455a64" text-anchor="middle">前横杆 1000</text>
+  <line x1="230" y1="676" x2="330" y2="676" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="280" y="692" font-size="9" fill="#455a64" text-anchor="middle">500</text>
+  <line x1="330" y1="676" x2="430" y2="676" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="380" y="692" font-size="9" fill="#455a64" text-anchor="middle">500</text>
+  <line x1="230" y1="716" x2="430" y2="716" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="330" y="732" font-size="9.5" fill="#333" text-anchor="middle">1000（前横杆长度）</text>
+  <text x="330" y="756" font-size="9" fill="#2e7d32" text-anchor="middle">两根 500 在中间正好对合（中折合页一个上、一个下，错开 25–40）：不打架、不超长</text>
+
+  <!-- ═════════════════ D. 收好套袋 ═════════════════ -->
+  <text x="740" y="486" font-size="14" font-weight="bold" fill="#1565c0">D · 收好：并成 1000 一束，套上常驻防水袋</text>
+  <text x="740" y="506" font-size="10" fill="#777">袋顶固定在前横杆下沿（1000 扁铝条 + 2 个 M6 T 螺母）｜展开时袋卷起绑在横杆上方｜拉链在下沿</text>
+
+  <rect x="880" y="532" width="130" height="18" rx="9" fill="#cfd8dc" stroke="#90a4ae" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="945" y="522" font-size="8.5" fill="#607d8b" text-anchor="middle">展开时：袋卷起（2 道魔术贴）</text>
+  <rect x="830" y="558" width="220" height="10" class="prof"/>
+  <text x="826" y="556" font-size="9" fill="#455a64" text-anchor="end">前横杆 1000</text>
+  <rect x="876" y="566" width="8" height="5" fill="#37474f"/>
+  <rect x="1004" y="566" width="8" height="5" fill="#37474f"/>
+  <line x1="1058" y1="567" x2="1016" y2="567" stroke="#37474f" stroke-width="0.8"/>
+  <text x="1062" y="570" font-size="8" fill="#37474f">2×M6 T 螺母</text>
+  <text x="1062" y="538" font-size="8" fill="#455a64">1000 扁铝条（袋顶穿杆套）</text>
+
+  <rect x="825" y="575" width="230" height="110" rx="12" class="bag"/>
+  <text x="940" y="622" font-size="10.5" fill="#eceff1" text-anchor="middle">常驻防水袋 1100 × 280 × 160</text>
+  <text x="940" y="640" font-size="9" fill="#cfd8dc" text-anchor="middle">框 + 布 1000 × 180 × 120</text>
+  <line x1="833" y1="685" x2="1047" y2="685" stroke="#eceff1" stroke-width="3" stroke-dasharray="5 3"/>
+  <text x="940" y="704" font-size="9" fill="#37474f" text-anchor="middle">下沿一整根 #10 拉链 + 底角 8 mm 排水孔</text>
+
+  <path d="M 800,530 Q 760,600 798,660" fill="none" stroke="#ef6c00" stroke-width="1.6" marker-end="url(#arwo)"/>
+  <text x="776" y="682" font-size="9" fill="#ef6c00" text-anchor="middle">⑤ 下拉包住</text>
+
+  <line x1="825" y1="724" x2="1055" y2="724" class="dim" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="940" y="740" font-size="9.5" fill="#333" text-anchor="middle">1000（收起总长）</text>
+  <text x="940" y="770" font-size="9" fill="#555" text-anchor="middle">套袋后外面只看得到袋子；袋跟着框走（拆模块时一起拆）</text>
+  <text x="940" y="786" font-size="8.5" fill="#777" text-anchor="middle">收起厚度 ≈ 180，进深 ≈ 120</text>
+
+  <!-- ═════════════════ 图例 ═════════════════ -->
+  <rect x="48" y="868" width="16" height="8" class="prof"/>
+  <text x="70" y="877" font-size="9.5" fill="#455a64">2020 型材（浅灰）</text>
+  <rect x="198" y="868" width="16" height="8" class="hang"/>
+  <text x="220" y="877" font-size="9.5" fill="#455a64">Z 形挂臂（深灰）</text>
+  <rect x="338" y="868" width="16" height="8" class="bag"/>
+  <text x="360" y="877" font-size="9.5" fill="#455a64">常驻防水袋（深灰）</text>
+  <rect x="500" y="868" width="16" height="8" class="fabric"/>
+  <text x="522" y="877" font-size="9.5" fill="#455a64">布（半透明蓝）</text>
+  <text x="660" y="877" font-size="9.5" fill="#777">橙色 = 折叠方向 / 铰点</text>
+  <text x="900" y="877" font-size="9.5" fill="#777">对应正文 §2.8（design-shower-tent-noleg.md）｜ 尺寸单位 mm</text>
+</svg>
