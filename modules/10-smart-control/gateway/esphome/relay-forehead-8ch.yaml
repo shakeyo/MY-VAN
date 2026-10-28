@@ -2,8 +2,8 @@
 # R1 射灯 / R2 户外灯 / R3 DSP / R4 副驾排气扇 / R5 预留 / R6 MPPT 接触器(备选) / R7-8 预留
 #
 # 【硬件变更】原 R5「户外灯LED」（预留跨箱线）已取消：
-#   LED 全部集中到中门 16DO 模块（地址 0x05），见 do16.yaml。
-#   户外灯 LED = 16DO.Y2，由 do16.yaml 的 led_outdoor 脚本按 sw_outdoor 状态驱动。
+#   LED 全部集中到中门 16DO 模块（地址 0x05），见 relay-mid-16do.yaml。
+#   户外灯 LED = 16DO.Y2，由 relay-mid-16do.yaml 的 led_outdoor 脚本按 sw_outdoor 状态驱动。
 # 【上水泵 48V】中8.Y4，续流二极管 1N5408（见 switch-assignment.md §四）
 # 【按键动作】= 执行 act_xxx script（prod 在 scenes.yaml）
 
@@ -69,17 +69,11 @@ binary_sensor:
   - platform: template
     name: "[额头.DI1] 驾驶室-射灯"
     id: bs_cabin_spot
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_spot
   - platform: template
     name: "[额头.DI2] 驾驶室-倒车灯"
     id: bs_cabin_reverse
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     # 跨模块：按键在额头模块，负载在中8.Y7（倒车灯由中门拉线到车尾）
     # 纯手动，不联动倒挡；车尾已取消模块（见 switch-assignment.md §六）
     on_press:
@@ -87,23 +81,14 @@ binary_sensor:
   - platform: template
     name: "[额头.DI3] 驾驶室-DSP"
     id: bs_cabin_dsp
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_dsp
   - platform: template
     name: "[额头.DI4] 驾驶室-换气风扇"
     id: bs_cabin_fan
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     # TODO: 蓝牙风扇，后期解析协议
   - platform: template
     name: "[额头.DI5] 驾驶室-灯光模式"
     id: bs_cabin_scene
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_scene

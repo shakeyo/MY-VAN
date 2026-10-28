@@ -42,75 +42,76 @@
 2. **[Home Assistant](./home-assistant.md)** — 安装 HA，接入 RS485/Modbus 设备
 3. **[Frigate NVR](./frigate.md)** — AI 视频监控部署
 4. **[Windows 调试机与核显直通](./n100-windows-gpu-passthrough.md)** — 车内调试 485 的 Windows 终端（RDP 远程 + HDMI 直显）
-5. **[仪表盘](./dashboard.md)** — 部署 rv-smart-dashboard
+5. **[车机面板](./dashboard.md)** — ESP32 自托管深蓝 UI（`/dashboard`，离线可用）
 
 ## 网络规划
 
 ### 车内局域网（终局）
 
 ```
-子网: 192.168.8.0/24 (GL.iNet 路由器默认)
+子网: 192.168.10.0/24（车内 Cudy 路由器 LAN；家里是 192.168.5.0/24，互不冲突）
 
-  192.168.8.1    — GL.iNet 路由器 (网关 + DHCP)
-  192.168.8.10   — N100 PVE 管理 IP
-  192.168.8.11   — Home Assistant (HAOS 虚拟机)
-  192.168.8.12   — Frigate (LXC)
-  192.168.8.13   — Mosquitto MQTT (LXC)
-  192.168.8.20   — ESP32 控制板
-  192.168.8.30   — 安卓车机 (Dashboard)
-  192.168.8.100  — DVR 编码器
+  192.168.10.1    — GL.iNet 路由器 (网关 + DHCP)
+  192.168.10.10   — N100 PVE 管理 IP
+  192.168.10.11   — Home Assistant (HAOS 虚拟机)
+  192.168.10.12   — Frigate (LXC)
+  192.168.10.13   — Mosquitto MQTT (LXC)
+  192.168.10.20   — ESP32 控制板
+  192.168.10.30   — 安卓车机 (Dashboard)
+  192.168.10.100  — DVR 编码器
 
-DHCP 池: 192.168.8.150-192.168.8.250
+DHCP 池: 192.168.10.150-192.168.10.250
 ```
 
-选 `192.168.8.0/24` 的理由：**GL.iNet 路由器默认网段，开箱即用无需改**；
-且 ESP32 的 `.20` 在 DHCP 池外，与自动分配地址不会冲突。
+选 `192.168.10.0/24` 为车内网段的理由：**与家里 `192.168.5.0/24` 不冲突**（Tailscale 前置硬约束），
+且 ESP32 / PVE 等固定地址都放在 DHCP 池外。**换网络（家里 WiFi / 手机热点 / 4G CPE）只影响 WAN，
+车内拓扑与 IP 不变**——这就是"不用折腾"的关键。
 
 ### 三张网必须互不冲突（Tailscale 前置约束）
 
 | 场景 | SSID | 网段 | 状态 |
 |------|------|------|------|
 | 家里 | `ooxx` | `192.168.5.0/24` | 已用 |
-| 车上（过渡） | `iWife`（手机热点） | `172.20.10.0/24` | 已用，无路由器时 |
-| 车上（当前调试） | `FORAGER`（AP 模式 + 手机热点） | `192.168.43.0/24` | **使用中**：PVE `.185`、Windows 调试机 `.210` |
-| 车上（终局） | GL.iNet | `192.168.8.0/24` | 待部署 |
+| 车上（当前/终局） | `FORAGER`（Cudy LAN） | `192.168.10.0/24` | **使用中**：PVE 静态 `.10`、Windows 调试机 DHCP（当前 `.101`，建议 Cudy 按 MAC 绑定） |
+| 手机热点（应急） | — | `172.20.10.0/24` | 应急备用，与上面两者不冲突 |
 | Tailscale 虚拟网 | — | `100.64.0.0/10` | Tailscale 自管，**不要动** |
 
-> **当前调试网说明**：`192.168.43.0/24` 是过渡方案（FORAGER 路由器以 AP 模式接在手机热点下），
-> N100 PVE 固定 `192.168.43.185`、Windows 调试机固定 `192.168.43.210`。
-> 迁到终局 `192.168.8.0/24` 时需同步改这两处静态 IP
+> **当前网络说明**：车内网段定为 `192.168.10.0/24`（Cudy LAN），家里 `192.168.5.0/24`，互不冲突。
+> N100 PVE **静态** `192.168.10.10`；Windows 调试机用 **DHCP**（当前 `192.168.10.101`，建议在 Cudy 里按 MAC 绑定固定）。
+> 以后 Cudy 改路由模式（WAN 接家里 WiFi/热点/4G）时，LAN 保持 `192.168.10.0/24` 不变，车内设备 IP 全部不动
 > （见 [Windows 调试机与核显直通](./n100-windows-gpu-passthrough.md)）。
 
 > ⚠️ **硬约束：家里与车里的局域网网段必须不同。**
-> 若两边都是 `192.168.8.0/24`，Tailscale 子网路由会因路由表无法区分
-> 「同一个 `192.168.8.x` 属于哪一边」而**必然冲突**，这是 Tailscale
-> 最经典的翻车点。本项目家里 `192.168.5.x` / 车里 `192.168.8.x` 天然满足。
+> 若两边都是 `192.168.10.0/24`，Tailscale 子网路由会因路由表无法区分
+> 「同一个 `192.168.10.x` 属于哪一边」而**必然冲突**，这是 Tailscale
+> 最经典的翻车点。本项目家里 `192.168.5.x` / 车里 `192.168.10.x` 天然满足。
 >
 > iPhone 个人热点的 `172.20.10.x` 也与此二者不冲突，可放心作为车上过渡网络。
 
-### Tailscale 接法：用子网路由，**不要改局域网网段**
+### 远程访问：Cudy 自带 **ZeroTier**（定稿，替代 Tailscale）
 
-在 **GL.iNet 路由器**上安装 Tailscale，并开启 **Subnet Router**，
-对外广告车内网段 `192.168.8.0/24`：
+> **决策变更（2026-10）**：车内路由器由 GL.iNet 换成 **Cudy TR3000**，其固件**自带 ZeroTier**
+> （VPN → ZeroTier），无需刷机即可实现"外网直连车内全部设备"。
+> 因此 **远程组网不装 Tailscale，也不用在任何 N100/PVE 上装客户端**——符合"网络交给网络、算力交给算力"。
 
-```
-家中设备 ──连上 Tailscale──▶ 直连 192.168.8.11 (HA) / .20 (ESP32) / .10 (PVE)
-```
+配置要点：
+1. `my.zerotier.com` 建 Network，记下 Network ID（Private，节点需手动 Authorize）
+2. Cudy → VPN → ZeroTier → 启用，填 Network ID；
+   **`客户端访问 = 互联网和本地局域网`**（这就是内置的"子网路由/网关"，让客户端访问 `192.168.10.0/24`）
+3. 授权 Cudy 节点；手机/笔记本装 ZeroTier One 加入同一 Network 并授权
+4. 若客户端访问不到 `192.168.10.x`：在 ZeroTier 后台加 **Managed Route** `192.168.10.0/24`
+   → Via 填 Cudy 节点的 ZeroTier IP，并在客户端勾选 **Allow Managed Routes**
 
-这样在家里就能直接访问车内全部设备，**无需修改任何设备的 IP 或网段**。
-把 Tailscale 装在路由器而非 N100 上，是为了「网络转发」与「智能计算」分离
-（重启 PVE 不会中断远程连接，见 [archive/ai-conversations.md](../../archive/ai-conversations.md)）。
+远程可访问：PVE `https://192.168.10.10:8006`、Windows RDP `192.168.10.101:3389`、
+路由器 `192.168.10.1`、后续 HA `.11` / Frigate `.12` 等 —— **整个网段，无需逐条端口映射**。
 
-> **HA 侧还有第二个 Tailscale 入口**：本项目 HA 为 **HAOS（Supervisor 版）PVE 虚拟机**
-> （定稿见 [n100-ha/design.md](../../modules/10-smart-control/n100-ha/design.md)），
-> 其 Tailscale 走 **add-on** 安装——这是**独立的第二条路径**，与路由器的子网路由并存：
-> 路由器那条负责访问车内**局域网设备**（N100/ESP32/摄像头），HA add-on 这条负责
-> 访问 **HA 本体**。两者认证到同一个 tailnet，互不冲突。
+> 保留 Tailscale 方案作为备选：若将来换回 GL.iNet/OpenWrt 路由器，可在路由器上装 Tailscale +
+> 子网路由（广告 `192.168.10.0/24`）。原则不变：**VPN 装在路由器，不装在 PVE**。
 
 ### ESP32 固件的网络约定
 
 - **不要设 `use_address`**：写死 IP 会让 OTA 在换网段后失效（如在家 `192.168.5.18`
-  写的固件拿到车上 `192.168.8.x` 就连不上）。留空时 ESPHome 自动用 mDNS
+  写的固件拿到车上 `192.168.10.x` 就连不上）。留空时 ESPHome 自动用 mDNS
   `${name}.local`（本机为 `myvan-485-gateway.local`），**任何网段都能 OTA**。
 - **SSID/密码集中在 `secrets.yaml`**（`modules/10-smart-control/gateway/esphome/`，
   权限 `600`，已在 `.gitignore` 中排除）。当前 4 份固件共用 `wifi_home_*`、
@@ -121,7 +122,7 @@ DHCP 池: 192.168.8.150-192.168.8.250
 
 ## 快速开发环境
 
-如果只是想先在笔记本上体验和开发仪表盘，不需要 N100 硬件：
+如果只是想先在笔记本上体验和开发，不需要 N100 硬件：
 
 ```bash
 # 进入 dev-environment 目录
@@ -132,10 +133,9 @@ docker compose up -d
 
 # HA 访问 http://localhost:8123
 # MQTT 端口 localhost:1883
-
-# 然后启动仪表盘
-cd ../rv-smart-dashboard
-pnpm install && pnpm dev
 ```
+
+> 车机面板本身由 ESP32 自托管（见 [车机面板](./dashboard.md)），无需单独的仪表盘前端；
+> 本地开发环境仅用于调试 HA 自动化 / MQTT，不承担面板托管。
 
 详细说明见 [dev-environment 开发环境](../../software/dev-environment/)。

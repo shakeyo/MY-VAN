@@ -8,12 +8,12 @@
 #     Y4 = 预留
 #   ⚠ 本模块 DO 为 5A 规格，**不得接 10A 级负载**（主灯/氛围灯/冰箱仍在 中8）。
 #   ⚠ switch 的 id 保持不变（sw_pump/sw_valve/sw_fan_rear），
-#     因此 base.yaml / scenes.yaml / do16.yaml 的引用无需改动。
+#     因此 base.yaml / scenes.yaml / relay-mid-16do.yaml 的引用无需改动。
 #
 # DI: DI1 主控键5（冰箱）/ DI2 主控键6（灯光模式）/ DI3-4 预留
 #
 # 【硬件变更】原 Y1/Y2/Y3 曾被当作「夜灯LED/明亮LED/冰箱LED」——已全部取消：
-#   LED 集中到中门 16DO 模块（地址 0x05），见 do16.yaml。
+#   LED 集中到中门 16DO 模块（地址 0x05），见 relay-mid-16do.yaml。
 # 【按键动作】= 执行 act_xxx script（prod 在 scenes.yaml）
 
 # 线圈地址：Y1=0x0000、Y2=0x0001、Y3=0x0002、Y4=0x0003（通道 N = 地址 N-1）
@@ -77,16 +77,10 @@ binary_sensor:
   - platform: template
     name: "[中4.DI1] 主控-冰箱"
     id: bs_bed_fridge
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_fridge
   - platform: template
     name: "[中4.DI2] 主控-灯光模式"
     id: bs_bed_scene
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_scene_bed

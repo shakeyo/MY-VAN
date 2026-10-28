@@ -3,28 +3,36 @@
 # 烧录: esphome run prod.yaml
 #
 # 文件结构:
-#   rs485.yaml     485 写帧公共件（DE 时序 + 参数化写帧脚本）
-#   base.yaml      基础（网络/串口/上电策略/场景状态/DI 上传驱动解析）
-#   forehead.yaml  额头模块（地址 0x01）
-#   mid8.yaml      中门 8 路（地址 0x02）
-#   mid4.yaml      中门 4 路（地址 0x03）
-#   do16.yaml      中门 16DO（地址 0x05）—— 全部 LED
-#   mppt.yaml      光伏控制器（地址 0x10）—— 监控 + 控制 + 本地自动化
-#   scenes.yaml    场景自动化脚本
+#   rs485.yaml            485 写帧公共件（DE 时序 + 参数化写帧脚本）
+#   base.yaml             基础（网络/串口/上电策略/场景状态/DI 上传驱动解析）
+#   relay.yaml            继电器模块汇总（含 4 个子模块 + 模块×站号×路数索引表）
+#     ├─ relay-forehead-8ch.yaml  额头 8 路继电器（地址 0x01）
+#     ├─ relay-mid-8ch.yaml       中门 8 路继电器（地址 0x02）—— 纯负载
+#     ├─ relay-mid-4ch.yaml       中门 4 路继电器（地址 0x03）—— 低功率负载
+#     └─ relay-mid-16do.yaml      中门 16DO（地址 0x05）—— 全部 LED
+#   mppt.yaml             光伏控制器（地址 0x10）—— 监控 + 控制 + 本地自动化
+#   pzem-tf03k.yaml       库仑计 TF03K —— 独立第二路 UART(19200 只收) + 16 字节帧解析
+#   scenes.yaml           场景自动化脚本
+#
+# 命名规范：所有继电器模块统一 relay-<位置>-<路数>.yaml
+#   <位置> = forehead(额头) / mid(中门)；<路数> = 8ch / 4ch / 16do
 #
 # 按键架构：模块主动上传驱动（FC06 0031H=1），零轮询、零总线竞争
 # 按键触发方式：X 与 COM 间电压差（双向光耦，任一极性），COM 必须接电源一极
 #
-# 485 地址占用：1=额头 2=中8 3=中4 5=16DO；0x10=MPPT 0x11=PZEM-017；0x20+ 传感器
+# 485 地址占用：1=额头 2=中8 3=中4 5=16DO；0x10=MPPT；0x20+ 传感器
+#   ⚠ 库仑计 TF03K **不在**此总线：它固定 19200、无地址、私有主动上报，
+#     走 base.yaml 之外的第二路 UART（coulomb_uart），见 pzem-tf03k.yaml
 # ⚠ 波特率 38400（出厂默认）→ 全车终局 9600，改造步骤见 build-guide.md §4.7
 # =============================================================
 
 packages:
   rs485: !include rs485.yaml
   base: !include base.yaml
-  forehead: !include forehead.yaml
-  mid8: !include mid8.yaml
-  mid4: !include mid4.yaml
-  do16: !include do16.yaml
+  relay: !include relay.yaml
   mppt: !include mppt.yaml
   scenes: !include scenes.yaml
+  panel: !include panel.yaml
+  tf03k: !include pzem-tf03k.yaml
+  scene_state: !include scene-state.yaml
+  system: !include system.yaml

@@ -1,10 +1,16 @@
 # 场景自动化脚本（按键动作 / 灯光模式 / 离车驻车 / 排气扇 / 主控键1 长按）
 #
-# 【LED 变更】LED 全部在中门 16DO（地址 0x05），见 do16.yaml。
+# 【LED 变更】LED 全部在中门 16DO（地址 0x05），见 relay-mid-16do.yaml。
 #   场景键 LED 为**单色**（switch-assignment.md §LED 策略：亮=进入模式，灭=正常）：
 #     离车/驻车 LED = 16DO.Y4（sw_led_y4）
 #     灯光模式 LED  = 16DO.Y10（sw_led_y10）
 #   原红绿双色脚本（sw_led_camp_red/green、sw_led_scene_red/green）已废弃。
+#
+# 【场景键节流 2026-10-23 实测】场景键一次触发要改 10+ 路继电器（每路一帧 485），
+#   DI 抖动/连按会让写帧瞬间打满 rs485_write 队列（ESPHome 2026.7 queued 默认
+#   max_runs=5）→ 超出的写帧被静默丢弃 → 表现为「继电器时动时不动」。
+#   处理：① rs485.yaml 的 rs485_write 加 max_runs: 20；
+#         ② 各 *_scene_next 末尾加 delay: 600ms，靠 mode: single 丢弃 600ms 内的重复触发。
 
 script:
   # ---- 按键动作（每键一个，对应各模块文件 on_press 的 script.execute）----
@@ -54,6 +60,7 @@ script:
     then:
       - lambda: 'id(light_scene) = (id(light_scene) + 1) % 3;'
       - script.execute: apply_light_scene
+      - delay: 600ms   # 场景键节流：见文件头说明（mode: single 会把 600ms 内的重复触发丢掉）
 
   - id: apply_light_scene
     mode: single
@@ -92,6 +99,7 @@ script:
     then:
       - lambda: 'id(camp_scene) = (id(camp_scene) + 1) % 3;'
       - script.execute: apply_camp_scene
+      - delay: 600ms   # 场景键节流：见文件头说明
 
   - id: apply_camp_scene
     mode: single
@@ -138,7 +146,7 @@ script:
             - switch.turn_off: sw_led_y4
 
   # 排气扇：0 全关 → 1 仅后窗 → 2 全开 循环
-  # （LED 由 led_fan 脚本跟随 sw_fan_rear 状态，见 do16.yaml）
+  # （LED 由 led_fan 脚本跟随 sw_fan_rear 状态，见 relay-mid-16do.yaml）
   - id: fan_scene_next
     mode: single
     then:
@@ -164,6 +172,7 @@ script:
             - logger.log: "场景: 排气扇-全开"
             - switch.turn_on: sw_fan_rear
             - switch.turn_on: sw_fan_pass
+      - delay: 600ms   # 场景键节流：见文件头说明
 
   # 主控键1 长按 2s 计时器（到达则灯光全关，短按逻辑在 on_release 里）
   - id: key1_hold_timer

@@ -1,6 +1,6 @@
 # Docker Compose 开发环境
 
-在本地笔记本上快速搭建 Home Assistant + MQTT 后端，用于仪表盘开发调试。**不需要 N100 硬件**。
+在本地笔记本上快速搭建 Home Assistant + MQTT 后端，用于 HA 自动化 / MQTT 联调。**不需要 N100 硬件**。
 
 ## 一键启动
 
@@ -20,9 +20,11 @@ docker compose up -d
 
 1. 访问 http://localhost:8123
 2. 创建 HA 账号
-3. 进入 `个人设置` → `长期访问令牌` → 创建令牌
-4. 复制令牌，在仪表盘 `.env` 中设置 `VITE_HA_TOKEN`
-5. 启动仪表盘：`cd ../rv-smart-dashboard && pnpm dev`
+3. 进入 `个人设置` → `长期访问令牌` → 创建令牌（如需在 HA 自动化/脚本中调用外部服务）
+
+> 车机面板已由 ESP32 自托管（`http://<esp32-ip>/dashboard`，见
+> [gateway/esphome/README.md](../../modules/10-smart-control/gateway/esphome/README.md)），
+> 不依赖本开发环境，也无需单独的仪表盘前端。
 
 ## 模拟设备数据
 

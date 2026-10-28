@@ -64,8 +64,8 @@ palate.sensor.battery_voltage
 | 位置 | 改动 | 状态 |
 |------|------|------|
 | `software/home-assistant-config/configuration.yaml` | `homeassistant.name` → `FORAGER` | ✅ |
-| `software/rv-dashboard/src/components/dashboard/Header.tsx` | 品牌字 → `FORAGER` / `UM` | ✅ |
-| `software/rv-dashboard/index.html` | `<title>` → `FORAGER · 觅食者` | ✅ |
+| `modules/10-smart-control/gateway/esphome/web/index.html` | 品牌字 → `FORAGER` / `FG` logo | ✅ |
+| `modules/10-smart-control/gateway/esphome/web/index.html` | `<title>` → `FORAGER · 觅食者号` | ✅ |
 | `README.md` | 首句增加车名与 Flavor Explorer 叙事 | ✅ |
 | `site/.vitepress/config.mts` | 站点标题（如需要） | ⬜ 待议 |
 | 车尾字 / 车牌框 | 物理落地：`UMAMI` | ⬜ 物理施工 |

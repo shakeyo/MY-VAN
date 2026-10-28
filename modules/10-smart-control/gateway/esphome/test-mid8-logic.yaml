@@ -36,7 +36,7 @@ esphome:
         - switch.turn_off: sw_fan_rear
         - switch.turn_off: sw_pump
         - switch.turn_off: sw_valve
-        # 离车/驻车 LED = 中门 16DO.Y4（单色）。全部 LED 已迁至 16DO（见 do16.yaml），
+        # 离车/驻车 LED = 中门 16DO.Y4（单色）。全部 LED 已迁至 16DO（见 relay-mid-16do.yaml），
         # 桌面固件无 16DO 模块，此处仅作占位说明，不引用实体（避免找不到 ID）
 
 api:

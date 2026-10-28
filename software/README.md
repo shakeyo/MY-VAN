@@ -6,23 +6,21 @@
 
 | 目录 | 说明 | 技术栈 |
 |------|------|--------|
-| [rv-dashboard](./rv-dashboard/) | 房车智能仪表盘（前端） | React 18 + TypeScript + Vite + Tailwind |
 | [home-assistant-config](./home-assistant-config/) | Home Assistant 配置模板 | YAML |
 | [dev-environment](./dev-environment/) | 本地开发环境（HA + MQTT） | Docker Compose |
+
+> 车机控制面板（深蓝 UI）已并入 ESP32 固件、由 ESP32 自托管（离线可用），
+> 见 [modules/10-smart-control/gateway/esphome/web/index.html](../modules/10-smart-control/gateway/esphome/web/index.html)，
+> 不再作为独立前端项目维护。
 
 ## 快速开始
 
 ### 本地开发（无需 N100 硬件）
 
 ```bash
-# 1. 启动 HA + MQTT 开发环境
+# 启动 HA + MQTT 开发环境
 cd dev-environment
 docker compose up -d
-
-# 2. 配置 HA 访问令牌，启动仪表盘
-cd ../rv-dashboard
-pnpm install
-pnpm dev
 ```
 
 ### 部署到房车

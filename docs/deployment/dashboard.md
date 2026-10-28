@@ -1,105 +1,47 @@
-# 仪表盘部署
+# 车机面板部署
 
-rv-smart-dashboard 是配套的 React 前端仪表盘，部署在安卓车机或平板上，通过 HA WebSocket API 实时展示车况。
+车机面板是一个**自包含的深蓝 UI**（仿原 React 仪表盘主题），**由 ESP32 自己托管**，手机/安卓车机打开即用，完全离线，不依赖 N100 / HA / 外网。
+
+- 面板本体：`modules/10-smart-control/gateway/esphome/web/index.html`（原生 HTML/CSS/JS，零依赖）
+- 数据来源：ESPHome 原生 REST（开关 `/switch/<name>`、光伏 `/sensor/<name>`、场景档位）
+- 机制详见：[gateway/esphome/README.md](../../modules/10-smart-control/gateway/esphome/README.md)「手机控制面板」小节
+
+> 原 `rv-smart-dashboard`（React + Vite，部署在 N100/Nginx）已废弃并删除，由 ESP32 自托管面板取代。
 
 ## 部署位置
 
 | 设备 | 位置 | 用途 |
 |------|------|------|
-| 安卓车机 (10-13") | 生活区壁挂 | 主控面板，Fully Kiosk 全屏锁定 |
-| 手机/平板 | 移动使用 | 随时查看、控制 |
+| 安卓车机 / 手机 | 生活区壁挂 + 随身 | 主控面板，Fully Kiosk 全屏锁定（车机） |
+| 兜底热点 | ESP32 自身 AP（`FORAGER-GATEWAY`） | 无路由器时手机直连 `192.168.4.1` |
 
-## 方式一：安卓车机部署（推荐）
+## 访问入口
 
-### 步骤
+```
+http://<esp32-ip>/dashboard          # 主用（车内 192.168.10.20 或家里 DHCP 地址）
+http://192.168.4.1/dashboard         # 兜底 AP（连 ESP32 热点 FORAGER-GATEWAY 后）
+```
+
+原生 ESPHome web_server 前端仍在 `/`（调试/OTA 用），两者并存互不干扰。
+
+## 烧录与更新
+
+面板页面是打进固件 Flash 的，改界面后必须**重新编译 + 烧录**才生效：
 
 ```bash
-# 1. 在开发机器上构建生产版本
-cd software/rv-smart-dashboard
-pnpm install
-pnpm build
-
-# 2. 上传到 N100 的 Web 服务目录
-scp -r dist/* root@192.168.8.10:/var/www/dashboard/
-
-# 3. 在 N100 上安装 Nginx
-apt install -y nginx
+cd modules/10-smart-control/gateway/esphome
+esphome run prod.yaml                # 编译 + USB 烧录 + 进日志（首次需 USB）
+# 或 OTA（设备同网段时）：
+esphome upload prod.yaml --device myvan-485-gateway.local
 ```
 
-Nginx 配置 `/etc/nginx/sites-available/dashboard`：
+详见 [build-guide.md §6.5](../../modules/10-smart-control/gateway/build-guide.md)。
 
-```nginx
-server {
-    listen 8080;
-    server_name _;
-    root /var/www/dashboard;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # 代理 HA API（避免跨域问题）
-    location /api/ha/ {
-        proxy_pass http://192.168.8.11:8123/api/;
-        proxy_set_header Host $host;
-        proxy_set_header Authorization $http_authorization;
-    }
-}
-```
-
-```bash
-ln -s /etc/nginx/sites-available/dashboard /etc/nginx/sites-enabled/
-nginx -t && systemctl reload nginx
-```
-
-### 车机访问
-
-在安卓车机浏览器中打开：`http://192.168.8.10:8080`
-
-安装 Fully Kiosk Browser 锁定到此页面即可。
-
-## 方式二：开发环境
-
-在笔记本上开发调试：
-
-```bash
-cd software/rv-smart-dashboard
-pnpm install
-pnpm dev
-# 访问 http://localhost:5173
-```
-
-配合 [dev-environment 开发环境](../../software/dev-environment/) 可以模拟完整的 HA 后端。
-
-## 环境变量配置
-
-生产构建时，设置 HA 连接信息：
-
-```bash
-# .env.production
-VITE_HA_URL=http://192.168.8.11:8123
-VITE_HA_TOKEN=your_long_lived_access_token
-```
-
-在 HA 中创建长期访问令牌：`个人设置` → `长期访问令牌` → `创建令牌`
-
-## 安卓车机 Fully Kiosk 配置
+## 车机 Fuly Kiosk 配置（安卓车机，可选）
 
 1. 安装 Fully Kiosk Browser
-2. 设置起始 URL：`http://192.168.8.10:8080`
+2. 起始 URL 设为 `http://<esp32-ip>/dashboard`
 3. 启用 Kiosk 模式（全屏 + 隐藏导航栏）
-4. 设置屏幕常亮（仅充电时）
-5. 启用运动检测唤醒（靠近自动亮屏）
-6. 配置 MQTT（可选，用于 HA 远程控制车机屏幕）
+4. 屏幕常亮（仅充电时）、运动检测唤醒（靠近自动亮屏）
 
-## 更新部署
-
-```bash
-#!/bin/bash
-# deploy.sh — 一键部署脚本
-cd software/rv-smart-dashboard
-pnpm build
-rsync -avz --delete dist/ root@192.168.8.10:/var/www/dashboard/
-echo "部署完成，访问 http://192.168.8.10:8080"
-```
+> 面板是**移动端优先**布局，手机浏览器直接打开即可获得最佳观感；无需 HA / Nginx 中转。

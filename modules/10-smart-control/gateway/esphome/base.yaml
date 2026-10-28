@@ -84,20 +84,42 @@ esp32:
 
 web_server:
   port: 80
+  # 【离线可用 2026-10-27 实测】web_server 默认从 CDN 拉前端：
+  #   v2 → https://oi.esphome.io/v2/www.js
+  #   v3 → https://oi.esphome.io/v3/www.js   ← 光写 version: 3 **仍然会**请求 CDN！
+  # 车载/兜底 AP 无外网时 JS 加载失败 → 页面空白。
+  # 必须同时加 **local: true**（把前端打进 flash，USE_WEBSERVER_LOCAL），
+  # 才是真正离线可用。缺了它 version: 3 只是换了 CDN 地址。
+  version: 3
+  local: true
 
 wifi:
-  # 按顺序尝试；都连不上则自动开下方 AP（车上无路由器时直接可用）
+  # 【双网络 2026-10-27】按顺序尝试：先家里 ooxx（家里调试方便），失败再试车上 FORAGER。
+  # ESPHome 是「逐条尝试直到连上」，所以两条都在时不会互相干扰；
+  # 两条都连不上 → 自动开兜底 AP（FORAGER-GATEWAY）。
+  # 上车后家里 SSID 扫不到，会直接落到 FORAGER，无额外开销。
   networks:
-    - ssid: !secret wifi_home_ssid       # 家里 wifi ooxx（192.168.5.x）
+    - ssid: !secret wifi_home_ssid       # 家里 ooxx（192.168.5.x）· 桌面/家里调试
       password: !secret wifi_home_password
-    - ssid: !secret wifi_phone_ssid      # 手机热点 iWife（172.20.10.x）——车上无路由器时用
-      password: !secret wifi_phone_password
-    # - ssid: !secret wifi_van_ssid      # 车上 GL.iNet（192.168.8.x）——路由器到位后启用
-    #   password: !secret wifi_van_password
+    - ssid: !secret wifi_van_ssid        # 车上 FORAGER（192.168.10.x）· 装车后主用
+      password: !secret wifi_van_password
   # ⚠ 不要设 use_address：写死 IP 会让 OTA 在其他网段失效，交给 mDNS 自动发现
+  # 【兜底 AP 2026-10-27】手机连上后"网页打不开"的根因不是网段，而是少了手动 IP：
+  #   手机连无互联网的 AP 时通常仍走蜂窝数据，DHCP 有时也拿不到/丢路由 →
+  #   请求根本没进 ESP32。对策：① 显式给 AP 手动 IP（默认 ap 用 192.168.4.1，
+  #   这里是 ESPHome 默认值，写出来便于记忆）；② 保留 captive_portal，
+  #   连上即弹认证页；③ 文档写明"连上后若不通，手动设 IP 192.168.4.2/24"。
   ap:
-    ssid: "myvan-ap"          # 兜底 AP（调试用），与车上热点名区分
+    ssid: "FORAGER-GATEWAY"   # 兜底热点（家里/车上 WiFi 都连不上时才开）
     password: "12345678"
+    # 【2026-10-27】默认 ap_timeout=90s：家里 WiFi 信号弱时会先尝试连家里，
+    # 超过 90s 才开 AP；调试时嫌慢可改小（如 30s）。上车后家里 SSID 扫不到，
+    # 会很快落到 FORAGER 并连上，AP 不会开。
+    ap_timeout: 90s
+    manual_ip:
+      static_ip: 192.168.4.1
+      gateway: 192.168.4.1
+      subnet: 255.255.255.0
 captive_portal:
 
 logger:
@@ -108,28 +130,69 @@ logger:
   #   → 看日志请插 ESP32 原生 USB 口（VID 0x303a，口名 usbmodem*）。
   hardware_uart: USB_SERIAL_JTAG
 
+# 【2026-10-28 列表化】原为单实例映射写法（uart: 下直接写 id/tx_pin/...）。
+# 引入 TF03K 库仑计需要**第二路 UART**（pzem-tf03k.yaml 的 coulomb_uart，19200 只收）。
+# ESPHome 的 uart 支持多实例，但 packages 合并时**映射写法与列表写法不能共存**：
+# 若 base 用映射、另一 package 用列表，映射那一路会被覆盖 → rs485_bus 丢失
+# （实测报错：Couldn't find ID 'rs485_bus'）。故此处统一改为列表形式。
+# ⚠ 本段改动只影响写法，不改变 485 的引脚/波特率，行为与改动前一致。
 uart:
-  id: rs485_bus
-  tx_pin: GPIO15
-  rx_pin: GPIO16
-  baud_rate: 38400
+  - id: rs485_bus
+    tx_pin: GPIO15
+    rx_pin: GPIO16
+    baud_rate: 38400
 
-# ============ DI 按键：模块主动上传驱动 ============
-# 模块输入变化即发上传帧（<地址> 04 02 <16位位图> <CRC>），零轮询、总线空闲时无流量
-# 100ms 高频读缓冲，只解析上传帧并按模块地址分发到对应按键
+# ============ DI 按键：主动上传 + 补释放沿（最终方案，2026-10-23 实测通过）============
+# 模块输入变化即发上传帧（<地址> 04 02 <16位位图> <CRC>）；实测释放帧会丢约一半，
+# 故对「重复为 1」的上传帧补一次释放沿（500ms 门限防抖动双动）。
+# ⚠ 两个不要做：① 不要加周期性 FC04 轮询（10Hz 约 50s 把模块打到不响应任何请求）；
+#   ② DI 模板传感器不要挂 filters（delayed_on 吞短按、delayed_off 吞快速连按）。
+# 详见 build-guide §6.4 第 8~11 条。
 interval:
   - interval: 100ms
     then:
       - script.execute: read_upload
+  # 【2026-10-23 重要】曾加「每 100ms FC04 轮询兜底」，实测约 50 秒后模块被轮询
+  #   打挂：polls 计数归零、连继电器写帧也不再响应（上传帧还在发，说明模块没断电）。
+  #   说明这个价位模块扛不住 10 次/秒的请求流。→ **撤掉周期性轮询**，
+  #   按键可靠性改由「补释放沿 + 500ms 防抖」保证（实测 8 连击 8/8）。
+  #   若以后仍需轮询兜底，必须把周期放到 ≥1s，并且轮询期间不得同时连发写帧。
+  # 【诊断 2026-10-23】每 30s 打一次计数（排查「按几次后失灵」用）：
+  #   polls 应 ≈ 200（150ms 一次 × 30s），明显低于 200 = 轮询被拖慢/总线异常；
+  #   keys = 期间收到的主动上传帧数（每次按键正常 2 帧）。
+  #   ⚠ 稳定后删掉本段 + globals 里的 g_poll_cnt / g_di_cnt。
+  - interval: 30s
+    then:
+      - lambda: |-
+          ESP_LOGI("stat", "polls=%d keys=%d heap=%u de=%d", id(g_poll_cnt), id(g_di_cnt), (unsigned) ESP.getFreeHeap(), (int) gpio_get_level((gpio_num_t) ${de_pin}));
+          id(g_poll_cnt) = 0;
+          id(g_di_cnt) = 0;
+
+  # 【上传使能保活 2026-10-23】模块 12V 断电重启后，保持寄存器 0031H（输入主动上传使能）
+  # 状态不确定（手册写明「掉电保存状态不确定」）。ESP32 只在自身 on_boot 写一次，
+  # 若车上只给模块断电（保险/接线检修），按键就会全哑。→ 每 60s 重写一次，
+  # 成本 2 帧/分钟，对总线无压力（对比：10Hz 轮询曾在 50s 内把模块打到不响应任何请求）。
+  - interval: 60s
+    then:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xC5]
+      - delay: 50ms
+      - script.execute:
+          id: rs485_write
+          frame: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
 
 script:
   - id: read_upload
     mode: single
     then:
       - lambda: |-
-          uint8_t buf[64];
-          int len = 0;
-          while (id(rs485_bus).available() && len < 64) {
+          // buf/len 用 static 跨 tick 保留：一帧 7 字节 @38400 只占约 2ms，
+          // 但 100ms 的 tick 有约 2% 概率正好切在帧中间——残帧若丢弃，
+          // 这一下按键就凭空消失了（表现为偶发丢键）。
+          static uint8_t buf[64];
+          static int len = 0;
+          while (id(rs485_bus).available() && len < 60) {
             uint8_t b;
             if (id(rs485_bus).read_byte(&b)) buf[len++] = b;
           }
@@ -143,12 +206,22 @@ script:
           // 中4(4DI) 可能为 04 01。早期代码统一按 04 02 解析，
           // 中4 一旦上报 1 字节就会整体错位、CRC 校验失败而丢帧（按键失灵）。
           // 现改为：读帧内自带的字节数 N，按 3+N+2 算帧长，再校验 CRC。
-          for (int i = 0; i + 4 < len; i++) {
-            if (buf[i] != 0x01 && buf[i] != 0x02 && buf[i] != 0x03) continue;  // 只要已知模块地址
-            if (buf[i+1] != 0x04) continue;                                    // FC04 输入寄存器
+          //
+          // 【一 tick 内可能有多帧】快速点按（<100ms）时「按下帧」和「释放帧」
+          // 会同时落进同一个 100ms tick 的缓冲区。早期版本只解析第一帧就 break，
+          // 释放帧被丢掉 → 该按键状态卡在“按下” → 下一次按键 publish 同值
+          // 不触发 on_press，表现为「按一下有用、下一次没反应」的随机丢键。
+          // 现在：扫完整个缓冲区，逐帧解析，全部处理。
+          int i = 0;
+          while (i + 4 < len) {
+            if (buf[i] != 0x01 && buf[i] != 0x02 && buf[i] != 0x03) { i++; continue; }  // 只要已知模块地址
+            if (buf[i+1] != 0x04) { i++; continue; }                                    // FC04 输入寄存器
             uint8_t n = buf[i+2];
-            if (n < 1 || n > 2) continue;                                      // 位图 1~2 字节
-            if (i + 3 + n + 2 > len) continue;                                 // 帧未收全，等下次
+            // n=1/2  = 模块主动上传帧（位图 1~2 字节）
+            // n=16   = 主站 FC04 轮询回包（8 个输入寄存器 = 16 字节，见下解码）
+            if (n != 1 && n != 2 && n != 0x10) { i++; continue; }
+            int flen = 3 + n + 2;
+            if (i + flen > len) break;                                                  // 帧未收全：留到下一 tick，不丢
             uint16_t crc = 0xFFFF;
             for (int k = i; k < i + 3 + n; k++) {
               crc ^= buf[k];
@@ -158,13 +231,54 @@ script:
               }
             }
             // CRC16-Modbus 低字节在前
-            if ((uint8_t) crc != buf[i+3+n] || (uint8_t) (crc >> 8) != buf[i+3+n+1]) continue;
-            // 位图按大端拼成 16 位（n=1 时只有低 8 位有效）
+            if ((uint8_t) crc != buf[i+3+n] || (uint8_t) (crc >> 8) != buf[i+3+n+1]) { i++; continue; }
             uint16_t r = 0;
-            for (int k = 0; k < n; k++) r = (r << 8) | buf[i+3+k];
-            ESP_LOGI("di", "keys addr=%02X n=%d: %04X", buf[i], n, r);
+            static uint16_t last_poll_r[4] = {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
+            // 【重复按下补偿 2026-10-23】模块只在输入变化时发上传帧，且实测「释放帧」
+            // 会丢约一半。若同一个上传帧里某一位又出现 1，而上次上传帧这一位已经是 1，
+            // 说明中间那次「释放」丢了 —— 必须先补一个释放沿，再补按下沿，
+            // 否则 ESPHome 的 binary_sensor 停在 ON，on_press 不会再触发 → 连点漏按。
+            // 只对主动上传帧（n=1/2）做补偿；轮询回包是周期性的，重复 1 不代表新按下。
+            static uint16_t last_up_r[4] = {0, 0, 0, 0};
+            uint16_t rep = 0;
+            if (n == 0x10) {
+              // FC04 轮询回包：8 个输入寄存器，reg0=X1 … reg7=X8，按下=0x0001（大端 2 字节/寄存器）
+              // 逐寄存器取非零 → 位图，与主动上传帧的位图语义一致
+              for (int k = 0; k < 8; k++) {
+                if (buf[i + 3 + 2 * k] != 0 || buf[i + 3 + 2 * k + 1] != 0) r |= (1 << k);
+              }
+              id(g_poll_cnt)++;
+              // 只在变化时打日志：轮询 6.7 次/秒，每帧都打会把 API 日志通道灌满，
+              // 关键事件（按键/继电器）反而被丢掉（2026-10-23 踩坑）
+              int slot = buf[i] & 0x03;
+              if (r != last_poll_r[slot]) {
+                last_poll_r[slot] = r;
+                ESP_LOGI("poll", "addr=%02X inputs=%04X", buf[i], r);
+              }
+            } else {
+              // 上传帧位图按大端拼成 16 位（n=1 时只有低 8 位有效）
+              for (int k = 0; k < n; k++) r = (r << 8) | buf[i+3+k];
+              id(g_di_cnt)++;
+              int slot = buf[i] & 0x03;
+              rep = r & last_up_r[slot];      // 仍是 1 的位 = 中间丢过释放帧
+              // 【抖动抑制】按键触点抖动时，一次物理按下会在几百 ms 内发好几个
+              // 「0008→(释放帧丢失)→0008」。若每个都补释放沿，一次按会动两下。
+              // 规则：同一模块 500ms 内的重复 1 位不再补沿（只认第一次）。
+              // 代价：释放帧丢失且两次真实按下间隔 <500ms 时，第二次会被抑制。
+              static uint32_t last_press_ms[4] = {0, 0, 0, 0};
+              uint32_t now_ms = millis();
+              if (rep && (now_ms - last_press_ms[slot] < 500)) rep = 0;
+              if (r != 0) last_press_ms[slot] = now_ms;
+              last_up_r[slot] = r;
+              ESP_LOGI("di", "keys addr=%02X n=%d: %04X%s", buf[i], n, r, rep ? " (补释放沿)" : "");
+            }
             switch (buf[i]) {
               case 0x01:  // 额头
+                if (rep & 0x01) id(bs_cabin_spot).publish_state(false);
+                if (rep & 0x02) id(bs_cabin_reverse).publish_state(false);
+                if (rep & 0x04) id(bs_cabin_dsp).publish_state(false);
+                if (rep & 0x08) id(bs_cabin_fan).publish_state(false);
+                if (rep & 0x20) id(bs_cabin_scene).publish_state(false);
                 id(bs_cabin_spot).publish_state(r & 0x01);
                 id(bs_cabin_reverse).publish_state(r & 0x02);
                 id(bs_cabin_dsp).publish_state(r & 0x04);
@@ -172,6 +286,14 @@ script:
                 id(bs_cabin_scene).publish_state(r & 0x20);
                 break;
               case 0x02:  // 中8
+                if (rep & 0x01) id(bs_door_drain).publish_state(false);
+                if (rep & 0x02) id(bs_door_outdoor).publish_state(false);
+                if (rep & 0x04) id(bs_door_pump).publish_state(false);
+                if (rep & 0x08) id(bs_door_camp).publish_state(false);
+                if (rep & 0x10) id(bs_bed_light).publish_state(false);
+                if (rep & 0x20) id(bs_bed_ambient).publish_state(false);
+                if (rep & 0x40) id(bs_bed_fan).publish_state(false);
+                if (rep & 0x80) id(bs_bed_pump).publish_state(false);
                 id(bs_door_drain).publish_state(r & 0x01);
                 id(bs_door_outdoor).publish_state(r & 0x02);
                 id(bs_door_pump).publish_state(r & 0x04);
@@ -182,15 +304,23 @@ script:
                 id(bs_bed_pump).publish_state(r & 0x80);
                 break;
               case 0x03:  // 中4（4 路 DI，位图可能只有 1 字节）
+                if (rep & 0x01) id(bs_bed_fridge).publish_state(false);
+                if (rep & 0x02) id(bs_bed_scene).publish_state(false);
                 id(bs_bed_fridge).publish_state(r & 0x01);
                 id(bs_bed_scene).publish_state(r & 0x02);
                 break;
             }
-            break;
+            i += flen;   // 本帧处理完，继续扫下一帧（不 break）
+          }
+          // 残帧（不完整的帧头）挪到缓冲区头部，等下一 tick 补齐
+          int rem = len - i;
+          if (i > 0) {
+            for (int k = 0; k < rem; k++) buf[k] = buf[i + k];
+            len = rem;
           }
 
   # LED 全灭（上电初始化共用入口）。16DO 全部在用 LED 一次性关掉；
-  # 新增 LED 通道时只需在此加一行（配合 do16.yaml 的 sw_led_* 定义）。
+  # 新增 LED 通道时只需在此加一行（配合 relay-mid-16do.yaml 的 sw_led_* 定义）。
   - id: led_all_off
     mode: restart
     then:
@@ -219,3 +349,10 @@ globals:
   - id: hold_triggered       # 主控键1 长按标记
     type: bool
     initial_value: 'false'
+  # ---- 诊断计数（2026-10-23 排查「按键时灵时不灵」用，稳定后可删）----
+  - id: g_poll_cnt           # 收到的 FC04 轮询回包数（应约 6.7/s）
+    type: int
+    initial_value: '0'
+  - id: g_di_cnt             # 收到的主动上传帧数
+    type: int
+    initial_value: '0'

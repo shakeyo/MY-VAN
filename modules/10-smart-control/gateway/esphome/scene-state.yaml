@@ -1,0 +1,44 @@
+# =============================================================
+# 场景状态传感器 —— 把 globals 里的场景档位暴露成 sensor,供手机面板 REST 读取
+#
+# 背景:light_scene / camp_scene / fan_scene 定义在 base.yaml 的 globals 里
+#   (0/1/2 三档),但它们不是实体,web_server 的 REST(/sensor/<name>)读不到。
+#   本文件加 3 个 template sensor,并每 1s 把 global 值 publish 上去,
+#   面板(/dashboard)即可显示真实场景档位。
+# =============================================================
+
+sensor:
+  - platform: template
+    name: "SceneLight 灯光模式"
+    id: sensor_light_scene
+    unit_of_measurement: ""
+    accuracy_decimals: 0
+    update_interval: never
+  - platform: template
+    name: "SceneCamp 离车驻车"
+    id: sensor_camp_scene
+    accuracy_decimals: 0
+    update_interval: never
+  - platform: template
+    name: "SceneFan 排气扇"
+    id: sensor_fan_scene
+    accuracy_decimals: 0
+    update_interval: never
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          static int last_light = -1, last_camp = -1, last_fan = -1;
+          if (id(light_scene) != last_light) {
+            last_light = id(light_scene);
+            id(sensor_light_scene).publish_state((float) last_light);
+          }
+          if (id(camp_scene) != last_camp) {
+            last_camp = id(camp_scene);
+            id(sensor_camp_scene).publish_state((float) last_camp);
+          }
+          if (id(fan_scene) != last_fan) {
+            last_fan = id(fan_scene);
+            id(sensor_fan_scene).publish_state((float) last_fan);
+          }

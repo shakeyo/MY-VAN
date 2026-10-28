@@ -1,0 +1,27 @@
+# =============================================================
+# 系统与维护实体 —— 供手机面板「设置」页使用
+#
+# 内容:
+#   - WiFi 状态(text_sensor × 3:SSID / IP / 信号强度)—— 只读
+#   - 重启按钮(button → restart)—— 面板一键重启 ESP32
+# =============================================================
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "SysWifi IP地址"
+      id: sys_wifi_ip
+    ssid:
+      name: "SysWifi SSID"
+      id: sys_wifi_ssid
+
+sensor:
+  - platform: wifi_signal
+    name: "SysWifi 信号"
+    id: sys_wifi_signal
+    update_interval: 10s
+
+button:
+  - platform: restart
+    name: "SysRestart 重启设备"
+    id: btn_restart

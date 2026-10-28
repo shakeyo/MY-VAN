@@ -22,7 +22,7 @@
   <line x1="120" y1="158" x2="190" y2="158" stroke="#333" stroke-width="3" marker-end="url(#arrow)"/>
   <rect x="30" y="110" width="160" height="100" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="3"/>
   <text x="110" y="138" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1b5e20">ESP32 网关</text>
-  <text x="110" y="158" text-anchor="middle" font-size="11" fill="#333">（中门配电箱）</text>
+  <text x="110" y="158" text-anchor="middle" font-size="11" fill="#333">（额头柜 · 与额头模块同柜）</text>
   <text x="110" y="176" text-anchor="middle" font-size="11" fill="#333">ESPhome 本地自动化</text>
   <text x="110" y="194" text-anchor="middle" font-size="10.5" fill="#777">MAX3485 电平转换</text>
   <!-- 终端电阻 1 -->
@@ -74,7 +74,7 @@
   <!-- 模块供电说明 -->
   <g>
     <rect x="250" y="360" width="780" height="46" rx="8" fill="#fffde7" fill-opacity="0.8" stroke="#f9a825" stroke-width="2"/>
-    <text x="266" y="380" font-size="12" fill="#333">模块 12V 供电：箱内模块（中8/中4）取自 F12-1（经控制区端子）· 16DO 取中门柜控制区 12V</text>
+    <text x="266" y="380" font-size="12" fill="#333">网关 12V 取自额头柜「控+」（F12-1 控制电源）· 中8/中4 取自配电箱 F12-1 · 16DO 取中门柜控制区 12V</text>
     <text x="266" y="398" font-size="11.5" fill="#777">485 并线点：新模块 = 总线末端并线（A 并 A、B 并 B），零拆改 —— 见 switch-assignment.md §十二</text>
   </g>
 </svg>

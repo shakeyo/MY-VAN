@@ -111,7 +111,7 @@
 | **热水器** | **米家智能小厨宝 S1**（储水式 7L / 2000W） | 1 | 已有 |
 | **阀 H 热水进水** | DM 4 分球阀 | 1 | 待购 |
 | **阀 O 热水出水** | DM 4 分球阀 | 1 | 待购 |
-| **阀 D 夏季旁路** | DM 4 分球阀，**冷水主干 → 热水主干（球O 之后）** | **1** | **必装**（已实测：恒温阀不支持单边进水） |
+| **阀 D 夏季旁路** | DM 4 分球阀，**冷水主干 → 热水主干（球O 之后）** | **1** | **必装 · 与热水支路同期购**（不装：夏季关H/O后**水槽热水口断水**、恒温阀热入口不出水） |
 | **淋浴恒温混水阀（车内）** | **蜡感温包式**，4 分接口，自带流量补偿 | 1 | **已采购** |
 | **泄压阀（安全阀）** | 储水式必备，**排水口接软管引至车外/灰水箱** | 1 | 待购 |
 | ~~止回阀（热水侧/厨宝出水）~~ | **已删除** —— 冷热同压无倒灌驱动，厨宝进水口已内置 | 0 | **不买** |
@@ -193,7 +193,7 @@
 
 ## 十、车尾可移副箱与双加水口（本方案新增）
 
-> 设计见 [design-tank-portability.md](design-tank-portability.md)，系统图见 [diagrams/water-portability.svg](diagrams/water-portability.svg)。
+> 设计见 [design-tank-portability.md](design-tank-portability.md)，切换细节图见 [diagrams/water-portability.svg](diagrams/water-portability.svg)，**全局总图见 [diagrams/water-overview-2.svg](diagrams/water-overview-2.svg)**。
 > **口径不变：仍走 DM 4 分（1/4" 管外径 6.35 mm）。车底主箱与泵组不动，两箱之间不输水。**
 
 ### 10.1 已有件（照片盘点，正好够用）

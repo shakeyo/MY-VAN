@@ -64,11 +64,11 @@
 
 <div class="hud">
   <h1>车尾淋浴帐 1000 宽 · 2020 折叠框</h1>
-  <div class="sub">2060 后梁 → Z 形挂臂（后伸 200 / 下探 200）→ 前横杆 1000 → 侧臂 1000（500+500）→ 后横杆 2×500<br>防水袋：挂在前横杆下沿，展开时卷起、收起时下拉包住框和布，拉链在下沿<br>拖动旋转 · 滚轮缩放 · 滑杆或自动播放</div>
+  <div class="sub">2060 后梁 → Z 形挂臂（后伸 200 / 下探 200）→ 前横杆 1000 → 侧臂 1000（500+500）→ 后横杆 1000 整根<br>后横杆：左端 90° 活动连接件 + 右端快拆搭扣，绕左端折 90° 正好贴侧臂（不用对拆/套管）<br>防水袋：挂在前横杆下沿，展开时卷起、收起时下拉包住框和布，拉链在下沿</div>
   <div class="metrics">
     <div class="metric">前横杆 <b>1000</b></div>
     <div class="metric">侧臂 <b>1000</b>（500+500）</div>
-    <div class="metric">后横杆 <b>2×500</b></div>
+    <div class="metric">后横杆 <b>1000</b></div>
     <div class="metric">挂臂 2060 <b>后伸 200</b></div>
     <div class="metric">型材 <b>2020</b></div>
   </div>
@@ -78,10 +78,10 @@
 <div class="legend">
   <div class="row"><span class="sq" style="background:#cdd7df"></span>2020 型材：前横杆 1000</div>
   <div class="row"><span class="sq" style="background:#c9b3a8"></span>2020 型材：侧臂 1000（500+500）</div>
-  <div class="row"><span class="sq" style="background:#d8b98a"></span>2020 型材：后横杆 2×500</div>
+  <div class="row"><span class="sq" style="background:#d8b98a"></span>2020 型材：后横杆 1000（整根）</div>
   <div class="row"><span class="sq" style="background:#7f95a6"></span>2060 平台后梁 + Z 形挂臂</div>
   <div class="row"><span class="dot" style="background:var(--yellow)"></span>合页 / 锁销</div>
-  <div class="row"><span class="dot" style="background:var(--green)"></span>后横杆中间插销</div>
+  <div class="row"><span class="dot" style="background:var(--green)"></span>右端快拆搭扣（绿=锁，红=开）</div>
   <div class="row"><span class="sq" style="background:#39434c;border-color:#7f95a6"></span>防水袋（常驻，收好拉上）</div>
   <div class="row"><span class="sq" style="background:#5aa0dc"></span>四面 + 顶布</div>
 </div>
@@ -122,7 +122,7 @@
 
   <div class="steps">
     <div class="step" data-k="0"><b>1</b>拉开袋拉链、卸布（布先收）</div>
-    <div class="step" data-k="1"><b>2</b>拔中间插销，2×500 后横杆折贴侧臂</div>
+    <div class="step" data-k="1"><b>2</b>解右端搭扣，整根后横杆绕左端折 90° 贴左臂</div>
     <div class="step" data-k="2"><b>3</b>侧臂中折 180°（1000 → 500）</div>
     <div class="step" data-k="3"><b>4</b>前角 90° 限位折回贴前横杆</div>
     <div class="step" data-k="4"><b>5</b>下拉防水袋包住整摞，拉上拉链</div>
@@ -182,12 +182,13 @@
     HA: 0.5,
     SEC: 0.02,
     FY: 2.17,
-    RY: 2.02,
+    RY: 2.07,
     ZF: 0.21,
     BEAM_Y: 2.38,
     BEAM_Z: -0.03,
+    BAR: 1.0,
     BAG_X: 0.53,
-    BAG_TOP: 2.245
+    BAG_TOP: 2.16
   };
   const dir0 = norm({x:0, y:(D.RY - D.FY)/D.ARM, z:1});
 
@@ -211,15 +212,18 @@
       const d2 = rotY(d1, -side * midFold);
       const rear = add(mid, mul(d2, D.HA));
       arms[side] = {front, mid, rear, d1, d2};
-      const barAng = -side * (barFold + midFold) + ff;
-      const barDir = rotY({x:-side, y:0, z:0}, barAng);
-      const p0 = {x: rear.x, y: rear.y - 0.021, z: rear.z};
-      const p1 = add(p0, mul(barDir, 0.5));
-      bars[side] = {p0, p1, dir: barDir};
     }
-    return {arms, bars, barFold, midFold, frontFold, fabricA, bagFill,
+    // 后横杆：整根 1000，左端 90° 活动连接件、右端快拆搭扣；绕左端折 90° 后随左臂一起转
+    const barAng = barFold - midFold + frontFold;
+    const barDir = rotY({x:1, y:0, z:0}, barAng);
+    const barP0 = {x: arms[-1].rear.x, y: arms[-1].rear.y - 0.021, z: arms[-1].rear.z};
+    const barP1 = add(barP0, mul(barDir, D.BAR));
+    const latchOpen = barFold > 0.01;
+    return {arms, barFold, midFold, frontFold, fabricA, bagFill,
+      barP0, barP1, barDir, latchOpen,
       frontL: arms[-1].front, frontR: arms[1].front,
-      rearL: bars[-1].p0, rearR: bars[1].p0};
+      rearL: {x: arms[-1].rear.x, y: arms[-1].rear.y - 0.021, z: arms[-1].rear.z},
+      rearR: {x: arms[1].rear.x, y: arms[1].rear.y - 0.021, z: arms[1].rear.z}};
   }
 
   // ── draw primitives ──────────────────────────────────────────
@@ -491,19 +495,17 @@
       }
     }
 
-    for (const side of [-1,1]){
-      const b = s.bars[side];
-      segBox(b.p0, b.p1, D.SEC, D.SEC, COL.rear.base, COL.rear.edge);
-      ball3(b.p0, 0.022, '#ffd54f');
+    // 整根后横杆 1000：左端 90° 活动连接件，右端快拆搭扣
+    segBox(s.barP0, s.barP1, D.SEC, D.SEC, COL.rear.base, COL.rear.edge);
+    ball3(s.barP0, 0.022, '#ffd54f');
+    // 右端搭扣（展开时扣在右臂后端）
+    const latchPos = s.latchOpen ? {x:s.barP1.x, y:s.barP1.y, z:s.barP1.z} : s.rearR;
+    ball3(latchPos, 0.018, s.latchOpen ? '#d8736a' : '#47c47a');
+    if (t < 0.5){
+      label3({x:s.rearR.x, y:s.rearR.y+0.09, z:s.rearR.z},
+             s.latchOpen ? '右端搭扣已解开' : '右端快拆搭扣（锁）',
+             s.latchOpen ? 'rgba(220,150,140,.9)' : 'rgba(130,220,170,.9)', 9, .9, -14);
     }
-    const bl = s.bars[-1];
-    if (s.barFold < 0.45){
-      segBox(add(bl.p1, mul(bl.dir,-0.17)), bl.p1, 0.026, 0.026, [150,170,186], 'rgba(30,45,60,.55)');
-    }
-    const pin = add(bl.p1, mul(bl.dir, -0.02));
-    ball3(pin, 0.016, s.barFold > 0.015 ? '#d8736a' : '#47c47a');
-    label3(add(pin,{x:0,y:0.06,z:0}), s.barFold > 0.015 ? '插销已拔' : '中间插销（锁）',
-           s.barFold > 0.015 ? 'rgba(220,150,140,.9)' : 'rgba(130,220,170,.9)', 9, .9, -14);
 
     if (s.fabricA > 0.05){
       const pegs = [
@@ -522,10 +524,12 @@
     const top = D.BAG_TOP;
 
     if (fill < 0.03){
-      const y1 = 2.225, y2 = 2.315, z1 = 0.06, z2 = 0.18;
+      const y1 = 2.20, y2 = 2.29, z1 = 0.06, z2 = 0.17;
       quadPts([{x:-x,y:y1,z:z1},{x:x,y:y1,z:z1},{x:x,y:y1,z:z2},{x:-x,y:y1,z:z2}],
               'rgba(57,67,76,.95)','rgba(127,149,166,.7)', 1, -14);
-      quadPts([{x:-x,y:y1,z:z2},{x:x,y:y1,z:z2},{x:x,y:y2,z:z2},{x:-x,y:y2,z:z2}],
+      const rc = 0.035;
+      quadPts([{x:-x+rc,y:y1,z:z2},{x:x-rc,y:y1,z:z2},{x:x,y:y2-rc,z:z2},
+               {x:x-rc,y:y2,z:z2},{x:-x+rc,y:y2,z:z2},{x:-x,y:y2-rc,z:z2}],
               'rgba(70,82,92,.95)','rgba(127,149,166,.7)', 1, -14.1);
       quadPts([{x:-x,y:y1,z:z1},{x:-x,y:y1,z:z2},{x:-x,y:y2,z:z2},{x:-x,y:y2,z:z1}],
               'rgba(45,54,62,.95)','rgba(127,149,166,.5)', 1, -14.1);
@@ -541,9 +545,9 @@
     }
 
     const drop = smooth(fill, 0, 0.35);
-    const yBot = top - (0.02 + 0.255*drop);
+    const yBot = top - (0.02 + 0.14*drop);
     const zIn = 0.185;
-    const zBack = 0.245 + 0.105*drop;
+    const zBack = 0.245 + 0.075*drop;
     const ba = 0.45 + 0.55*smooth(fill, 0.45, 0.95);
     const body = `rgba(57,67,76,${ba.toFixed(3)})`, side = `rgba(46,55,64,${ba.toFixed(3)})`, edge = `rgba(127,149,166,${(0.35+0.35*fill).toFixed(2)})`;
 
@@ -555,14 +559,23 @@
             side, edge, 1, -14);
     quadPts([{x:x,y:yBot,z:zIn},{x:x,y:yBot,z:zBack},{x:x,y:top,z:zBack},{x:x,y:top,z:zIn}],
             side, edge, 1, -14);
-    quadPts([{x:-x,y:yBot,z:zBack},{x:x,y:yBot,z:zBack},{x:x,y:top,z:zBack},{x:-x,y:top,z:zBack}],
-            body, edge, 1, -14.1);
+    const ch = 0.028, zBot = zBack - 0.016;
+    quadPts([
+      {x:-x+ch,y:top,z:zBack},{x:x-ch,y:top,z:zBack},
+      {x:x,y:top-ch,z:zBack},{x:x,y:yBot+ch,z:zBot},
+      {x:x-ch,y:yBot,z:zBot},{x:-x+ch,y:yBot,z:zBot},
+      {x:-x,y:yBot+ch,z:zBot},{x:-x,y:top-ch,z:zBack}
+    ], body, edge, 1, -14.1);
+    // 袋身竖向褶皱（软袋感）
+    quadPts([{x:-x*0.5,y:yBot+ch,z:zBot+0.001},{x:-x*0.5+0.012,y:yBot+ch,z:zBot+0.001},
+             {x:-x*0.5+0.012,y:top-ch,z:zBack-0.001},{x:-x*0.5,y:top-ch,z:zBack-0.001}],
+            'rgba(255,255,255,.05)', null, 1, -14.11);
 
     const zx = 0.46;
     const pullX = -zx + 2*zx*fill;
-    const zipA = project({x:-zx, y:yBot+0.004, z:zBack+0.001});
-    const zipB = project({x:pullX, y:yBot+0.004, z:zBack+0.001});
-    const zipC = project({x:zx, y:yBot+0.004, z:zBack+0.001});
+    const zipA = project({x:-zx, y:yBot+0.004, z:zBot+0.001});
+    const zipB = project({x:pullX, y:yBot+0.004, z:zBot+0.001});
+    const zipC = project({x:zx, y:yBot+0.004, z:zBot+0.001});
     if (zipA.z > 0.2 && zipC.z > 0.2){
       pushOverlay(-14.2, () => {
         ctx.lineCap = 'round';
@@ -583,7 +596,7 @@
               'rgba(34,43,51,.85)', null, 1, -14.2);
     }
     const midY = (top + yBot)/2;
-    label3({x:0,y:midY,z:zBack+0.001}, '防水袋 1100 × 280', 'rgba(206,220,232,.92)', 11,
+    label3({x:0,y:midY,z:zBack+0.001}, '防水袋 1100 × 160', 'rgba(206,220,232,.92)', 11,
            Math.min(1, fill*2.2), -14.3);
     label3({x:-0.36,y:yBot-0.035,z:zBack+0.001}, '拉链（下沿）', 'rgba(190,208,222,.9)', 9,
            Math.min(1, fill*2.2), -14.3);

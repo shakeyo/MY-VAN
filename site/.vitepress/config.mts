@@ -50,7 +50,7 @@ export default defineConfig({
           { text: 'Home Assistant', link: '/docs/deployment/home-assistant' },
           { text: 'Frigate NVR', link: '/docs/deployment/frigate' },
           { text: 'Windows 调试机与核显直通', link: '/docs/deployment/n100-windows-gpu-passthrough' },
-          { text: '仪表盘', link: '/docs/deployment/dashboard' },
+          { text: '车机面板', link: '/docs/deployment/dashboard' },
         ]},
       ],
     },

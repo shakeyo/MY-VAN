@@ -1,0 +1,231 @@
+# =============================================================
+# TF03K 库仑计 —— 主动上报帧解析（只收不发）
+#
+# 协议源：energy/pzem-017.md（TF03K 通讯说明 V1.1，16 字节逐字节已解出）
+# 文档：energy/pzem-017.md
+# 挂载：由 prod.yaml 以 package 引入
+#
+# ⚠⚠ 与现有 485 总线完全独立 ⚠⚠
+#   TF03K 固定 19200 bps + 私有主动上报 + 无地址 + 8 位累加和，
+#   与全车 9600 Modbus 总线（MPPT 0x10 / 继电器 1,2,3,5）**协议与波特率都不同**，
+#   严禁同挂一根 A/B 线。本文件使用**独立的第二路 UART（coulomb_uart）**。
+#
+# 【接线】TF03K RS485 → MAX3485（仅接收，DE 固定低）→ ESP32 UART1
+#   - 库仑计 A/B → MAX3485 A/B
+#   - MAX3485 RO → ESP32 GPIO4 (RX)
+#   - MAX3485 RE+DE → GND（常接收，**不要**接 GPIO）
+#   - MAX3485 VCC → 3.3V，GND → GND
+#   - ⚠ TF03K 内部已有 120Ω 终端电阻；网关侧 MAX3485 若也带终端，仅保留一颗
+#
+# 【无需写帧】TF03K 只发不收（RXD 无接收功能），本文件不含任何 tx 帧、
+#   不调用 rs485_write、不做 DE 切换。
+#
+# 【帧格式】16 字节，1 次/秒，仅库仑计工作时有输出：
+#   [0] 0xA5 帧头
+#   [1] 电量百分比 0~100 (%)
+#   [2-3] 电压 大端16 ÷100 (V)
+#   [4-7] 容量 大端32，单位 mAh → ÷1000 (Ah)
+#   [8-11] 电流 大端32 有符号，单位 mA → ÷1000 (A)，负值为补码
+#   [12-14] 剩余时间 大端24 (秒)
+#   [15] 校验和 = 前15字节 8位累加和
+# =============================================================
+
+substitutions:
+  # 库仑计 UART 引脚（S3 DevKitC-1 空闲脚，避开 rs485 的 15/16/17）
+  # 只接收：tx_pin 配了但可悬空（TF03K 的 RXD 无接收功能，本就不接）
+  coulomb_rx_pin: GPIO4
+  coulomb_tx_pin: GPIO5
+
+# ============ 独立 UART（19200，只收）============
+# ⚠ 注意：ESPHome 的 uart 支持多实例，但 base.yaml 目前是单实例写法。
+#   若 base.yaml 用 `uart:` 映射形式，本文件的 `uart:` 列表会与之合并；
+#   若编译报「uart 重复定义」，需按下方「合并说明」把 base.yaml 的 uart 改为列表。
+uart:
+  - id: coulomb_uart
+    tx_pin: ${coulomb_tx_pin}
+    rx_pin: ${coulomb_rx_pin}
+    baud_rate: 19200
+    rx_buffer_size: 256      # 1 次/秒 × 16 字节，256 足够；留余量防突发
+
+# ============ 监控实体 ============
+sensor:
+  - platform: template
+    name: "CoulombSOC 电量百分比"
+    id: coulomb_soc
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:battery"
+    update_interval: never
+    # 无 state_class：SOC 百分比不是累计量也不是单调测量，按普通值发布
+
+  - platform: template
+    name: "CoulombVolt 电池电压"
+    id: coulomb_voltage
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    device_class: voltage
+    state_class: measurement
+    update_interval: never
+
+  - platform: template
+    name: "CoulombCap 剩余容量"
+    id: coulomb_capacity
+    unit_of_measurement: "Ah"
+    accuracy_decimals: 2
+    icon: "mdi:battery-charging-60"
+    update_interval: never
+
+  - platform: template
+    name: "CoulombCurr 电流"
+    id: coulomb_current
+    unit_of_measurement: "A"
+    accuracy_decimals: 3
+    device_class: current
+    state_class: measurement
+    update_interval: never
+
+  - platform: template
+    name: "CoulombTime 剩余时间"
+    id: coulomb_remain_time
+    unit_of_measurement: "s"
+    accuracy_decimals: 0
+    icon: "mdi:timer-outline"
+    update_interval: never
+
+  # 功率 = 电压 × 电流（协议不含功率，本地算）
+  - platform: template
+    name: "CoulombPow 功率"
+    id: coulomb_power
+    unit_of_measurement: "W"
+    accuracy_decimals: 1
+    device_class: power
+    state_class: measurement
+    update_interval: never
+
+  # 诊断：累计收到的有效帧数 / 校验失败帧数（排查接线与干扰）
+  - platform: template
+    name: "CoulombDiag 有效帧数"
+    id: coulomb_frames_ok
+    accuracy_decimals: 0
+    icon: "mdi:counter"
+    update_interval: never
+  - platform: template
+    name: "CoulombBad 校验错帧数"
+    id: coulomb_frames_bad
+    accuracy_decimals: 0
+    icon: "mdi:alert-circle-outline"
+    update_interval: never
+
+# ============ 定时扫描 UART 缓冲 ============
+# 库仑计 1 次/秒发 16 字节；用 200ms 扫描缓冲，既能及时取走数据，
+# 又不会像 10Hz 那样空转。残帧跨 tick 保留（与 base.yaml read_upload 同思路）。
+interval:
+  - interval: 200ms
+    then:
+      - script.execute: coulomb_read
+  # 每 30s 打一次诊断日志（接线/干扰排查用；稳定后可删本段 + 两个 diag sensor）
+  - interval: 30s
+    then:
+      - script.execute: coulomb_diag_log
+
+globals:
+  - id: coulomb_ok_cnt
+    type: int
+    initial_value: '0'
+  - id: coulomb_bad_cnt
+    type: int
+    initial_value: '0'
+
+script:
+  # 扫描 UART 缓冲，找 0xA5 帧头，验累加和，解析并发布
+  - id: coulomb_read
+    mode: single
+    then:
+      - lambda: |-
+          // 残帧跨 tick 保留：一帧 16 字节 @19200 约 8.3ms，
+          // 200ms tick 切在帧中间的概率约 4%，残帧若丢弃则每次丢一帧(1秒)。
+          static uint8_t buf[128];
+          static int len = 0;
+
+          while (id(coulomb_uart).available() && len < 120) {
+            uint8_t b;
+            if (id(coulomb_uart).read_byte(&b)) buf[len++] = b;
+          }
+
+          int i = 0;
+          while (i + 16 <= len) {
+            // 找帧头 0xA5；不是帧头则后移 1 字节继续找
+            if (buf[i] != 0xA5) { i++; continue; }
+
+            // 8 位累加和校验：前 15 字节之和的低 8 位 == 第 16 字节
+            uint8_t sum = 0;
+            for (int k = 0; k < 15; k++) sum += buf[i + k];
+            if (sum != buf[i + 15]) {
+              // 校验失败：可能是帧头误判(数据里恰好有 0xA5)，后移 1 字节重找
+              i++;
+              id(coulomb_bad_cnt)++;
+              continue;
+            }
+
+            // ---- 解析 ----
+            const uint8_t *f = buf + i;
+            int soc = f[1];                                      // 0~100 %
+            float voltage = ((uint16_t)f[2] << 8 | f[3]) / 100.0f;          // ÷100
+            uint32_t cap_mah = ((uint32_t)f[4] << 24) | ((uint32_t)f[5] << 16) |
+                               ((uint32_t)f[6] << 8) | (uint32_t)f[7];      // mAh
+            int32_t cur_ma = (int32_t)(((uint32_t)f[8] << 24) | ((uint32_t)f[9] << 16) |
+                                       ((uint32_t)f[10] << 8) | (uint32_t)f[11]); // 有符号 mA
+            uint32_t remain_s = ((uint32_t)f[12] << 16) |
+                                ((uint32_t)f[13] << 8) | (uint32_t)f[14];   // 24 位秒
+
+            float current = cur_ma / 1000.0f;                    // A
+            float capacity = cap_mah / 1000.0f;                  // Ah
+            float power = voltage * current;                     // W
+
+            id(coulomb_soc).publish_state((float)soc);
+            id(coulomb_voltage).publish_state(voltage);
+            id(coulomb_capacity).publish_state(capacity);
+            id(coulomb_current).publish_state(current);
+            id(coulomb_remain_time).publish_state((float)remain_s);
+            id(coulomb_power).publish_state(power);
+
+            id(coulomb_ok_cnt)++;
+            i += 16;
+          }
+
+          // 残帧（<16 字节的不完整帧）挪到缓冲区头部，等下一 tick 补齐
+          // 防御：i 不可能超过 len（循环条件 i+16<=len 保证），rem 恒 >=0；
+          // 但仍夹紧边界，避免将来改动引入越界读（static buf 在 .bss，越界会踩其他全局）。
+          if (i > len) i = len;
+          int rem = len - i;
+          if (i > 0) {
+            for (int k = 0; k < rem; k++) buf[k] = buf[i + k];
+            len = rem;
+          }
+          if (len > 120) len = 0;    // 兜底：异常积压时清零，防越界
+
+          // 诊断计数发布（每 tick 刷一次，不做额外 interval）
+          id(coulomb_frames_ok).publish_state((float)id(coulomb_ok_cnt));
+          id(coulomb_frames_bad).publish_state((float)id(coulomb_bad_cnt));
+
+  # 诊断日志：每 30s 打一次帧计数（接线排查用，稳定后可删）
+  - id: coulomb_diag_log
+    mode: single
+    then:
+      - lambda: |-
+          ESP_LOGI("coulomb", "OK=%d BAD=%d heap=%u",
+                   id(coulomb_ok_cnt), id(coulomb_bad_cnt), (unsigned) ESP.getFreeHeap());
+
+# ============ UART 多实例说明（已实施，2026-10-28）============
+# base.yaml 的 uart 已改为**列表形式**（原来是单实例映射写法）：
+#   uart:
+#     - id: rs485_bus
+#       tx_pin: GPIO15
+#       rx_pin: GPIO16
+#       baud_rate: 38400
+#
+# 原因：ESPHome 的 packages 合并时，映射写法与列表写法不能共存——若 base 用映射、
+# 本文件用列表，base 那一路会被覆盖 → 报错 `Couldn't find ID 'rs485_bus'`（实测已踩）。
+# 统一成列表后两路并存，实测 `esphome config` + `esphome compile` 均通过：
+#   rs485_bus    38400  TX=15 RX=16   （原样保留，行为不变）
+#   coulomb_uart 19200  TX=5  RX=4    （本文件新增，只收）

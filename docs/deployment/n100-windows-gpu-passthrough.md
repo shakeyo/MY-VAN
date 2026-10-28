@@ -11,7 +11,7 @@ N100 上跑一台 **Windows 10 LTSC 虚拟机**，作为车内设备（485 总�
 
 | 目标 | 验收方式 |
 |---|---|
-| 车内用平板/笔记本远程进 Windows 调 485 | `mstsc`/Windows App 连 `192.168.43.210:3389` 成功登录 |
+| 车内用平板/笔记本远程进 Windows 调 485 | `mstsc`/Windows App 连 Windows 的当前 IP（DHCP，实测 `192.168.10.101`）`:3389` 成功登录 |
 | N100 的 HDMI 直接显示 Windows | 显示器出现 Windows 桌面 |
 | 核显真正直通（不是虚拟显卡） | PVE 宿主机 `lspci -k -s 00:02.0` 显示 `vfio-pci`；guest 内 `Intel(R) UHD Graphics`、`Problem=CM_PROB_NONE`、模式 `3840x2160@60` |
 | 重启后自动恢复 | 整机重启后 VM 自动启动、直通生效、RDP 可达 |
@@ -21,12 +21,31 @@ N100 上跑一台 **Windows 10 LTSC 虚拟机**，作为车内设备（485 总�
 | 项 | 值 |
 |---|---|
 | 主机 | N100 迷你主机，4 核 / **8GB DDR4-3200 单槽（本机上限 8G）** |
-| 存储 | 141G thin pool（Windows 80G + Win11 100G 两个 VM 已占 ~92G） |
+| 存储 | 141G thin pool，**剩余约 82G**（已删除 `win11-UNAVALIABLE`，释放约 39G） |
 | 核显 | Intel Alder Lake-N UHD Graphics `[8086:46d1]`，IOMMU 独占 group 0 |
 | 宿主机 | Proxmox VE **8.4.0**，kernel `6.8.12-9-pve` |
-| Guest | VM **102 `win10`**：Windows 10 Enterprise LTSC 2021，q35 + OVMF，4 vCPU / 5G RAM |
+| Guest | VM **102 `win10`**：Windows 10 Enterprise LTSC 2021，q35 + OVMF，4 vCPU / **4G RAM**（2026-10 由 5G 下调） |
 | 显示 | HDMI 4K 显示器（核显输出） |
-| 网段 | 过渡期：FORAGER 路由器/手机热点 `192.168.43.0/24`（终局规划 `192.168.8.0/24`） |
+| 网段 | 车内 Cudy LAN `192.168.10.0/24`（家里 `192.168.5.0/24`，互不冲突）；PVE 静态 `.10`、Windows **DHCP**（当前 `.101`） |
+
+### 车内 IP 规划（192.168.10.0/24，定稿）
+
+| IP | 设备 | 分配方式 |
+|---|---|---|
+| `.1` | Cudy TR3000（网关/DHCP） | 固定 |
+| **`.10`** | **N100 PVE** | 静态 |
+| `.11` | HAOS | 静态 |
+| `.12` | Frigate LXC | 静态 |
+| `.13` | Mosquitto | 静态 |
+| `.20` | ESP32 485 网关 | 静态 |
+| `.21` / `.22` | 安卓车机 / 小米平板4 | DHCP MAC 绑定 |
+| `.30~39` | 预留 | — |
+| `.100` | DVR 编码器 | 静态 |
+| **`.101`** | **Windows 调试机** | DHCP + Cudy MAC 绑定（`BC:24:11:88:DC:75`） |
+| `.150~249` | DHCP 池 | — |
+
+> 原则：基础设施（PVE/HA/摄像头）静态；终端类（Windows/车机/平板）DHCP + 路由器 MAC 绑定。
+> ZeroTier 客户端（手机/笔记本）走 **Managed Route** 访问整个 `192.168.10.0/24`。
 
 > ⚠️ **8GB 内存是硬约束**：Windows 5G + PVE 自身 ~1.5G 后只剩几百 MB，HAOS 跑不起来。
 > 由于单槽上限 8G 无法升级，**Windows 与 HA 只能二选一常开**。
@@ -37,8 +56,8 @@ N100 上跑一台 **Windows 10 LTSC 虚拟机**，作为车内设备（485 总�
 ```
 N100 (PVE 8.4)
 ├── VM 102  win10 LTSC ── 直通 0000:00:02.0 (UHD Graphics) ──→ HDMI 4K 显示器
-│     ├── RDP 3389 ←── 车内平板/笔记本（192.168.43.210）
-│     ├── virtio 网卡（vmbr0，静态 192.168.43.210）
+│     ├── RDP 3389 ←── 车内平板/笔记本（DHCP，实测 .101）
+│     ├── virtio 网卡（vmbr0，DHCP；可选静态 .210）
 │     └── USB 直通：键盘 413c:2105 / 预留 USB-485 转换器
 ├── VM 101  ha（停用，内存不足）
 ├── VM 100  win11-UNAVALIABLE（停用，占 39G，可删）
@@ -88,6 +107,9 @@ update-grub
 cat /etc/modprobe.d/pve-blacklist.conf   # blacklist i915 / snd_hda_intel ...
 ```
 
+> `pve-blacklist.conf` 只需保留 `i915` / `snd_hda_intel`（防止宿主抢核显/音频）；
+> **不要** blacklist `vfio` / `vfio_pci` / `vfio_iommu_type1`（没必要，PVE 会显式加载）。
+>
 > 为什么：实测**开机预绑定 vfio 会让 guest 首次显示初始化失败（彩色雪花）**的概率明显变高——
 > 相当于把"固件刚初始化过、又被 vfio 提前接管"的 GPU 状态交给 guest。去掉预绑定后，
 > 首次启动花屏从"必现"降到"偶发"（仍需二次启动保险，见 §10）。
@@ -111,8 +133,8 @@ cp n100.rom /usr/share/kvm/n100.rom
 # /etc/network/interfaces
 auto vmbr0
 iface vmbr0 inet static
-    address 192.168.43.185/24
-    gateway 192.168.43.1
+    address 192.168.10.10/24
+    gateway 192.168.10.1
     bridge-ports enp3s0
     bridge-stp off
     bridge-fd 0
@@ -126,8 +148,7 @@ qm set 102 --args "-set device.hostpci0.x-igd-opregion=on -set device.hostpci0.x
 qm set 102 --vga std            # 保留虚拟显卡作兜底（关键）
 qm set 102 --onboot 1           # 随 PVE 自启
 qm set 102 --memory 4096        # 8G 上限下的建议值（原 5120）
-qm set 102 --usb0 host=413c:2105  # 物理键盘按 VID:PID 绑定（不用端口号）
-qm set 102 --usb1 host=093a:2510  # 鼠标按 VID:PID 绑定
+qm set 102 --hostpci1 "0000:00:14.0;0000:00:14.2"  # 整个 USB 控制器直通（键鼠/485/U盘即插即用）
 ```
 
 最终关键字段：
@@ -140,8 +161,7 @@ bios: ovmf
 vga: std
 memory: 4096
 onboot: 1
-usb0: host=413c:2105
-usb1: host=093a:2510
+hostpci1: 0000:00:14.0;0000:00:14.2
 ```
 
 > **为什么按 VID:PID 而不是端口**：端口号（`host=1-3`）一换 USB 口就失效，VID:PID 只要求设备插着。
@@ -152,12 +172,16 @@ usb1: host=093a:2510
 
 虚拟机原来 DHCP 失败只拿到 `169.254.x.x`（APIPA），必须手动固定：
 
+**推荐 DHCP**（车内/家里/热点都能自动适配）：
+
 ```powershell
-# 管理员 PowerShell
-Get-NetAdapter | ft ifIndex,Name,Status -AutoSize
-New-NetIPAddress -InterfaceIndex <idx> -IPAddress 192.168.43.210 -PrefixLength 24 -DefaultGateway 192.168.43.1
-Set-DnsClientServerAddress -InterfaceIndex <idx> -ServerAddresses 192.168.43.1
+Set-NetIPInterface -InterfaceAlias '以太网 2' -Dhcp Enabled
+Set-DnsClientServerAddress -InterfaceAlias '以太网 2' -ResetServerAddresses
+ipconfig /renew
 ```
+
+> 想固定地址：**在上游路由器里按 MAC 绑定**（比在 Windows 里写死更稳，换路由器/网段不失效）。
+> 一定要静态时的写法：`New-NetIPAddress -InterfaceIndex <idx> -IPAddress <ip> -PrefixLength 24 -DefaultGateway <gw>`。
 
 ### 7.2 开启 RDP（LTSC 自带 RDP Host）
 
@@ -171,6 +195,21 @@ Start-Service TermService
 > 中文系统上**不要用 `-DisplayGroup 'Remote Desktop'`**（显示名被本地化成"远程桌面"会报错），
 > 用语言无关的规则名 `-Name RemoteDesktop-UserMode-In-TCP`。
 
+### 7.2.1 自动登录（免密码进桌面）
+
+```powershell
+# 管理员 PowerShell
+$k='HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+Set-ItemProperty $k AutoAdminLogon '1'
+Set-ItemProperty $k DefaultUserName 'fung'
+Set-ItemProperty $k DefaultPassword '<你的密码>'
+Set-ItemProperty $k DefaultDomainName $env:COMPUTERNAME
+Set-ItemProperty $k ForceAutoLogon '1'
+```
+
+> 好处：整机重启 → 保险自动重启 VM 后直接进桌面；RDP 也不受登录状态影响。
+> 代价：物理接触 N100 的人可直接进桌面（房车单人使用可接受）。
+
 ### 7.3 核显驱动
 
 Windows Update 会在核显直通后**自动装好 Intel 驱动**（实测 `32.0.101.7088`），
@@ -181,11 +220,24 @@ Microsoft 基本显示适配器   1280 x 800     ← 虚拟 std VGA（兜底）
 Intel(R) UHD Graphics      3840 x 2160    ← 直通的核显（HDMI 物理屏）
 ```
 
-### 7.4 显示模式
+### 7.4 显示模式（**本机命名是反的，实测**）
 
-- `Win+P` →「扩展」：双屏（虚拟 1280×800 + HDMI 4K）
-- `Win+P` →「仅第二屏幕」：Windows 全屏输出到 HDMI，虚拟屏变黑（**正常，RDP 不受影响**）
-- 命令行等价：`DisplaySwitch.exe /extend | /external | /clone | /internal`
+| 命令 | 实际效果（本机） |
+|---|---|
+| `DisplaySwitch.exe /internal` | **物理 HDMI 屏（核显）**单独显示 —— Windows 把核显输出当"内部屏" |
+| `DisplaySwitch.exe /external` | **虚拟屏（std VGA）**单独显示（物理屏黑） |
+| `DisplaySwitch.exe /extend` | 双屏扩展（虚拟屏默认变成主屏 → 应用会跑到虚拟屏） |
+| `DisplaySwitch.exe /clone` | 双屏同画面 |
+
+> **推荐配置：只保留物理屏**（`/internal`）。此时所有应用只可能在物理屏打开，
+> **虚拟屏不再参与显示**（PVE noVNC 会黑，但 **RDP 完全不受影响**）。
+> 若保留扩展模式，Windows 会把"上次在虚拟屏打开的应用"继续开在虚拟屏（`设置` 最典型）——
+> 需要时用 `Win+Shift+←/→` 把窗口移到物理屏，或干脆断开虚拟屏。
+
+> **把物理屏设为扩展模式下的主屏**（需要双屏时）：用 `ChangeDisplaySettingsEx` 先对所有屏
+> 以 `CDS_UPDATEREGISTRY | CDS_NORESET` 设置坐标（物理屏 `(0,0)`、虚拟屏 `(1920,0)`），
+> 再 `ChangeDisplaySettingsEx(NULL, NULL, …, CDS_UPDATEREGISTRY)` 应用。
+> ⚠️ `CDS_SET_PRIMARY` 标志在 `ChangeDisplaySettingsEx` 里**不被支持**（返回成功但不生效），别用。
 
 > ⚠️ **分辨率建议：优先 `1920×1080@60`，别用 4K。**
 > 4K60 对 HDMI 线材/显示器带宽要求高，这套直通下**在线切分辨率或 4K 高带宽模式极易花屏**；
@@ -198,35 +250,37 @@ Intel(R) UHD Graphics      3840 x 2160    ← 直通的核显（HDMI 物理屏�
 > **一劳永逸的硬件解法：加一个 HDMI EDID 模拟器（"假负载"，约 ¥20–40）**串在 N100 与显示器之间，
 > 让 Windows 始终认为显示器在线，显示器随便开关都不再触发重新协商——车载/房车 HTPC 常见做法。
 
-## 8. USB 直通
+## 8. USB 直通（**整控制器直通，推荐**）
 
-### 8.1 键盘/鼠标
-
-```bash
-qm set 102 --usb0 host=413c:2105     # Dell 键盘（VID:PID，换 USB 口也不失效）
-qm set 102 --usb1 host=093a:2510     # PixArt USB Optical Mouse（实测）
-```
-
-⚠️ **`qm set` 只改配置，运行中的 VM 不会自动生效**（本次踩坑）。
-两种生效方式：
-
-1. **重启 VM**（最干净，配置按 VID:PID 解析后直通）
-2. **热插拔**（保留当前会话）：
-   ```bash
-   printf "device_add usb-host,id=usb1,hostbus=1,hostport=1,bus=ehci.0\ninfo usb\n" | qm monitor 102
-   ```
-   `hostport` 用 `lsusb -t` 查（如鼠标在 `Port 1` → `1-1`）；先 `info usb` 确认设备是否已在。
-
-### 8.2 USB-485 转换器（调试 485 用）
+### 8.1 结论：把整个 USB 控制器给 Windows，而不是逐个抓设备
 
 ```bash
-lsusb                 # 找到转换器，如 1a86:7523 (CH340) / 0403:6001 (FT232)
-qm set 102 --usb1 host=1a86:7523
-qm set 102 --delete usb1     # 拔掉时删除，否则下次开机会启动失败
+qm set 102 --hostpci1 "0000:00:14.0;0000:00:14.2"   # xHCI + 同组 Shared SRAM，IOMMU group 3
 ```
 
-> 模块厂家 PC 软件（总线监视器）+ USB-485 转换器 = 现成的 485 总线分析仪，
-> 详见 [10-smart-control/gateway/build-guide.md](../../modules/10-smart-control/gateway/build-guide.md) §4.3.1。
+- 之后 Windows 里**任意** USB 设备即插即用：换键鼠、插 USB-485、U 盘、读卡器……都自动识别，**无需再改配置**
+- 宿主机因此**没有任何 USB**（管理走 SSH / 8006 网页，不依赖 USB）
+- 启动日志 `vfio: Cannot reset device 0000:00:14.0/14.2, no available reset mechanism` 属正常告警（PCH 设备无复位机制）
+
+> 关键：`00:14.0` 与 `00:14.2` 属同一 IOMMU group（group 3），必须**一起**直通；PVE 也支持网页操作：
+> VM → 硬件 → 添加 → PCI 设备 → 选 `00:14.0` + 勾「所有功能」。
+
+### 8.2 备用方案：按 VID:PID 抓单个设备（不推荐）
+
+```bash
+qm set 102 --usb0 host=<vid:pid>    # 例：键盘 413c:2105、鼠标 093a:2510
+```
+
+缺点：换设备就失效、要改配置；只有无法整控制器直通时才用。
+⚠️ `qm set` 只改配置，运行中的 VM 不生效——需重启 VM，或用 `qm monitor` 热插
+（`printf "device_add usb-host,id=usb1,hostbus=1,hostport=1,bus=ehci.0\n" | qm monitor 102`，hostport 查 `lsusb -t`）。
+
+### 8.3 USB-485 转换器（调试 485 用）
+
+整控制器直通后**即插即用**：插上 USB-485 转换器 → Windows 设备管理器出现 COM 口 →
+用模块厂家 PC 软件（总线监视器）即可调试。无需再执行任何 PVE 命令。
+
+> 485 调试流程详见 [10-smart-control/gateway/build-guide.md](../../modules/10-smart-control/gateway/build-guide.md) §4.3.1。
 
 ## 9. 验证清单（4 层）
 
@@ -262,13 +316,13 @@ qm shutdown 102 --timeout 90 --forceStop 1
 systemctl reboot
 
 # 2) ~60s 后 SSH 回来（IP 已固定，不会变）
-ssh -p 2222 root@192.168.43.185
+ssh -p 2222 root@192.168.10.10
 
 # 3) 逐项检查
 lspci -k -s 00:02.0 | grep "driver in use"   # vfio-pci
 qm status 102                                 # running（onboot 自动启动）
 ls /sys/class/net/vmbr0/brif/                 # 必须有 tap102i0
-nc -z 192.168.43.210 3389                     # RDP 通
+nc -z <Windows当前IP> 3389                    # RDP 通（DHCP，实测 192.168.10.101）
 ```
 
 - HDMI 显示器：开机后先黑（宿主控制台已禁用）→ VM 启动 + Intel 驱动初始化后出现 Windows 登录界面（约 1 分钟）
@@ -288,8 +342,9 @@ nc -z 192.168.43.210 3389                     # RDP 通
 > 在主机启动、VM 自启后约 25 秒自动 `qm shutdown/stop → qm start` 一次，
 > 保证第二次启动显示正常。**整机重启到可正常显示约 1 分 20 秒**（第一次启动画面是花的，会自动重启一次）。
 >
-> 可选升级（更快，需权衡）：**开启 Windows 自动登录** + 「登录时执行 fixdisplay 脚本」的计划任务，
-> 可把开机到画面正常压到约 1 分钟，但 VM 控制台将免密码自动进桌面。
+> 已开启 **Windows 自动登录**：保险重启后直接进桌面。
+> 曾尝试「登录时自动执行显示重置脚本」来免除重启，**实测无效**（模式切换救不回花屏），已删除该计划任务。
+> 如需进一步压缩开机时间，只能是硬件侧（HDMI EDID 模拟器/换原生 VBIOS）。
 >
 > 试过但**无效**的改进：加大自启延迟 30s→120s、去掉 `initcall_blacklist=sysfb_init`、
 > 去掉开机 vfio 预绑定（只降低概率）、启动前用 i915 预热 GPU（只改变花屏形态）、
@@ -335,13 +390,20 @@ update-grub && update-initramfs -u -k all && reboot
 
 ## 13. 已知约束与待办
 
-- [ ] **USB-485 转换器直通**（插上后按 §8.2 加）
-- [ ] 鼠标直通（插上后按 §8.1 加，键鼠预留）
-- [ ] Windows 降内存到 4096MB（给 HAOS 留空间）
-- [ ] 删除 `win11-UNAVALIABLE` VM（释放约 39G）
-- [ ] 出门远程：FORAGER 路由器装 Tailscale 做子网路由（车内网段 `192.168.43.0/24`）
-- [ ] 终局迁网段：`192.168.8.0/24` 定稿后，PVE `.10` / Windows `.210` / HA `.11` 一并迁移
-- [ ] Win10 LTSC 激活（右下角水印，不影响功能）
+- [ ] **USB-485 转换器直通**（插上后按 §8.2 加；这是调试 485 的最后一环）
+- [x] 鼠标直通（`093a:2510`，已加进 VM 配置）
+- [x] **自动登录**（`AutoAdminLogon`，开机免密码进桌面）
+- [x] **显示布局**：只保留物理屏（`DisplaySwitch /internal`），应用全部开在物理屏；虚拟屏断开（noVNC 黑，RDP 正常）
+- [x] **内存 4096MB**（原 5120；本机 8G 上限，给 HAOS 留空间）
+- [x] **删除 `win11-UNAVALIABLE` VM**（磁盘剩余 43G → 82G）
+- [x] **软件清理**：已卸载 ShtermClient / aTrust / NAC Client
+- [ ] ⚠️ **奇安信天擎（"广电运通防病毒"）**：静默卸载失败，需公司 IT 卸载密码或管理控制台下发；否则只能**新建干净 Windows VM**（旧 VM 留备份，按本文档重配，约 1 小时）
+- [ ] 其余非系统软件待定：Chrome / PotPlayer / GPU-Z / virtio 安装器 / 驱动人生
+- [ ] 可选：HDMI EDID 模拟器（假负载，¥20–40）——显示器按需开关/热插拔更稳
+- [x] 车内网段/IP 划分定稿：`192.168.10.0/24`，PVE `.10`、Windows DHCP `.101`（路由器 MAC 绑定）
+- [ ] 出门远程：**Cudy TR3000 自带 ZeroTier**（VPN→ZeroTier，客户端访问=互联网和本地局域网），PVE/Windows **不装任何 VPN 客户端**（网算分离）
+- [x] 网段定稿：车内 `192.168.10.0/24`（家里 `192.168.5.0/24`），PVE 静态 `.10`、Windows DHCP（建议 Cudy 绑定 MAC）
+- [ ] Win10 LTSC 激活（右下角水印，不影响功能；需产品密钥或 KMS 地址）
 - [ ] 升级 PVE 前先确认核显直通是否修复（PVE 9 已知回归）
 
 ## 参考

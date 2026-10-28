@@ -2,8 +2,8 @@
 # Y1 主灯 / Y2 氛围灯+睡眠灯 / Y3 后窗排气扇 / Y4 上水泵(48V直切+续流二极管)
 # Y5 电控水阀 / Y6 冰箱 / Y7 倒车灯（车尾并进） / Y8 预留
 #
-# 【硬件变更】LED 全部移到中门 16DO 模块（地址 0x05），见 do16.yaml。
-#   本文件不再有任何 LED 通道；负载 on_state 只调用 do16.yaml 里的 led_* 脚本。
+# 【硬件变更】LED 全部移到中门 16DO 模块（地址 0x05），见 relay-mid-16do.yaml。
+#   本文件不再有任何 LED 通道；负载 on_state 只调用 relay-mid-16do.yaml 里的 led_* 脚本。
 #   原 中8.Y3/Y5 曾被当作 LED 用的设计已废弃（现 Y3=排气扇、Y5=水阀，均为负载）。
 # 【按键动作】= 执行 act_xxx script（prod 在 scenes.yaml）
 
@@ -76,41 +76,29 @@ binary_sensor:
   - platform: template
     name: "[中8.DI1] 入口-排水"
     id: bs_door_drain
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_drain
   - platform: template
     name: "[中8.DI2] 入口-户外灯"
     id: bs_door_outdoor
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_outdoor
   - platform: template
     name: "[中8.DI3] 入口-上水泵"
     id: bs_door_pump
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_pump_in
   - platform: template
     name: "[中8.DI4] 入口-离车驻车"
     id: bs_door_camp
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
-      - script.execute: act_camp
+      # 【临时测试版 · 用户要求保留到验收通过】X4 直切主灯 Y1（一次按下=一次动作），
+      # 验收通过后再改回：`- script.execute: act_camp`（X4 = 离车/驻车场景键）。
+      - switch.toggle: sw_main_light
+      # - script.execute: act_camp
   - platform: template
     name: "[中8.DI5] 主控-主灯"
     id: bs_bed_light
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - lambda: 'id(hold_triggered) = false;'
       - script.execute: key1_hold_timer
@@ -125,24 +113,15 @@ binary_sensor:
   - platform: template
     name: "[中8.DI6] 主控-氛围灯"
     id: bs_bed_ambient
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_ambient
   - platform: template
     name: "[中8.DI7] 主控-排气扇"
     id: bs_bed_fan
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_fan
   - platform: template
     name: "[中8.DI8] 主控-上水泵"
     id: bs_bed_pump
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
     on_press:
       - script.execute: act_pump_bed

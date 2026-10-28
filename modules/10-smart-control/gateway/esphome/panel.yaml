@@ -1,0 +1,23 @@
+# =============================================================
+# FORAGER 手机控制面板 —— 自包含深蓝 UI,由 ESP32 直接 serve
+#
+# 原理:自定义 external_component (components/forager_panel) 在同一个
+#   web_server_base 上注册一个 HTTP handler,把 gzip 进 Flash 的
+#   index.html serve 到 /dashboard(以及把首页 / 也一并接管)。
+#   页面本身用 fetch 轮询 ESPHome 原生 REST(/switch/<id> /sensor/<id>),
+#   因此与 web_server 组件共存,且完全离线(页面与数据都在 ESP32 本地)。
+#
+# ⚠ 与「原生 web_server 前端」的关系:
+#   web_server 仍保留(继续提供 REST + OTA);本组件只额外注册页面路由。
+#   手机打开 http://<esp32-ip>/dashboard 即是本界面。
+# =============================================================
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [forager_panel]
+
+forager_panel:
+  html_file: web/index.html
+  route: /dashboard

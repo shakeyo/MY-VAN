@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>FORAGER · 觅食者号</title>
+<style>
+  /* =====================================================================
+     FORAGER 控制面板 —— 单文件版 (ESP32 web_server 定制前端)
+     主题取自 rv-dashboard (React): 深蓝 #111827 / 主色 #00A0FF
+     无框架、无外部依赖、纯原生 CSS/JS；移动优先，触控目标 ≥44px
+     ===================================================================== */
+  :root {
+    --bg: #111827;            /* rv-bg      */
+    --surface: #1F2937;       /* rv-surface */
+    --surface-2: #273449;     /* 略亮的卡片，用于层级             */
+    --border: #374151;        /* rv-border  */
+    --primary: #00A0FF;       /* rv-primary */
+    --primary-dim: rgba(0,160,255,0.12);
+    --primary-glow: rgba(0,160,255,0.4);
+    --success: #4ADE80;
+    --warning: #FBBF24;
+    --danger: #EF4444;
+    --text: #F9FAFB;
+    --muted: #9CA3AF;
+    --mono: "SFMono-Regular", "Roboto Mono", "JetBrains Mono", ui-monospace, monospace;
+    --r: 16px;
+    --r-sm: 12px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Microsoft YaHei", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+    height: 100%;
+  }
+
+  body {
+    display: flex; flex-direction: column;
+    height: 100dvh;               /* 移动端地址栏收起后可正常铺满 */
+    overflow: hidden;
+  }
+
+  /* ===================== 顶栏 ===================== */
+  header {
+    flex: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+    background: rgba(31,41,55,0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--primary), #2563eb);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 11px; color: #fff; letter-spacing: 0.5px;
+    box-shadow: 0 0 14px var(--primary-glow);
+  }
+  .brand-name { font-weight: 650; font-size: 15px; letter-spacing: 2px; }
+  .brand-sub  { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+  .status {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px; color: var(--muted);
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 9px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+  .dot.warn { background: var(--warning); }
+  .dot.off  { background: var(--muted); }
+  .clock { font-family: var(--mono); font-size: 15px; color: var(--text); font-weight: 600; }
+
+  /* ===================== 主体 ===================== */
+  main {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+  }
+
+  section { margin-bottom: 22px; }
+  .sec-title {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    letter-spacing: 1px; margin: 0 0 10px 2px;
+    text-transform: uppercase;
+  }
+  .sec-title::before {
+    content: ''; width: 3px; height: 14px; border-radius: 2px;
+    background: var(--primary); box-shadow: 0 0 8px var(--primary-glow);
+  }
+
+  /* ===================== 卡片 ===================== */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px;
+  }
+
+  /* ===================== 情景模式 ===================== */
+  .scenes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .scene-btn {
+    appearance: none; border: 1.5px solid var(--border); background: var(--surface);
+    border-radius: var(--r-sm); padding: 12px 6px 11px;
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    color: var(--muted); cursor: pointer; min-height: 72px;
+    transition: border-color .15s, background .15s, box-shadow .15s, transform .1s;
+  }
+  .scene-btn:active { transform: scale(0.97); }
+  .scene-btn .ic { font-size: 22px; line-height: 1; }
+  .scene-btn .lb { font-size: 12px; font-weight: 500; }
+  .scene-btn .st { font-size: 10px; color: var(--muted); opacity: 0.85; }
+  .scene-btn.active {
+    border-color: var(--primary); color: var(--text);
+    background: linear-gradient(180deg, var(--primary-dim), transparent);
+    box-shadow: 0 0 16px var(--primary-dim), inset 0 0 0 1px var(--primary-dim);
+  }
+  .scene-btn.active .st { color: var(--primary); }
+  .scene-btn.active .ic { filter: drop-shadow(0 0 6px var(--primary-glow)); }
+
+  /* ===================== 快捷开关网格 ===================== */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tile {
+    appearance: none; border: 1.5px solid var(--border); background: var(--surface);
+    border-radius: var(--r-sm); padding: 13px 6px 11px;
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    cursor: pointer; position: relative; min-height: 88px;
+    color: var(--muted);
+    transition: border-color .15s, background .15s, box-shadow .15s, transform .1s;
+  }
+  .tile:active { transform: scale(0.96); }
+  .tile .ic {
+    width: 42px; height: 42px; border-radius: 11px;
+    background: var(--bg); display: flex; align-items: center; justify-content: center;
+    font-size: 22px; line-height: 1;
+  }
+  .tile .lb { font-size: 12px; font-weight: 500; }
+  .tile.on {
+    border-color: var(--primary); color: var(--text);
+    background: var(--primary-dim);
+    box-shadow: 0 0 16px var(--primary-dim);
+  }
+  .tile.on .ic { background: var(--primary); box-shadow: 0 0 12px var(--primary-glow); }
+  .tile .mark {
+    position: absolute; top: 7px; right: 7px; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--primary);
+    box-shadow: 0 0 8px var(--primary-glow);
+    display: none;
+  }
+  .tile.on .mark { display: block; }
+
+  /* ===================== 能源 ===================== */
+  .energy-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .energy-head .lbl { font-size: 12px; color: var(--muted); }
+  .energy-head .val { font-family: var(--mono); font-weight: 700; font-size: 17px; }
+  .battery { display: flex; align-items: center; gap: 16px; }
+  .gauge { position: relative; width: 96px; height: 96px; flex: none; }
+  .gauge svg { transform: rotate(-90deg); }
+  .gauge .c { fill: none; stroke: var(--border); stroke-width: 9; }
+  .gauge .p {
+    fill: none; stroke: var(--success); stroke-width: 9; stroke-linecap: round;
+    transition: stroke-dashoffset .6s ease;
+  }
+  .gauge .num {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .gauge .num b { font-family: var(--mono); font-size: 26px; font-weight: 700; }
+  .gauge .num span { font-size: 10px; color: var(--muted); }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; }
+  .stat { background: var(--bg); border-radius: var(--r-sm); padding: 9px 10px; }
+  .stat .k { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .stat .v { font-family: var(--mono); font-weight: 650; font-size: 15px; }
+  .stat .v.good { color: var(--success); }
+  .stat .v.warn { color: var(--warning); }
+  .stat .v.bad  { color: var(--danger); }
+
+  .solar-bar { margin-top: 12px; }
+  .solar-bar .row { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+  .solar-bar .track { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+  .solar-bar .fill {
+    height: 100%; width: 0%; border-radius: 999px;
+    background: linear-gradient(90deg, #F59E0B, var(--warning));
+    transition: width .6s ease;
+  }
+
+  /* ===================== 底部标签栏 ===================== */
+  nav {
+    flex: none;
+    display: flex; justify-content: space-around; align-items: stretch;
+    background: rgba(31,41,55,0.92);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  nav button {
+    appearance: none; background: none; border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    min-width: 64px; padding: 6px 10px; border-radius: 12px;
+    color: var(--muted); font-size: 11px; position: relative;
+    transition: color .15s, background .15s; min-height: 48px;
+  }
+  nav button .ic { font-size: 22px; line-height: 1; }
+  nav button.active { color: var(--primary); background: var(--primary-dim); }
+  nav button.active::after {
+    content: ''; position: absolute; bottom: -6px; width: 22px; height: 3px;
+    border-radius: 2px; background: var(--primary); box-shadow: 0 0 8px var(--primary-glow);
+  }
+
+  /* ===================== 页面 ===================== */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+  /* ===================== 调试 / 日志 ===================== */
+  .log-toolbar {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  .log-toolbar .spacer { flex: 1; }
+  .chip {
+    appearance: none; border: 1px solid var(--border); background: var(--surface);
+    color: var(--muted); border-radius: 8px; padding: 6px 12px; font-size: 12px;
+    cursor: pointer; min-height: 36px;
+  }
+  .chip.active { border-color: var(--primary); color: var(--text); background: var(--primary-dim); }
+  .log-view {
+    background: #0a0f1a; border: 1px solid var(--border); border-radius: var(--r-sm);
+    padding: 10px 12px; height: calc(100dvh - 240px); min-height: 200px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    font-family: var(--mono); font-size: 11px; line-height: 1.6;
+    color: #c9d1d9; white-space: pre-wrap; word-break: break-all;
+  }
+  .log-view .lvl-W { color: var(--warning); }
+  .log-view .lvl-E { color: var(--danger); }
+  .log-view .lvl-D { color: var(--muted); }
+  .log-view .lvl-I { color: #7ee787; }
+  .log-view .dim { color: #6e7681; }
+  .conn-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 4px; vertical-align: middle; }
+  .conn-dot.ok { background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+  /* ===================== 设置页 ===================== */
+  .set-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 2px; gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .set-row:last-child { border-bottom: none; }
+  .set-row .lbl { font-size: 14px; }
+  .set-row .lbl small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .set-row .val { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .toggle-mini {
+    width: 46px; height: 26px; border-radius: 13px; background: var(--border);
+    position: relative; cursor: pointer; flex: none; transition: background .2s;
+  }
+  .toggle-mini.on { background: var(--primary); box-shadow: 0 0 10px var(--primary-dim); }
+  .toggle-mini::after {
+    content:''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+    border-radius: 50%; background: #fff; transition: left .2s;
+  }
+  .toggle-mini.on::after { left: 23px; }
+  .range-row { display: flex; align-items: center; gap: 12px; padding: 12px 2px; }
+  .range-row .lbl { flex: 1; font-size: 14px; }
+  .range-row .lbl small { display:block; font-size:11px; color:var(--muted); margin-top:2px; }
+  .range-row input[type=range] { flex: 2; accent-color: var(--primary); }
+  .range-row .rval { min-width: 48px; text-align: right; font-family: var(--mono); font-size: 14px; color: var(--text); }
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn-grid .chip { min-height: 44px; text-align: left; }
+  .card + .card { margin-top: 12px; }
+
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">FG</div>
+    <div>
+      <div class="brand-name">FORAGER</div>
+      <div class="brand-sub">觅食者号 · 485 网关</div>
+    </div>
+  </div>
+  <div class="status">
+    <span class="pill"><span class="dot" id="wifiDot"></span><span id="wifiTxt">WiFi</span></span>
+    <span class="clock" id="clock">--:--</span>
+  </div>
+</header>
+
+<main>
+  <!-- ============ 首页 ============ -->
+  <div class="page active" id="page-home">
+    <section>
+      <h3 class="sec-title">情景模式</h3>
+      <div class="scenes">
+        <button class="scene-btn active" data-scene="light" id="scene-light">
+          <span class="ic">💡</span><span class="lb">灯光</span><span class="st">明亮</span>
+        </button>
+        <button class="scene-btn" data-scene="camp" id="scene-camp">
+          <span class="ic">🚐</span><span class="lb">离车/驻车</span><span class="st">正常</span>
+        </button>
+        <button class="scene-btn" data-scene="fan" id="scene-fan">
+          <span class="ic">🌀</span><span class="lb">排气扇</span><span class="st">后窗</span>
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">快捷开关</h3>
+      <div class="grid" id="quick-grid"></div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">能源</h3>
+      <div class="card">
+        <div class="battery">
+          <div class="gauge">
+            <svg width="96" height="96" viewBox="0 0 96 96">
+              <circle class="c" cx="48" cy="48" r="40"></circle>
+              <circle class="p" id="battArc" cx="48" cy="48" r="40"
+                      stroke-dasharray="251.3" stroke-dashoffset="251.3"></circle>
+            </svg>
+            <div class="num"><b id="battPct">--</b><span>%</span></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><div class="k">电池电压</div><div class="v" id="batV">--V</div></div>
+            <div class="stat"><div class="k">充电电流</div><div class="v good" id="chgA">--A</div></div>
+            <div class="stat"><div class="k">发电功率</div><div class="v warn" id="solarW">--W</div></div>
+            <div class="stat"><div class="k">状态</div><div class="v good" id="chgState">--</div></div>
+          </div>
+        </div>
+        <div class="solar-bar">
+          <div class="row"><span>今日发电</span><span id="dayK">-- kWh</span></div>
+          <div class="track"><div class="fill" id="solarFill"></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ 开关页 ============ -->
+  <div class="page" id="page-switches">
+    <section>
+      <h3 class="sec-title">照明</h3>
+      <div class="grid" id="light-grid"></div>
+    </section>
+    <section>
+      <h3 class="sec-title">电力与设备</h3>
+      <div class="grid" id="power-grid"></div>
+    </section>
+    <section>
+      <h3 class="sec-title">水路</h3>
+      <div class="grid" id="water-grid"></div>
+    </section>
+  </div>
+
+  <!-- ============ 电池页 ============ -->
+  <div class="page" id="page-power">
+    <section>
+      <h3 class="sec-title">光伏系统</h3>
+      <div class="card">
+        <div class="energy-head">
+          <span class="lbl">太阳能充电</span>
+          <span class="val" id="pvStateVal" style="color:var(--success)">充电中</span>
+        </div>
+        <div class="stat-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="stat"><div class="k">PV 电压</div><div class="v" id="pvV">--V</div></div>
+          <div class="stat"><div class="k">电池电压</div><div class="v" id="pvBatV">--V</div></div>
+          <div class="stat"><div class="k">充电电流</div><div class="v good" id="pvA">--A</div></div>
+          <div class="stat"><div class="k">发电功率</div><div class="v warn" id="pvW">--W</div></div>
+          <div class="stat"><div class="k">控制器温度</div><div class="v" id="pvTemp">--°C</div></div>
+          <div class="stat"><div class="k">电池温度</div><div class="v" id="pvBatTemp">--°C</div></div>
+          <div class="stat"><div class="k">今日发电</div><div class="v" id="pvDay">--Wh</div></div>
+          <div class="stat"><div class="k">累计发电</div><div class="v" id="pvTotal">--Wh</div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ 调试页 ============ -->
+  <div class="page" id="page-debug">
+    <section>
+      <h3 class="sec-title">实时日志</h3>
+      <div class="card">
+        <div class="log-toolbar">
+          <span><span class="conn-dot" id="connDot"></span><span id="connTxt" style="font-size:12px;color:var(--muted)">连接中…</span></span>
+          <span class="spacer"></span>
+          <button class="chip" id="btnPause">暂停</button>
+          <button class="chip" id="btnClear">清空</button>
+        </div>
+        <div class="log-view" id="logView">等待日志…</div>
+      </div>
+      <p class="hint">日志来自 ESP32 实时推送（SSE /events）；包括 485 按键、轮询计数、MPPT 告警等</p>
+    </section>
+  </div>
+
+  <!-- ============ 设置页 ============ -->
+  <div class="page" id="page-settings">
+    <section>
+      <h3 class="sec-title">光伏充电控制</h3>
+      <div class="card">
+        <div class="set-row">
+          <span class="lbl">充电输出<small>MPPT 到电池的输出回路</small></span>
+          <span class="toggle-mini" id="swSolarCharge"></span>
+        </div>
+        <div class="set-row">
+          <span class="lbl">允许充电<small>远程允许/禁止充电</small></span>
+          <span class="toggle-mini" id="swSolarEnable"></span>
+        </div>
+        <div class="range-row">
+          <span class="lbl">充电限流<small>0 ~ 40 A</small></span>
+          <input type="range" id="numSolarLimit" min="0" max="40" step="0.5" value="30">
+          <span class="rval" id="solarLimitVal">30A</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="btn-grid">
+          <button class="chip" data-maint="remote">设为远程控制</button>
+          <button class="chip" data-maint="clock">时钟同步</button>
+          <button class="chip" data-maint="readcfg">读设置参数</button>
+          <button class="chip" data-maint="buzzer">蜂鸣器消音</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">系统与维护</h3>
+      <div class="card">
+        <div class="set-row">
+          <span class="lbl">WiFi SSID</span>
+          <span class="val" id="sysSsid">--</span>
+        </div>
+        <div class="set-row">
+          <span class="lbl">IP 地址</span>
+          <span class="val" id="sysIp">--</span>
+        </div>
+        <div class="set-row">
+          <span class="lbl">WiFi 信号</span>
+          <span class="val" id="sysSignal">--</span>
+        </div>
+        <div class="set-row">
+          <span class="lbl">重启设备<small>重新启动 ESP32 网关</small></span>
+          <button class="chip" id="btnRestart">重启</button>
+        </div>
+        <div class="set-row">
+          <span class="lbl">固件 OTA<small>跳转到原生 web_server 页面</small></span>
+          <button class="chip" id="btnOta">打开</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">面板偏好</h3>
+      <div class="card">
+        <div class="set-row">
+          <span class="lbl">实时日志自动滚动</span>
+          <span class="toggle-mini on" id="prefAutoScroll"></span>
+        </div>
+      </div>
+      <p class="hint">偏好保存在本机浏览器（localStorage），不影响 ESP32</p>
+    </section>
+  </div>
+</main>
+
+<nav>
+  <button data-page="home" class="active"><span class="ic">🏠</span>首页</button>
+  <button data-page="switches"><span class="ic">🎛️</span>开关</button>
+  <button data-page="power"><span class="ic">🔋</span>电池</button>
+  <button data-page="debug"><span class="ic">📋</span>调试</button>
+  <button data-page="settings"><span class="ic">⚙️</span>设置</button>
+</nav>
+
+<script>
+/* =====================================================================
+   FORAGER 控制面板 · 真实数据层 (SSE 实时推送)
+   通过 ESPHome 原生 SSE 流 (/events) 订阅实时状态与日志:
+     event: state_detail_all  /  state   → 实体状态 {id,name_id,state,value}
+     event: log                          → 实时日志文本
+     event: ping                         → 心跳 {uptime}
+   命令仍走 REST:
+     POST /switch/<name>/toggle          → 切换开关
+   注意:web_server 用实体 name(而非 id)做 URL/name_id 匹配,
+   故 ENTITIES 记录每个 key 的「domain + 精确 name」。
+   ===================================================================== */
+
+const ICONS = {
+  mainLight: '💡', ambient: '✨', spot: '🔦', outdoor: '🗼',
+  pump: '🚰', valve: '🚿', fanRear: '🌀', fanPass: '💨',
+  fridge: '🧊', dsp: '🎵', reverse: '🚗',
+};
+
+const QUICK = ['mainLight','ambient','pump','fanRear','fridge','spot'];
+const GROUPS = {
+  light:  ['mainLight','ambient','spot','outdoor'],
+  power:  ['fridge','dsp','reverse','fanPass'],
+  water:  ['pump','valve','fanRear'],
+};
+const NAMES = {
+  mainLight:'主灯', ambient:'氛围灯', spot:'射灯', outdoor:'户外灯',
+  pump:'上水泵', valve:'水阀', fanRear:'后窗排扇', fanPass:'副驾排扇',
+  fridge:'冰箱', dsp:'DSP', reverse:'倒车灯',
+};
+
+// —— 实体映射:UI key → {domain, name}。name 必须与各 yaml 的 name: 完全一致 ——
+const ENTITIES = {
+  mainLight: { domain:'switch', name:'[中8.Y1] 主灯' },
+  ambient:   { domain:'switch', name:'[中8.Y2] 氛围灯' },
+  fridge:    { domain:'switch', name:'[中8.Y6] 冰箱' },
+  reverse:   { domain:'switch', name:'[中8.Y7] 倒车灯' },
+  spot:      { domain:'switch', name:'[额头.R1] 射灯' },
+  outdoor:   { domain:'switch', name:'[额头.R2] 户外灯' },
+  dsp:       { domain:'switch', name:'[额头.R3] DSP' },
+  fanPass:   { domain:'switch', name:'[额头.R4] 副驾排气扇' },
+  pump:      { domain:'switch', name:'[中4.Y1] 上水泵' },
+  valve:     { domain:'switch', name:'[中4.Y2] 电控水阀' },
+  fanRear:   { domain:'switch', name:'[中4.Y3] 后窗排气扇' },
+};
+
+// 光伏 MPPT 传感器(实体名取自 mppt.yaml)
+const SENSORS = {
+  pvV:       { name:'SolarPV PV电压' },
+  batV:      { name:'SolarBat 电池电压' },
+  chgA:      { name:'SolarChg 充电电流' },
+  solarW:    { name:'SolarPower 发电功率' },
+  dayWh:     { name:'SolarDay 日发电量' },
+  totalWh:   { name:'SolarTotal 总发电量' },
+  pvTemp:    { name:'SolarTemp 控制器温度' },
+  pvBatTemp: { name:'SolarBatTemp 电池温度' },
+};
+const TEXT_SENSORS = {
+  chgState:  { name:'SolarState 充电状态' },
+  alert:     { name:'SolarAlert 告警' },
+};
+
+// MPPT 可控开关(设置页)
+const MPPT_SWITCHES = {
+  solarCharge: { name:'SolarCharge 充电输出' },
+  solarEnable: { name:'SolarEnable 允许充电' },
+};
+// MPPT 数值(number,设置页滑块)
+const MPPT_NUMBERS = {
+  solarLimit: { name:'SolarLimit 充电限流', min:0, max:40, unit:'A' },
+};
+// MPPT 维护按钮(button,设置页)
+const MPPT_BUTTONS = {
+  remote:  { name:'SolarA 设为远程控制' },
+  clock:   { name:'SolarB 时钟同步' },
+  readcfg: { name:'SolarC 读设置参数' },
+  buzzer:  { name:'SolarD 蜂鸣器消音' },
+};
+// 系统 text_sensor / sensor(system.yaml)
+const SYS_TEXT = {
+  ssid:   { name:'SysWifi SSID' },
+  ip:     { name:'SysWifi IP地址' },
+};
+const SYS_SENSORS = {
+  signal: { name:'SysWifi 信号' },
+};
+
+const state = {
+  sceneLight: 0, sceneCamp: 0, sceneFan: 0,
+  switches: {
+    mainLight:false, ambient:false, spot:false, outdoor:false,
+    pump:false, valve:false, fanRear:false, fanPass:false,
+    fridge:false, dsp:false, reverse:false,
+  },
+  power: {
+    batteryPercent: 0, batV: 0, chgA: 0, solarW: 0,
+    pvV: 0, pvBatV: 0, pvTemp: 0, pvBatTemp: 0,
+    dayWh: 0, totalWh: 0, state: '--',
+  },
+  sys: {
+    solarCharge: false, solarEnable: true, solarLimit: 30,
+    ssid: '--', ip: '--', signal: '--',
+  },
+};
+
+// 由电池电压估算百分比(48V 磷酸铁锂:44V≈0% ~ 54V≈100%)
+function voltToPct(v) {
+  if (!v || v === 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((v - 44.0) / (54.0 - 44.0) * 100)));
+}
+
+/* ---------- 渲染:开关网格 ---------- */
+function renderGrid(el, keys) {
+  el.innerHTML = '';
+  keys.forEach(k => {
+    const on = state.switches[k];
+    const b = document.createElement('button');
+    b.className = 'tile' + (on ? ' on' : '');
+    b.dataset.key = k;
+    b.innerHTML = `<span class="ic">${ICONS[k]||'⚡'}</span>` +
+                  `<span class="lb">${NAMES[k]||k}</span>` +
+                  `<span class="mark"></span>`;
+    b.addEventListener('click', () => toggleSwitch(k, b));
+    el.appendChild(b);
+  });
+}
+function renderAllSwitches() {
+  renderGrid(document.getElementById('quick-grid'), QUICK);
+  renderGrid(document.getElementById('light-grid'), GROUPS.light);
+  renderGrid(document.getElementById('power-grid'), GROUPS.power);
+  renderGrid(document.getElementById('water-grid'), GROUPS.water);
+}
+function syncTile(k, on) {
+  document.querySelectorAll(`.tile[data-key="${k}"]`).forEach(t => t.classList.toggle('on', on));
+}
+
+/* ---------- 开关动作:调 ESP32 REST ---------- */
+async function toggleSwitch(k, btn) {
+  const e = ENTITIES[k];
+  if (!e) return;
+  const enc = encodeURIComponent(e.name);
+  try {
+    await fetch(`/${e.domain}/${enc}/toggle`, { method:'POST' });
+  } catch (err) {
+    console.warn('toggle failed', k, err);
+  }
+  // 乐观更新 + 下一轮轮询会校正真实态
+  const on = !state.switches[k];
+  state.switches[k] = on;
+  syncTile(k, on);
+}
+
+/* ---------- 场景(只读展示;档位来自 scene-state.yaml 暴露的 sensor) ---------- */
+const SCENE_META = {
+  light: { names:['全关','明亮','夜灯'] },
+  camp:  { names:['正常','离车','驻车'] },
+  fan:   { names:['全关','后窗','全开'] },
+};
+// 场景真值 = scene-state.yaml 的 3 个 template sensor(0/1/2 三档)
+const SCENE_SENSORS = {
+  light: { name:'SceneLight 灯光模式' },
+  camp:  { name:'SceneCamp 离车驻车' },
+  fan:   { name:'SceneFan 排气扇' },
+};
+function renderScenes() {
+  const set = (key, idx) => {
+    const el = document.getElementById('scene-' + key);
+    el.querySelector('.st').textContent = SCENE_META[key].names[idx];
+    el.classList.toggle('active', idx !== 0);
+  };
+  set('light', state.sceneLight || 0);
+  set('camp', state.sceneCamp || 0);
+  set('fan', state.sceneFan || 0);
+}
+
+/* ---------- 渲染:能源 ---------- */
+const ARC = 251.3;
+const battColor = v => v > 50 ? '#4ADE80' : v > 20 ? '#FBBF24' : '#EF4444';
+function renderPower() {
+  const p = state.power;
+  const pct = p.batteryPercent;
+  document.getElementById('battPct').textContent = pct;
+  document.getElementById('battArc').setAttribute('stroke-dashoffset', ARC * (1 - pct/100));
+  document.getElementById('battArc').setAttribute('stroke', battColor(pct));
+  document.getElementById('batV').textContent = (p.batV||0).toFixed(1) + 'V';
+  document.getElementById('chgA').textContent = (p.chgA||0).toFixed(1) + 'A';
+  document.getElementById('solarW').textContent = Math.round(p.solarW||0) + 'W';
+  document.getElementById('chgState').textContent = p.state || '--';
+  document.getElementById('dayK').textContent = ((p.dayWh||0)/1000).toFixed(2) + ' kWh';
+  document.getElementById('solarFill').style.width = Math.min(100, (p.dayWh||0)/30) + '%';
+  // 光伏页
+  document.getElementById('pvV').textContent = (p.pvV||0).toFixed(1) + 'V';
+  document.getElementById('pvBatV').textContent = (p.batV||0).toFixed(1) + 'V';
+  document.getElementById('pvA').textContent = (p.chgA||0).toFixed(1) + 'A';
+  document.getElementById('pvW').textContent = Math.round(p.solarW||0) + 'W';
+  document.getElementById('pvTemp').textContent = (p.pvTemp||0).toFixed(1) + '°C';
+  document.getElementById('pvBatTemp').textContent = (p.pvBatTemp||0).toFixed(1) + '°C';
+  document.getElementById('pvDay').textContent = Math.round(p.dayWh||0) + ' Wh';
+  document.getElementById('pvTotal').textContent = Math.round(p.totalWh||0) + ' Wh';
+  document.getElementById('pvStateVal').textContent = p.state || '--';
+}
+
+/* ---------- 页面切换 ---------- */
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + btn.dataset.page).classList.add('active');
+  });
+});
+
+/* ---------- 时钟 ---------- */
+function tickClock() {
+  document.getElementById('clock').textContent = new Date().toTimeString().slice(0,5);
+}
+setInterval(tickClock, 1000);
+
+/* ---------- SSE 实时推送 + 状态映射 ---------- */
+// 反向映射:实体 name → UI key,用于把 SSE 的 state 事件对应回面板
+const NAME_TO_SWITCH = {};       // name -> key (负载/继电器开关)
+const NAME_TO_SENSOR = {};       // name -> sensor key (光伏/场景/系统数值)
+const NAME_TO_MPPT_SW = {};      // name -> key (MPPT 可控开关,写 sys.solarCharge等)
+const NAME_TO_MPPT_NUM = {};     // name -> key (MPPT number)
+const NAME_TO_SYS_TEXT = {};     // name -> key (SysWifi SSID/IP)
+const NAME_TO_SYS_SENSOR = {};   // name -> key (SysWifi 信号)
+for (const [k, e] of Object.entries(ENTITIES)) NAME_TO_SWITCH[e.name] = k;
+for (const [k, s] of Object.entries(SENSORS)) NAME_TO_SENSOR[s.name] = k;
+for (const [k, s] of Object.entries(TEXT_SENSORS)) NAME_TO_SENSOR[s.name] = k;
+for (const [k, s] of Object.entries(SCENE_SENSORS)) NAME_TO_SENSOR[s.name] = 'scene:' + k;
+for (const [k, s] of Object.entries(MPPT_SWITCHES)) NAME_TO_MPPT_SW[s.name] = k;
+for (const [k, s] of Object.entries(MPPT_NUMBERS)) NAME_TO_MPPT_NUM[s.name] = k;
+for (const [k, s] of Object.entries(SYS_TEXT)) NAME_TO_SYS_TEXT[s.name] = k;
+for (const [k, s] of Object.entries(SYS_SENSORS)) NAME_TO_SYS_SENSOR[s.name] = k;
+
+// 从 json 提取实体 name(兼容 state 的 name_id 与 detail 的 name)
+function entityName(json) {
+  if (json.name) return json.name;
+  if (json.name_id) {
+    const i = json.name_id.indexOf('/');
+    return i >= 0 ? json.name_id.slice(i + 1) : json.name_id;
+  }
+  return null;
+}
+
+// 根据 SSE state 事件更新本地 state 并重绘
+function applyEntityState(json) {
+  const name = entityName(json);
+  if (!name) return;
+
+  // 负载开关
+  if (name in NAME_TO_SWITCH) {
+    const k = NAME_TO_SWITCH[name];
+    const on = (json.state === 'ON' || json.value === true);
+    if (state.switches[k] !== on) { state.switches[k] = on; syncTile(k, on); }
+    return;
+  }
+  // MPPT 可控开关(设置页)
+  if (name in NAME_TO_MPPT_SW) {
+    const k = NAME_TO_MPPT_SW[name];
+    const on = (json.state === 'ON' || json.value === true);
+    if (state.sys[k] !== on) { state.sys[k] = on; renderMPPT(); }
+    return;
+  }
+  // MPPT 数值(number)
+  if (name in NAME_TO_MPPT_NUM) {
+    const k = NAME_TO_MPPT_NUM[name];
+    const v = Number(json.value);
+    if (state.sys[k] !== v) { state.sys[k] = v; renderMPPT(); }
+    return;
+  }
+  // 系统文本(SSID/IP)
+  if (name in NAME_TO_SYS_TEXT) {
+    const k = NAME_TO_SYS_TEXT[name];
+    state.sys[k] = json.value || json.state || '--';
+    renderSys();
+    return;
+  }
+  // 系统数值(信号)
+  if (name in NAME_TO_SYS_SENSOR) {
+    const k = NAME_TO_SYS_SENSOR[name];
+    state.sys[k] = json.value;
+    renderSys();
+    return;
+  }
+  // 光伏/场景传感器
+  const ssen = NAME_TO_SENSOR[name];
+  if (ssen !== undefined) {
+    if (ssen.startsWith('scene:')) {
+      const key = ssen.slice(6);
+      state['scene' + key.charAt(0).toUpperCase() + key.slice(1)] = Math.round(Number(json.value));
+      renderScenes();
+    } else if (ssen === 'chgState' || ssen === 'alert') {
+      state.power[ssen === 'chgState' ? 'state' : 'alert'] = json.value || json.state || '';
+      renderPower();
+    } else {
+      state.power[ssen] = Number(json.value);
+      state.power.batteryPercent = voltToPct(state.power.batV);
+      renderPower();
+    }
+  }
+}
+
+/* ---------- 日志流 ---------- */
+const MAX_LOG_LINES = 300;
+let logPaused = false;
+let logAutoScroll = true;
+const logView = document.getElementById('logView');
+const btnPause = document.getElementById('btnPause');
+const btnClear = document.getElementById('btnClear');
+
+function logLevelClass(text) {
+  // ESPHome 日志形如 [W][web_server:123]: ... 或 [12:34:56][I][di:262]: ...
+  const m = text.match(/\[([A-Z])\]/);
+  return m ? 'lvl-' + m[1] : '';
+}
+
+function appendLog(text) {
+  if (logPaused) return;
+  const line = document.createElement('div');
+  const cls = logLevelClass(text);
+  line.className = cls;
+  line.textContent = text;
+  logView.appendChild(line);
+  // 限制行数,防内存无限增长
+  while (logView.childElementCount > MAX_LOG_LINES) logView.removeChild(logView.firstChild);
+  if (logAutoScroll) logView.scrollTop = logView.scrollHeight;
+}
+
+btnPause.addEventListener('click', () => {
+  logPaused = !logPaused;
+  btnPause.textContent = logPaused ? '继续' : '暂停';
+  btnPause.classList.toggle('active', logPaused);
+});
+btnClear.addEventListener('click', () => {
+  logView.innerHTML = '';
+});
+logView.addEventListener('scroll', () => {
+  // 用户上滚则暂停自动滚底;滚到底恢复
+  const nearBottom = logView.scrollHeight - logView.scrollTop - logView.clientHeight < 30;
+  logAutoScroll = nearBottom;
+});
+
+/* ---------- 建立 SSE 连接(状态 + 日志) ---------- */
+function connectSSE() {
+  const es = new EventSource('/events');
+
+  es.onopen = () => {
+    const d = document.getElementById('connDot');
+    d.classList.add('ok');
+    document.getElementById('connTxt').textContent = '已连接';
+  };
+
+  es.addEventListener('log', (ev) => {
+    appendLog(ev.data);
+  });
+
+  es.addEventListener('state', (ev) => {
+    try { applyEntityState(JSON.parse(ev.data)); } catch (e) {}
+  });
+  es.addEventListener('state_detail_all', (ev) => {
+    try { applyEntityState(JSON.parse(ev.data)); } catch (e) {}
+  });
+
+  es.onerror = () => {
+    const d = document.getElementById('connDot');
+    d.classList.remove('ok');
+    document.getElementById('connTxt').textContent = '已断开(重连中)';
+    // EventSource 会自动重连;无需手动处理
+  };
+  return es;
+}
+
+/* ---------- 设置页:渲染 + 命令 ---------- */
+async function postCmd(path) {
+  try { await fetch(path, { method:'POST' }); }
+  catch (e) { console.warn('cmd failed', path, e); }
+}
+function encName(map, key) { return encodeURIComponent(map[key].name); }
+
+function renderMPPT() {
+  // 充电输出 / 允许充电 开关
+  const c = document.getElementById('swSolarCharge');
+  const e = document.getElementById('swSolarEnable');
+  c.classList.toggle('on', !!state.sys.solarCharge);
+  e.classList.toggle('on', !!state.sys.solarEnable);
+  // 充电限流滑块
+  const sl = document.getElementById('numSolarLimit');
+  const v = document.getElementById('solarLimitVal');
+  sl.value = state.sys.solarLimit;
+  v.textContent = state.sys.solarLimit + 'A';
+}
+function renderSys() {
+  document.getElementById('sysSsid').textContent = state.sys.ssid;
+  document.getElementById('sysIp').textContent = state.sys.ip;
+  document.getElementById('sysSignal').textContent =
+    (typeof state.sys.signal === 'number') ? state.sys.signal + ' dBm' : state.sys.signal;
+}
+
+// 充电输出开关
+document.getElementById('swSolarCharge').addEventListener('click', function() {
+  const on = !state.sys.solarCharge;
+  postCmd('/switch/' + encName(MPPT_SWITCHES, 'solarCharge') + (on ? '/turn_on' : '/turn_off'));
+  state.sys.solarCharge = on; renderMPPT();   // 乐观更新,SSE 会校正
+});
+// 允许充电开关
+document.getElementById('swSolarEnable').addEventListener('click', function() {
+  const on = !state.sys.solarEnable;
+  postCmd('/switch/' + encName(MPPT_SWITCHES, 'solarEnable') + (on ? '/turn_on' : '/turn_off'));
+  state.sys.solarEnable = on; renderMPPT();
+});
+// 充电限流滑块
+document.getElementById('numSolarLimit').addEventListener('input', function() {
+  const v = this.value;
+  document.getElementById('solarLimitVal').textContent = v + 'A';
+});
+document.getElementById('numSolarLimit').addEventListener('change', function() {
+  const v = this.value;
+  postCmd('/number/' + encName(MPPT_NUMBERS, 'solarLimit') + '/set?value=' + v);
+  state.sys.solarLimit = Number(v);
+});
+// 维护按钮
+document.querySelectorAll('[data-maint]').forEach(b => {
+  b.addEventListener('click', () => {
+    const k = b.dataset.maint;
+    postCmd('/button/' + encName(MPPT_BUTTONS, k) + '/press');
+  });
+});
+// 重启
+document.getElementById('btnRestart').addEventListener('click', () => {
+  if (confirm('确定重启 ESP32 网关?')) postCmd('/button/SysRestart%20重启设备/press');
+});
+// OTA(跳原生 web_server 页)
+document.getElementById('btnOta').addEventListener('click', () => {
+  location.href = '/';
+});
+// 偏好:日志自动滚动(存 localStorage)
+function loadPref() {
+  try { logAutoScroll = localStorage.getItem('forager_autoscroll') !== '0'; }
+  catch (e) { logAutoScroll = true; }
+  document.getElementById('prefAutoScroll').classList.toggle('on', logAutoScroll);
+}
+document.getElementById('prefAutoScroll').addEventListener('click', function() {
+  logAutoScroll = !logAutoScroll;
+  this.classList.toggle('on', logAutoScroll);
+  try { localStorage.setItem('forager_autoscroll', logAutoScroll ? '1' : '0'); } catch (e) {}
+});
+
+/* ---------- 初始化 ---------- */
+renderAllSwitches();
+renderScenes();
+renderPower();
+renderMPPT();
+renderSys();
+loadPref();
+tickClock();
+appendLog('FORAGER 调试台 · 等待 ESP32 日志…');
+connectSSE();
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # 🚐 VAN-PROJECT — 现代化房车智能改装开源项目
 
-基于 **上汽大通 V80** 的房车（Vanlife）自制改装项目。从底盘防锈、铝型材框架到全车 RS485 智能控制、Home Assistant 中控和 React 仪表盘，完整记录了一台"智能 Van"从零到一的改造过程。
+基于 **上汽大通 V80** 的房车（Vanlife）自制改装项目。从底盘防锈、铝型材框架到全车 RS485 智能控制、Home Assistant 中控和 ESP32 车机控制面板，完整记录了一台"智能 Van"从零到一的改造过程。
 
 > **车名：FORAGER · 觅食者号** — 一台为 *Flavor Explorer* 而生的移动基地。
 > 命名方案（车名 / 系统前缀 / 行程模块）见 [docs/design/naming.md](docs/design/naming.md)。
@@ -10,7 +10,7 @@
 - **智能控制总线** — 基于 RS485/Modbus RTU 的全车灯光、水泵、排风扇集中控制，物理开关与 HA 双向同步，网络离线也不影响生存
 - **模块化结构** — 铝型材骨架 + 海洋板柜体，所有家具可拆卸以应对年审和维护；淋浴模块、卡座折叠机构均为独立可拆单元
 - **能源与监控** — 48V/12V 双电系统，PZEM-017 库仑计实时监测，AHD 摄像头经 Frigate 进行 AI 人形/车辆识别
-- **软件全部开源** — React + Vite + Tailwind 智能仪表盘，Home Assistant 自动化配置，ESP32/485 固件逻辑均可自行修改
+- **软件全部开源** — ESP32 自托管的深蓝车机面板（仿 React 仪表盘、离线可用），Home Assistant 自动化配置，ESP32/485 固件逻辑均可自行修改
 
 ## 📁 目录结构
 
@@ -33,11 +33,13 @@ van-project/
 │   ├── design/                    # 工业设计参考
 │   └── dependency-graph.md        # 模块依赖关系
 ├── software/                      # 代码层
-│   ├── rv-dashboard/              # React 智能仪表盘
 │   ├── home-assistant-config/     # HA 配置模板
 │   └── dev-environment/           # Docker 本地开发环境
 └── archive/                       # 归档：历史草稿、AI 对话
 ```
+
+> 车机控制面板（深蓝 UI）已内置于 ESP32 固件，见
+> [modules/10-smart-control/gateway/esphome/web/index.html](modules/10-smart-control/gateway/esphome/web/index.html)。
 
 ## 🛠️ 技术栈
 
@@ -57,16 +59,14 @@ van-project/
 | 类别 | 方案 |
 |------|------|
 | 中控平台 | Home Assistant |
-| 前端仪表盘 | React 18 + TypeScript + Vite + Tailwind CSS |
-| 状态管理 | Zustand |
-| 图表 | Recharts |
-| 构建工具 | Vite 6 + pnpm |
+| 车机面板 | ESP32 自托管深蓝 UI（原生 HTML/CSS/JS，仿 React 仪表盘主题，离线可用） |
+| 面板数据 | ESPHome 原生 REST（开关 / 光伏 MPPT / 场景档位） |
 
 ## 🚀 快速开始
 
 1. **浏览模块** — 从 `modules/README.md` 查看各模块状态，找到当前在施工的模块
 2. **查看部署** — 参考 [`docs/deployment/`](docs/deployment/) 搭建 PVE、HA、Frigate
-3. **启动仪表盘** — `cd software/rv-dashboard && pnpm install && pnpm dev`
+3. **车机面板** — 手机打开 `http://<esp32-ip>/dashboard`（详见 [gateway/esphome/README.md](modules/10-smart-control/gateway/esphome/README.md)）
 4. **开发环境** — 使用 [`software/dev-environment/`](software/dev-environment/) 一键启动 HA + MQTT 调试环境
 
 ## 📐 设计原则

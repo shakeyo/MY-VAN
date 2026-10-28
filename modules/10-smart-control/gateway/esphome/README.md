@@ -10,13 +10,52 @@
 |------|------|
 | `rs485.yaml` | **485 写帧公共件**：DE/RE 方向时序 + 参数化 `rs485_write` 脚本 |
 | `base.yaml` | 基础：网络/串口/上电策略/场景状态/DI 上传驱动解析/LED 全灭 |
-| `forehead.yaml` | 额头模块（地址 0x01）：负载 + 按键 |
-| `mid8.yaml` | 中门 8 路（地址 0x02）：纯负载 7 路 + 1 预留 |
-| `mid4.yaml` | 中门 4 路（地址 0x03）：4 路 DO 全留未来负载 + 读键5-6 |
-| `do16.yaml` | **中门 16DO（地址 0x05）：全部 LED（12 现用 + 4 预留）** |
+| `relay.yaml` | **继电器模块汇总入口**：include 下面 4 个子模块，并附「模块×站号×路数」索引表。站号因与帧 CRC 绑定，实际值仍写在各自子文件里 |
+| └ `relay-forehead-8ch.yaml` | 额头 8 路（地址 0x01）：负载 + 按键 |
+| └ `relay-mid-8ch.yaml` | 中门 8 路（地址 0x02）：纯负载 7 路 + 1 预留 |
+| └ `relay-mid-4ch.yaml` | 中门 4 路（地址 0x03）：低功率负载 3 路 + 1 预留 + 读键5-6 |
+| └ `relay-mid-16do.yaml` | **中门 16DO（地址 0x05）：全部 LED（12 现用 + 4 预留）** |
 | `mppt.yaml` | **光伏控制器（地址 0x10）**：监控实体 + 控制 + 时钟同步 + 应答解析 |
+| `pzem-tf03k.yaml` | **库仑计 TF03K**：独立第二路 UART（19200 只收）+ 16 字节帧解析（见下） |
 | `scenes.yaml` | 场景自动化（灯光模式/离车驻车/排气扇/长按全关） |
+| `scene-state.yaml` | 场景档位传感器（把 globals 的 light/camp/fan_scene 暴露成 REST 可读的 sensor） |
+| `system.yaml` | **系统与维护**：WiFi 状态（SSID/IP/信号）+ 重启按钮（供面板设置页） |
+| `panel.yaml` | **手机控制面板**：挂载自定义组件 + 指定页面文件与路由（见下） |
+| `web/index.html` | 面板页面本体（自包含深蓝 UI，SSE 订阅 + REST 命令，随固件打进 Flash） |
+| `components/forager_panel/` | 自定义 external_component（C++，serve index.html 到 `/dashboard`） |
 | `prod.yaml` | 生产主文件（以上 packages 的组装） |
+
+### 手机控制面板（/dashboard）
+
+自 2026-10-27 起，固件内置一个**自包含手机控制面板**，复刻 RV Dashboard（React）的深蓝
+FORAGER 主题，但彻底零依赖、离线可用。
+
+- **机制**：自定义组件 `forager_panel`（见 `components/`）在 `web_server_base` 上额外注册一条
+  HTTP handler，把 `web/index.html` gzip 后打进 Flash，serve 到 **`/dashboard`**。
+  页面用 **ESPHome 原生 SSE 流（`/events`）** 订阅实时状态与日志，**命令**走 REST（`POST /switch/<name>/toggle`），
+  **页面与数据都在 ESP32 本地**，不依赖任何 CDN/HA/N100。
+- **实时日志 / 调试**：面板底部「调试」页通过 `EventSource('/events')` 订阅 `log` 事件，实时滚动显示
+  ESP32 日志（485 按键 `[di]`、轮询计数 `[stat]`、MPPT 告警等），带「暂停 / 清空 / 自动滚底」。初期排查
+  485 模块不稳定时，手机打开即可看日志，无需插电脑。
+- **设置页**：底部「设置」页分三块——①光伏充电控制（充电输出开关、允许充电开关、充电限流滑块 0~40A、
+  4 个维护按钮：远程控制/时钟同步/读参数/消音，均来自 `mppt.yaml` 已有实体）；②系统与维护（WiFi SSID/IP/信号
+  显示 + 一键重启 ESP32 + 跳原生 OTA 页，来自 `system.yaml` 新增实体）；③面板偏好（日志自动滚动开关，存
+  localStorage，不落 ESP32）。
+- **为什么是自定义组件**：ESPHome 原生 `web_server` 的 `/` 被 `<esp-app>`（官方 Lit 前端）锁死，
+  `js_include`/`css_include` 只能**叠加**在原生界面上、不能替换整页，且与 `local: true` 互斥。
+  要「打开就是自己的界面 + 完全离线 + 自由布局」，唯一干净的路是外部组件自己注册路由
+  （详见 [build-guide.md §6.5](../build-guide.md)）。
+- **入口**：手机打开 `http://<esp32-ip>/dashboard`（兜底 AP `http://192.168.4.1/dashboard`）。
+  原生 `web_server` 前端照旧在 `/`，两者并存、互不干扰。
+- **实体名路由**：`web_server` 用实体的 `name`（而非 `id`）做 URL 匹配，故 `web/index.html`
+  里的 `ENTITIES`/`SCENE_SENSORS` 记录了每个 key 的**精确中文 name**。改任何实体的 `name:`
+  后，必须同步改 `web/index.html` 里的对应映射，否则该开关在面板上会读不到。
+- **场景档位**：`light_scene`/`camp_scene`/`fan_scene` 本是 `base.yaml` 的 globals（非实体、
+  REST 读不到），由 `scene-state.yaml` 用 3 个 template sensor（`SceneLight`/`SceneCamp`/`SceneFan`）
+  每 1s 读出真实值，面板借此显示真实档位。
+- **水位显示已移除**：面板不含水位刻度（固件暂无可读的水箱液位传感器——现用的房车水箱探头为
+  模拟/机械式、读不到连续数值）。清水/灰水/黑水的**水位显示**已从面板删除；**上水泵 / 电控水阀**
+  等真实 RS485 继电器开关仍保留。等换上 485 数字液位传感器（0x20 起）后，再在面板补 `sensor` 映射。
 
 ### 485 地址占用
 
@@ -27,7 +66,8 @@
 | 0x03 | 中门 4 路（未来负载扩展） |
 | 0x05 | **中门 16DO（全部 LED，已到货）** |
 | 0x10 | MPPT（易科 Fcu，**固件已就绪**，见 `mppt.yaml`） |
-| 0x11 | PZEM-017 |
+| — | **TF03K 库仑计**（无地址、非 Modbus、19200 独立 UART，不在此总线） |
+| 0x11 | （空出，原 PZEM-017 规划已作废） |
 | 0x20+ | 485 传感器（建议） |
 
 > 0x04 原规划给车尾模块，**该模块已取消**（倒车灯并进 中8.Y7），如未来要加设备可用 0x04。
@@ -89,6 +129,44 @@ on_turn_on:
 > 485 是否仍响应——决定走「协议档」还是「硬件档（加 63A 接触器，额头.R6 驱动）」。
 > 本文件目前实现了**协议档**的监控与控制骨架；定档后如需硬件档再补 R6 驱动逻辑。
 
+## 库仑计固件说明（pzem-tf03k.yaml）
+
+**TF03K 库仑计**，2026-10-28 新增。实物经查为 TF03K（原规划 PZEM-017 作废）。
+
+- **接口**：独立**第二路 UART**（`coulomb_uart`，**19200**，TX=GPIO5 / RX=GPIO4，实际只用 RX）
+- **协议**：私有主动上报，**16 字节/次，1 次/秒**，无地址、非 Modbus、**8 位累加和**（非 CRC16）
+- **只收不发**：TF03K 的 RXD 无接收功能，固件不含任何写帧，**不调用 `rs485_write`、不做 DE 切换**
+- **帧解析**：`coulomb_read` 每 200ms 扫 UART 缓冲 → 找 `0xA5` 帧头 → 验累加和 → 解析发布；
+  残帧跨 tick 保留（与 `base.yaml` 的 `read_upload` 同思路）
+- **实体**：6 个 sensor（SOC%/电压/剩余容量/电流/剩余时间/功率）+ 2 个诊断计数
+
+### 帧结构（16 字节）
+
+| 字节 | 内容 | 换算 |
+|------|------|------|
+| 1 | 帧头 `0xA5` | — |
+| 2 | 电量百分比 | 直取 % |
+| 3-4 | 电压 | 大端 16，÷100 → V |
+| 5-8 | 剩余容量 | 大端 32，mAh ÷1000 → Ah |
+| 9-12 | 电流 | 大端 32 有符号（补码），mA ÷1000 → A |
+| 13-15 | 剩余时间 | 大端 24，秒 |
+| 16 | 校验和 | 前 15 字节 8 位累加和 |
+
+### ⚠ 接线与总线隔离
+
+- **严禁与 9600 Modbus 总线同挂**：波特率、协议、方向、寻址全都不同。
+- TF03K RS485 A/B → MAX3485 → ESP32 RX；**MAX3485 的 DE/RE 接 GND（常接收）**，不要接 GPIO。
+- TF03K **内部已含 120Ω 终端电阻**；网关侧 MAX3485 若也带终端，仅在总线两端各保留一颗、避免过量匹配。
+- **待实测确认**：电流正负方向（协议只写"负值为补码"，未说明充/放哪边为正）。
+
+### 关于 UART 列表化（base.yaml 已改）
+
+引入第二路 UART 时发现：ESPHome packages 合并时**映射写法与列表写法不能共存**，
+若 base 用 `uart:` 映射、本文件用 `uart:` 列表，base 那一路会被覆盖（报 `Couldn't find ID 'rs485_bus'`）。
+故 `base.yaml` 的 uart 已统一改为**列表形式**（**只改写法，485 引脚/波特率不变**，行为与改动前一致）。
+实测 `esphome config` + `esphome compile` 通过，两路并存：`rs485_bus` 38400 / `coulomb_uart` 19200。
+
 ## 规划
 
-- `pzem.yaml`（待建）：PZEM-017 直流电能表，见 [energy/pzem-017.md](../../energy/pzem-017.md)
+- ~~`pzem.yaml`（待建）：PZEM-017~~ → **已改为 `pzem-tf03k.yaml`（已建成）**：
+  实物为 TF03K 库仑计（非 PZEM-017），协议完全不同，见 [energy/pzem-017.md](../../energy/pzem-017.md)

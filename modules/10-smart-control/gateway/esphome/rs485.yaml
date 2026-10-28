@@ -21,6 +21,12 @@ script:
   # 发一帧 485（含 DE 切换）。调用方只管给帧，时序全在这里。
   - id: rs485_write
     mode: queued          # 多路按键几乎同时触发时不丢帧，串行排队发送
+    # ⚠ ESPHome 2026.7 的 queued 默认 max_runs=5（1 运行 + 4 排队）。
+    #   场景键一次要改 10+ 路继电器（每路一帧），连按两下就打满队列，
+    #   超出的写帧被**静默丢弃** → 「继电器时动时不动」。
+    #   实测 2026-10-23 日志：Script 'rs485_write' max instances reached!
+    #   每帧约 25ms，20 个实例 ≈ 0.5s 缓冲，足够场景连发。
+    max_runs: 20
     parameters:
       frame: std::vector<uint8_t>
     then:
