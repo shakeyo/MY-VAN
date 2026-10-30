@@ -57,7 +57,7 @@ switch:
       # 主控键5 冰箱 LED（16DO.Y9）
       - script.execute: led_fridge
   - platform: template
-    name: "[中8.Y7] 倒车灯"
+    name: "[中8.Y7] 车尾灯"
     id: sw_reverse
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -92,10 +92,9 @@ binary_sensor:
     name: "[中8.DI4] 入口-离车驻车"
     id: bs_door_camp
     on_press:
-      # 【临时测试版 · 用户要求保留到验收通过】X4 直切主灯 Y1（一次按下=一次动作），
-      # 验收通过后再改回：`- script.execute: act_camp`（X4 = 离车/驻车场景键）。
-      - switch.toggle: sw_main_light
-      # - script.execute: act_camp
+      # X4 = 离车/驻车场景键（离车 → 驻车 → 正常 三态循环，见 scenes.yaml）。
+      # 临时测试版的「X4 直切主灯 Y1」已于验收后回退。
+      - script.execute: act_camp
   - platform: template
     name: "[中8.DI5] 主控-主灯"
     id: bs_bed_light

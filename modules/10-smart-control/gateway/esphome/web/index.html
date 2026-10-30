@@ -111,15 +111,23 @@
   }
 
   /* ===================== 情景模式 ===================== */
-  .scenes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  /* 情景模式现为 2 张卡（排气扇场景已移除，2026-10-30）→ 2 列铺满 */
+  .scenes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .scene-btn {
     appearance: none; border: 1.5px solid var(--border); background: var(--surface);
     border-radius: var(--r-sm); padding: 12px 6px 11px;
     display: flex; flex-direction: column; align-items: center; gap: 7px;
-    color: var(--muted); cursor: pointer; min-height: 72px;
-    transition: border-color .15s, background .15s, box-shadow .15s, transform .1s;
+    color: var(--muted); min-height: 72px; position: relative;
+    /* 场景卡是**只读展示**（档位由物理按键驱动 globals，面板改不了）：
+       不给 pointer/按压反馈，避免误以为点了能切场景 */
+    cursor: default;
+    transition: border-color .15s, background .15s, box-shadow .15s;
   }
-  .scene-btn:active { transform: scale(0.97); }
+  .scene-btn.readonly::after {
+    content: '按键'; position: absolute; top: 5px; right: 6px;
+    font-size: 9px; line-height: 1; padding: 2px 4px; border-radius: 4px;
+    color: var(--muted); background: var(--bg); opacity: .55;
+  }
   .scene-btn .ic { font-size: 22px; line-height: 1; }
   .scene-btn .lb { font-size: 12px; font-weight: 500; }
   .scene-btn .st { font-size: 10px; color: var(--muted); opacity: 0.85; }
@@ -132,7 +140,15 @@
   .scene-btn.active .ic { filter: drop-shadow(0 0 6px var(--primary-glow)); }
 
   /* ===================== 快捷开关网格 ===================== */
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  /* 用 flex 而非 grid：固定 3 列时，末尾不满一行的格子（如 5 个→第二行只有 2 个）
+     会留下空格子；flex + flex-grow 让末行的格子自动撑满整行，视觉上始终铺满。 */
+  .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .grid > .tile { flex: 1 1 calc((100% - 20px) / 3); min-width: 0; }
+  .grid.cols-2 > .tile { flex: 1 1 calc((100% - 10px) / 2); }
+  /* 占位卡（如逆变器）与普通格子同等参与 flex-grow：
+     否则同排的开关会把空出来的宽度全吃掉，导致一行里格子宽窄不一。 */
+  .grid > .tile.disabled { flex: 1 1 calc((100% - 20px) / 3); }
+  .grid.cols-2 > .tile.disabled { flex: 1 1 calc((100% - 10px) / 2); }
   .tile {
     appearance: none; border: 1.5px solid var(--border); background: var(--surface);
     border-radius: var(--r-sm); padding: 13px 6px 11px;
@@ -162,6 +178,25 @@
   }
   .tile.on .mark { display: block; }
 
+  /* 置灰占位卡（能源系统待接入）：看起来是"还没接的东西"，而不是"坏了/可点但没反应" */
+  .tile.disabled {
+    cursor: not-allowed; opacity: .5;
+    border-style: dashed;
+  }
+  .tile.disabled:active { transform: none; }
+  .tile.disabled .ic { filter: grayscale(1); opacity: .7; }
+  .tile.disabled .hint-txt {
+    font-size: 9px; color: var(--muted); opacity: .9; line-height: 1.2;
+    text-align: center; margin-top: -2px;
+  }
+  .tile.disabled .mark { display: none !important; }
+  .sec-note {
+    font-size: 10px; font-weight: 500; letter-spacing: 0;
+    padding: 1px 5px; border-radius: 4px;
+    color: var(--muted); background: var(--surface); border: 1px solid var(--border);
+    text-transform: none;
+  }
+
   /* ===================== 能源 ===================== */
   .energy-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .energy-head .lbl { font-size: 12px; color: var(--muted); }
@@ -178,13 +213,21 @@
     position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
   }
-  .gauge .num b { font-family: var(--mono); font-size: 26px; font-weight: 700; }
+  /* 库仑计 SOC 是小数(如 78.19)，三位数+两位小数会溢出弧内，故比首页估算值小一号 */
+  .gauge .num b { font-family: var(--mono); font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+  .gauge .num b.wide { font-size: 19px; letter-spacing: -1px; }
+  .battery .gauge { width: 104px; height: 104px; }
   .gauge .num span { font-size: 10px; color: var(--muted); }
 
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; }
   .stat { background: var(--bg); border-radius: var(--r-sm); padding: 9px 10px; }
   .stat .k { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
   .stat .v { font-family: var(--mono); font-weight: 650; font-size: 15px; }
+  /* 长文本（如「MPPT充电中」）不折行，否则会把整张能源卡撑高、网格错位 */
+  .stat .v.ellip {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 13px; line-height: 1.45;
+  }
   .stat .v.good { color: var(--success); }
   .stat .v.warn { color: var(--warning); }
   .stat .v.bad  { color: var(--danger); }
@@ -197,6 +240,42 @@
     background: linear-gradient(90deg, #F59E0B, var(--warning));
     transition: width .6s ease;
   }
+
+  /* ===================== 充电趋势折线图 ===================== */
+  .trend-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .trend-head .lbl { font-size: 12px; color: var(--muted); }
+  .trend-head .val { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .trend-head .val b { font-size: 17px; color: var(--warning); }
+  /* 右侧留出 40px 给 Y 轴刻度，避免刻度压在曲线上 */
+  .trend-wrap { position: relative; height: 110px; padding-right: 40px; box-sizing: border-box; }
+  .trend-wrap svg { width: 100%; height: 100%; display: block; }
+  .trend-wrap .grid-l { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 4; opacity: .6; }
+  .trend-line {
+    fill: none; stroke: var(--warning); stroke-width: 2;
+    stroke-linejoin: round; stroke-linecap: round;
+    vector-effect: non-scaling-stroke;   /* 关键：非等比缩放时线宽不被拉变形 */
+  }
+  .trend-area { fill: url(#trendGrad); stroke: none; }
+  /* Y 轴刻度叠在右上，避免占用绘图宽度 */
+  .trend-y {
+    position: absolute; top: 0; right: 0; width: 38px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    height: 110px; font-size: 9px; color: var(--muted); font-family: var(--mono);
+    text-align: right; pointer-events: none;
+  }
+  .trend-x {
+    display: flex; justify-content: space-between;
+    font-size: 9px; color: var(--muted); margin-top: 4px; font-family: var(--mono);
+  }
+  .trend-empty {
+    position: absolute; inset: 0; display: none;
+    align-items: center; justify-content: center;
+    font-size: 11px; color: var(--muted); text-align: center; padding: 0 20px;
+  }
+  .trend-empty.show { display: flex; }
 
   /* ===================== 底部标签栏 ===================== */
   nav {
@@ -307,15 +386,15 @@
     <section>
       <h3 class="sec-title">情景模式</h3>
       <div class="scenes">
-        <button class="scene-btn active" data-scene="light" id="scene-light">
+        <button class="scene-btn active readonly" data-scene="light" id="scene-light" aria-readonly="true">
           <span class="ic">💡</span><span class="lb">灯光</span><span class="st">明亮</span>
         </button>
-        <button class="scene-btn" data-scene="camp" id="scene-camp">
+        <button class="scene-btn readonly" data-scene="camp" id="scene-camp" aria-readonly="true">
           <span class="ic">🚐</span><span class="lb">离车/驻车</span><span class="st">正常</span>
         </button>
-        <button class="scene-btn" data-scene="fan" id="scene-fan">
-          <span class="ic">🌀</span><span class="lb">排气扇</span><span class="st">后窗</span>
-        </button>
+        <!-- 排气扇场景已移除（2026-10-30）：扇体需手动安装，未装时无常驻意义；
+             风扇改到下方「快捷开关」单独控制。物理按键的三态循环仍在固件里，
+             将来装好想恢复本卡，把按钮加回这里并恢复 SCENE_META/SCENE_SENSORS 即可。 -->
       </div>
     </section>
 
@@ -340,7 +419,9 @@
             <div class="stat"><div class="k">电池电压</div><div class="v" id="batV">--V</div></div>
             <div class="stat"><div class="k">充电电流</div><div class="v good" id="chgA">--A</div></div>
             <div class="stat"><div class="k">发电功率</div><div class="v warn" id="solarW">--W</div></div>
-            <div class="stat"><div class="k">状态</div><div class="v good" id="chgState">--</div></div>
+            <div class="stat"><div class="k">状态</div><div class="v good ellip" id="chgState" title="--">--</div></div>
+            <div class="stat"><div class="k">剩余续航</div><div class="v" id="cbTime">--</div></div>
+            <div class="stat"><div class="k">剩余容量</div><div class="v" id="cbCap">--Ah</div></div>
           </div>
         </div>
         <div class="solar-bar">
@@ -358,12 +439,22 @@
       <div class="grid" id="light-grid"></div>
     </section>
     <section>
-      <h3 class="sec-title">电力与设备</h3>
-      <div class="grid" id="power-grid"></div>
+      <h3 class="sec-title">通风</h3>
+      <div class="grid" id="vent-grid"></div>
     </section>
     <section>
       <h3 class="sec-title">水路</h3>
       <div class="grid" id="water-grid"></div>
+    </section>
+    <section>
+      <h3 class="sec-title">负载设备</h3>
+      <div class="grid" id="device-grid"></div>
+    </section>
+    <section>
+      <h3 class="sec-title">能源系统 <span class="sec-note">待接入</span></h3>
+      <div class="grid" id="energy-grid"></div>
+      <p class="hint">逆变器 / MPPT / 行车发电功率大，模块 DO 只能切<strong>接触器线圈</strong>，
+        控制侧方案与额定电流尚未定档，目前仍走物理开关。</p>
     </section>
   </div>
 
@@ -386,6 +477,65 @@
           <div class="stat"><div class="k">今日发电</div><div class="v" id="pvDay">--Wh</div></div>
           <div class="stat"><div class="k">累计发电</div><div class="v" id="pvTotal">--Wh</div></div>
         </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">库仑计 (TF03K)</h3>
+      <div class="card">
+        <div class="battery">
+          <div class="gauge">
+            <svg width="96" height="96" viewBox="0 0 96 96">
+              <circle class="c" cx="48" cy="48" r="40"></circle>
+              <circle class="p" id="cbArc" cx="48" cy="48" r="40"
+                      stroke-dasharray="251.3" stroke-dashoffset="251.3"></circle>
+            </svg>
+            <div class="num"><b id="cbSoc" class="wide">--</b><span>%</span></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><div class="k">电池电压</div><div class="v" id="cbVolt">--V</div></div>
+            <div class="stat"><div class="k">电流</div><div class="v" id="cbCurr">--A</div></div>
+            <div class="stat"><div class="k">功率</div><div class="v" id="cbPow">--W</div></div>
+            <div class="stat"><div class="k">剩余容量</div><div class="v" id="cbCap2">--Ah</div></div>
+            <div class="stat"><div class="k">剩余时间</div><div class="v" id="cbTime2">--</div></div>
+            <div class="stat"><div class="k">帧统计</div><div class="v" id="cbFrames">--</div></div>
+          </div>
+        </div>
+        <div class="solar-bar" id="cbDiag" style="display:none;">
+          <div class="row"><span>库仑计未上线</span><span id="cbDiagTxt"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">充电趋势 <span class="sec-note" id="trendNote">24h</span></h3>
+      <div class="card">
+        <div class="trend-head">
+          <span class="lbl">发电功率</span>
+          <span class="val"><b id="trendNow">--</b> W</span>
+        </div>
+        <!-- 折线图：纯内联 SVG，由 drawTrend() 生成 path，不依赖任何图表库 -->
+        <div class="trend-wrap">
+          <svg id="trendSvg" viewBox="0 0 300 110" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--warning)" stop-opacity="0.35"></stop>
+                <stop offset="100%" stop-color="var(--warning)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <!-- 水平参考线 -->
+            <line class="grid-l" x1="0" y1="27.5" x2="300" y2="27.5"></line>
+            <line class="grid-l" x1="0" y1="55"   x2="300" y2="55"></line>
+            <line class="grid-l" x1="0" y1="82.5" x2="300" y2="82.5"></line>
+            <path id="trendArea" class="trend-area" d=""></path>
+            <path id="trendLine" class="trend-line" d=""></path>
+          </svg>
+          <div class="trend-y">
+            <span id="trendMax">--</span><span id="trendMid">--</span><span>0</span>
+          </div>
+          <div class="trend-empty" id="trendEmpty">暂无数据（每 5 分钟采样，重启后清空）</div>
+        </div>
+        <div class="trend-x"><span id="trendOldest">--</span><span>现在</span></div>
       </div>
     </section>
   </div>
@@ -502,16 +652,36 @@ const ICONS = {
   fridge: '🧊', dsp: '🎵', reverse: '🚗',
 };
 
-const QUICK = ['mainLight','ambient','pump','fanRear','fridge','spot'];
+// 首页快捷区 = 停车后最常动的负载。
+// 【2026-10-30 调整】排气扇场景卡已移除（扇体需手动安装，无常驻意义），
+//   风扇改为在这里单独控制；DSP 挪到风扇前。
+// 【排列顺序】灯具全部排前（主灯/氛围灯/前射灯/户外灯），
+//   其余（上水泵/DSP/后窗排扇）置后，逆变器占位收尾——同类聚在一起更易扫读。
+// 逆变器用 'inverter' 这个 key，它不是真实实体（固件无），由 renderGrid 渲染成置灰卡。
+// 【排列顺序 2026-10-30】按"每行成类"排，扫读更快：
+//   第1行：主灯 / 氛围灯 / 前射灯      —— 主照明（每行 3 格）
+//   第2行：户外灯 / 上水泵 / 后窗排扇  —— 辅助照明 + 水路 + 通风
+//   第3行：DSP / 逆变器(占位)          —— 电气设备
+const QUICK = ['mainLight','ambient','spot','outdoor','pump','fanRear','dsp','inverter'];
+// 开关页按「功能类型」分组：负载(照明/通风/水路/负载设备) + 能源系统(待接入)
 const GROUPS = {
-  light:  ['mainLight','ambient','spot','outdoor'],
-  power:  ['fridge','dsp','reverse','fanPass'],
-  water:  ['pump','valve','fanRear'],
+  light:  ['mainLight','ambient','spot','outdoor','reverse'],
+  vent:   ['fanRear','fanPass'],
+  water:  ['pump','valve'],
+  device: ['fridge','dsp'],
 };
+// 能源系统：逆变器 / MPPT / 行车发电。
+// ⚠ 目前**没有可控实体**（逆变器待购、MPPT 协议档未定、DC-DC 不支持 485 且无控制方案），
+//   故只渲染置灰占位卡，不可点击。定档后在此填 ENTITIES + GROUPS.energy 即可启用。
+const ENERGY_SLOTS = [
+  { key:'inverter', ic:'🔌', lb:'逆变器',   hint:'48V→220V · 待购' },
+  { key:'mppt',     ic:'☀️', lb:'MPPT',     hint:'485 0x10 · 协议档待定' },
+  { key:'dcdc',     ic:'🔋', lb:'行车发电', hint:'DC-DC · 无 485 控制' },
+];
 const NAMES = {
-  mainLight:'主灯', ambient:'氛围灯', spot:'射灯', outdoor:'户外灯',
+  mainLight:'主灯', ambient:'氛围灯', spot:'前射灯', outdoor:'户外灯',
   pump:'上水泵', valve:'水阀', fanRear:'后窗排扇', fanPass:'副驾排扇',
-  fridge:'冰箱', dsp:'DSP', reverse:'倒车灯',
+  fridge:'冰箱', dsp:'DSP', reverse:'车尾灯',
 };
 
 // —— 实体映射:UI key → {domain, name}。name 必须与各 yaml 的 name: 完全一致 ——
@@ -519,8 +689,8 @@ const ENTITIES = {
   mainLight: { domain:'switch', name:'[中8.Y1] 主灯' },
   ambient:   { domain:'switch', name:'[中8.Y2] 氛围灯' },
   fridge:    { domain:'switch', name:'[中8.Y6] 冰箱' },
-  reverse:   { domain:'switch', name:'[中8.Y7] 倒车灯' },
-  spot:      { domain:'switch', name:'[额头.R1] 射灯' },
+  reverse:   { domain:'switch', name:'[中8.Y7] 车尾灯' },
+  spot:      { domain:'switch', name:'[额头.R1] 前射灯' },
   outdoor:   { domain:'switch', name:'[额头.R2] 户外灯' },
   dsp:       { domain:'switch', name:'[额头.R3] DSP' },
   fanPass:   { domain:'switch', name:'[额头.R4] 副驾排气扇' },
@@ -544,6 +714,22 @@ const TEXT_SENSORS = {
   chgState:  { name:'SolarState 充电状态' },
   alert:     { name:'SolarAlert 告警' },
 };
+
+// 库仑计 TF03K 传感器(实体名取自 pzem-tf03k.yaml)
+// ⚠ 这些 name 必须与 yaml 里 name: 完全一致，改一处要同步改另一边
+const COULOMB_SENSORS = {
+  cbSoc:    { name:'CoulombSOC 电量百分比' },
+  cbVolt:   { name:'CoulombVolt 电池电压' },
+  cbCap:    { name:'CoulombCap 剩余容量' },
+  cbCurr:   { name:'CoulombCurr 电流' },
+  cbTime:   { name:'CoulombTime 剩余时间' },
+  cbPow:    { name:'CoulombPow 功率' },
+  cbOk:     { name:'CoulombDiag 有效帧数' },
+  cbBad:    { name:'CoulombBad 校验错帧数' },
+};
+
+// 充电趋势（mppt.yaml 的 text_sensor，format: "v1:count:idx:base64"）
+const TREND_SENSOR = { name:'SolarTrend 充电趋势' };
 
 // MPPT 可控开关(设置页)
 const MPPT_SWITCHES = {
@@ -581,6 +767,9 @@ const state = {
     batteryPercent: 0, batV: 0, chgA: 0, solarW: 0,
     pvV: 0, pvBatV: 0, pvTemp: 0, pvBatTemp: 0,
     dayWh: 0, totalWh: 0, state: '--',
+    // 库仑计 TF03K(有数据时优先于电压估算)
+    cbSoc: null, cbVolt: 0, cbCap: 0, cbCurr: 0,
+    cbTime: 0, cbPow: 0, cbOk: 0, cbBad: 0,
   },
   sys: {
     solarCharge: false, solarEnable: true, solarLimit: 30,
@@ -595,9 +784,30 @@ function voltToPct(v) {
 }
 
 /* ---------- 渲染:开关网格 ---------- */
+// 占位卡（无实体、不可点）：用 div + aria-disabled，语义上就不可交互。
+// 与真实 tile 共用 .tile 样式，但加 .disabled 变成虚线灰卡。
+function slotTile(s) {
+  const d = document.createElement('div');
+  d.className = 'tile disabled';
+  d.dataset.key = s.key;
+  d.setAttribute('aria-disabled', 'true');
+  d.title = s.lb + '：' + s.hint;
+  d.innerHTML = `<span class="ic">${s.ic}</span>` +
+                `<span class="lb">${s.lb}</span>` +
+                `<span class="hint-txt">${s.hint}</span>`;
+  return d;
+}
+// key → 占位定义（快捷区和能源组共用）
+const SLOT_BY_KEY = {};
+ENERGY_SLOTS.forEach(s => { SLOT_BY_KEY[s.key] = s; });
+
 function renderGrid(el, keys) {
   el.innerHTML = '';
+  // 4 个用 2 列(2×2)让末行铺平；其余 3 列。末行不满的由 flex-grow 撑满（见 .grid CSS）
+  el.classList.toggle('cols-2', keys.length === 4);
   keys.forEach(k => {
+    // 无实体的 key → 渲染成置灰占位卡（如快捷区的逆变器）
+    if (!ENTITIES[k] && SLOT_BY_KEY[k]) { el.appendChild(slotTile(SLOT_BY_KEY[k])); return; }
     const on = state.switches[k];
     const b = document.createElement('button');
     b.className = 'tile' + (on ? ' on' : '');
@@ -612,8 +822,18 @@ function renderGrid(el, keys) {
 function renderAllSwitches() {
   renderGrid(document.getElementById('quick-grid'), QUICK);
   renderGrid(document.getElementById('light-grid'), GROUPS.light);
-  renderGrid(document.getElementById('power-grid'), GROUPS.power);
+  renderGrid(document.getElementById('vent-grid'), GROUPS.vent);
   renderGrid(document.getElementById('water-grid'), GROUPS.water);
+  renderGrid(document.getElementById('device-grid'), GROUPS.device);
+  renderEnergySlots();
+}
+
+// 能源系统占位组（开关页底部）
+function renderEnergySlots() {
+  const el = document.getElementById('energy-grid');
+  if (!el) return;
+  el.innerHTML = '';
+  ENERGY_SLOTS.forEach(s => el.appendChild(slotTile(s)));
 }
 function syncTile(k, on) {
   document.querySelectorAll(`.tile[data-key="${k}"]`).forEach(t => t.classList.toggle('on', on));
@@ -650,12 +870,14 @@ const SCENE_SENSORS = {
 function renderScenes() {
   const set = (key, idx) => {
     const el = document.getElementById('scene-' + key);
+    // 该场景卡已被移除（如排气扇场景）→ 跳过，不要抛错
+    if (!el) return;
     el.querySelector('.st').textContent = SCENE_META[key].names[idx];
     el.classList.toggle('active', idx !== 0);
   };
   set('light', state.sceneLight || 0);
   set('camp', state.sceneCamp || 0);
-  set('fan', state.sceneFan || 0);
+  set('fan', state.sceneFan || 0);   // 卡片已移除 → set() 内部自动跳过
 }
 
 /* ---------- 渲染:能源 ---------- */
@@ -670,7 +892,9 @@ function renderPower() {
   document.getElementById('batV').textContent = (p.batV||0).toFixed(1) + 'V';
   document.getElementById('chgA').textContent = (p.chgA||0).toFixed(1) + 'A';
   document.getElementById('solarW').textContent = Math.round(p.solarW||0) + 'W';
-  document.getElementById('chgState').textContent = p.state || '--';
+  const chgEl = document.getElementById('chgState');
+  chgEl.textContent = p.state || '--';
+  chgEl.title = p.state || '--';   // 省略号截断时，长按/悬停可看全文
   document.getElementById('dayK').textContent = ((p.dayWh||0)/1000).toFixed(2) + ' kWh';
   document.getElementById('solarFill').style.width = Math.min(100, (p.dayWh||0)/30) + '%';
   // 光伏页
@@ -683,6 +907,145 @@ function renderPower() {
   document.getElementById('pvDay').textContent = Math.round(p.dayWh||0) + ' Wh';
   document.getElementById('pvTotal').textContent = Math.round(p.totalWh||0) + ' Wh';
   document.getElementById('pvStateVal').textContent = p.state || '--';
+  renderCoulomb();
+}
+
+// 秒 → "10:31:45"；无效/0 显示 "--"
+function fmtRemain(sec) {
+  if (!sec || sec <= 0) return '--';
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s2 = sec%60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s2).padStart(2,'0');
+}
+
+/* ---------- 充电趋势折线图 ---------- */
+// 固件把 24h 功率采样(每 5 分钟)打包成 "v1:<count>:<idx>:<base64>" 推送，
+// base64 是 uint16 小端序列，已按时间正序（最旧→最新）。
+let trendData = [];        // 解码后的功率数组(W)
+
+function decodeBase64(b64) {
+  // 浏览器自带 atob；返回 0~255 的字符串
+  try { return atob(b64); } catch (e) { return ''; }
+}
+
+function parseTrend(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  const parts = raw.split(':');
+  if (parts.length < 4 || parts[0] !== 'v1') return null;
+  const count = parseInt(parts[1], 10);
+  if (!Number.isFinite(count) || count <= 0) return [];
+  // base64 里可能含 ':'? 不会（字母数字+/=），但保险起见把剩余部分重新拼回
+  const bin = decodeBase64(parts.slice(3).join(':'));
+  const out = [];
+  const n = Math.min(count, Math.floor(bin.length / 2));
+  for (let i = 0; i < n; i++) {
+    const lo = bin.charCodeAt(i*2) & 0xFF;
+    const hi = bin.charCodeAt(i*2 + 1) & 0xFF;
+    out.push(lo | (hi << 8));       // 小端
+  }
+  return out;
+}
+
+function drawTrend() {
+  const svgLine = document.getElementById('trendLine');
+  const svgArea = document.getElementById('trendArea');
+  const empty   = document.getElementById('trendEmpty');
+  const note    = document.getElementById('trendNote');
+  if (!svgLine || !svgArea) return;
+
+  const d = trendData;
+  if (!d || d.length < 2) {
+    svgLine.setAttribute('d', '');
+    svgArea.setAttribute('d', '');
+    if (empty) empty.classList.add('show');
+    document.getElementById('trendNow').textContent = '--';
+    return;
+  }
+  if (empty) empty.classList.remove('show');
+
+  const W = 300, H = 110;
+  // 内边距：上下留 3px、左右留 1px，避免端点被 viewBox 裁掉半根线
+  const padX = 1, padY = 3;
+  const iw = W - padX * 2, ih = H - padY * 2;
+  const max = Math.max(1, ...d);
+  // 上限取整到"好看的"刻度：100/200/500/1000...
+  const niceMax = max <= 100 ? 100 : max <= 300 ? 300 : max <= 600 ? 600
+                : max <= 1000 ? 1000 : Math.ceil(max / 500) * 500;
+
+  const pts = d.map((v, i) => {
+    const x = padX + (i / (d.length - 1)) * iw;
+    const y = padY + ih - (v / niceMax) * ih;
+    return x.toFixed(2) + ',' + y.toFixed(2);
+  });
+  svgLine.setAttribute('d', 'M' + pts.join(' L'));
+  // 面积：折线 + 回到底部闭合
+  svgArea.setAttribute('d',
+    'M' + padX + ',' + (H - padY) + ' L' + pts.join(' L') +
+    ' L' + (W - padX) + ',' + (H - padY) + ' Z');
+
+  // 刻度与文字
+  document.getElementById('trendMax').textContent = niceMax + 'W';
+  document.getElementById('trendMid').textContent = Math.round(niceMax/2) + 'W';
+  document.getElementById('trendNow').textContent = Math.round(d[d.length-1]);
+  // 最旧点 ≈ count × 5 分钟前
+  const mins = (d.length - 1) * 5;
+  const oh = Math.floor(mins / 60), om = mins % 60;
+  document.getElementById('trendOldest').textContent = oh > 0 ? ('-' + oh + 'h' + (om ? om + 'm' : '')) : ('-' + mins + 'm');
+  if (note) note.textContent = oh > 0 ? (oh + 'h' + (om?om+'m':'') + ' 数据') : (mins + 'm 数据');
+}
+
+// 库仑计渲染：数据来自 pzem-tf03k.yaml 的 8 个 sensor
+function renderCoulomb() {
+  const p = state.power;
+  const online = p.cbSoc !== null;          // 收到过至少一帧 = 上线
+  const soc = online ? p.cbSoc : 0;
+
+  // 首页能源卡
+  const t1 = document.getElementById('cbTime');
+  if (t1) t1.textContent = online ? fmtRemain(p.cbTime) : '--';
+  const c1 = document.getElementById('cbCap');
+  if (c1) c1.textContent = online ? (p.cbCap||0).toFixed(1) + 'Ah' : '--Ah';
+
+  // 电池页库仑计卡片
+  const arc = document.getElementById('cbArc');
+  if (arc) {
+    arc.setAttribute('stroke-dashoffset', ARC * (1 - soc/100));
+    arc.setAttribute('stroke', battColor(soc));
+  }
+  const socEl = document.getElementById('cbSoc');
+  if (socEl) socEl.textContent = online ? Number(soc).toFixed(1) : '--';
+
+  const setTxt = (id, val, deci, unit) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = online ? (val||0).toFixed(deci) + unit : '--' + unit;
+  };
+  setTxt('cbVolt', p.cbVolt, 2, 'V');
+  setTxt('cbPow',  p.cbPow,  1, 'W');
+  setTxt('cbCap2', p.cbCap,  1, 'Ah');
+
+  // 电流带方向：正=充电(绿) 负=放电(橙)，方向语义待实测定档
+  const currEl = document.getElementById('cbCurr');
+  if (currEl) {
+    currEl.textContent = online ? (p.cbCurr||0).toFixed(2) + 'A' : '--A';
+    currEl.classList.toggle('good', online && p.cbCurr > 0);
+    currEl.classList.toggle('warn', online && p.cbCurr < 0);
+  }
+  const timeEl = document.getElementById('cbTime2');
+  if (timeEl) timeEl.textContent = online ? fmtRemain(p.cbTime) : '--';
+
+  const frameEl = document.getElementById('cbFrames');
+  if (frameEl) {
+    frameEl.textContent = online ? ('✓' + (p.cbOk||0) + ' ✗' + (p.cbBad||0)) : '--';
+    // 校验错占比高 = 接线/干扰问题
+    frameEl.classList.toggle('warn', online && p.cbBad > 0 && p.cbBad > p.cbOk);
+  }
+
+  // 未上线提示条
+  const diag = document.getElementById('cbDiag');
+  if (diag) {
+    diag.style.display = online ? 'none' : '';
+    const dt = document.getElementById('cbDiagTxt');
+    if (dt) dt.textContent = 'BAD=' + (p.cbBad||0);
+  }
 }
 
 /* ---------- 页面切换 ---------- */
@@ -708,6 +1071,7 @@ const NAME_TO_MPPT_SW = {};      // name -> key (MPPT 可控开关,写 sys.solar
 const NAME_TO_MPPT_NUM = {};     // name -> key (MPPT number)
 const NAME_TO_SYS_TEXT = {};     // name -> key (SysWifi SSID/IP)
 const NAME_TO_SYS_SENSOR = {};   // name -> key (SysWifi 信号)
+const NAME_TO_COULOMB = {};      // name -> key (库仑计 TF03K)
 for (const [k, e] of Object.entries(ENTITIES)) NAME_TO_SWITCH[e.name] = k;
 for (const [k, s] of Object.entries(SENSORS)) NAME_TO_SENSOR[s.name] = k;
 for (const [k, s] of Object.entries(TEXT_SENSORS)) NAME_TO_SENSOR[s.name] = k;
@@ -716,6 +1080,8 @@ for (const [k, s] of Object.entries(MPPT_SWITCHES)) NAME_TO_MPPT_SW[s.name] = k;
 for (const [k, s] of Object.entries(MPPT_NUMBERS)) NAME_TO_MPPT_NUM[s.name] = k;
 for (const [k, s] of Object.entries(SYS_TEXT)) NAME_TO_SYS_TEXT[s.name] = k;
 for (const [k, s] of Object.entries(SYS_SENSORS)) NAME_TO_SYS_SENSOR[s.name] = k;
+for (const [k, s] of Object.entries(COULOMB_SENSORS)) NAME_TO_COULOMB[s.name] = k;
+const NAME_TREND = TREND_SENSOR.name;     // 充电趋势 text_sensor 的实体名
 
 // 从 json 提取实体 name(兼容 state 的 name_id 与 detail 的 name)
 function entityName(json) {
@@ -767,6 +1133,24 @@ function applyEntityState(json) {
     renderSys();
     return;
   }
+  // 充电趋势（text_sensor，内含 base64 编码的 24h 功率序列）
+  if (name === NAME_TREND) {
+    const raw = json.value || json.state || '';
+    const d = parseTrend(raw);
+    if (d && d.length) { trendData = d; drawTrend(); }
+    return;
+  }
+  // 库仑计 TF03K
+  if (name in NAME_TO_COULOMB) {
+    const k = NAME_TO_COULOMB[name];
+    state.power[k] = Number(json.value);
+    // SOC 以库仑计为准(直读百分比，不是电压估算)
+    if (k === 'cbSoc') {
+      state.power.batteryPercent = Math.max(0, Math.min(100, Math.round(Number(json.value))));
+    }
+    renderPower();
+    return;
+  }
   // 光伏/场景传感器
   const ssen = NAME_TO_SENSOR[name];
   if (ssen !== undefined) {
@@ -779,7 +1163,10 @@ function applyEntityState(json) {
       renderPower();
     } else {
       state.power[ssen] = Number(json.value);
-      state.power.batteryPercent = voltToPct(state.power.batV);
+      // SOC 优先用库仑计真实值；库仑计未上线(null)时才用电压估算兜底
+      if (state.power.cbSoc === null) {
+        state.power.batteryPercent = voltToPct(state.power.batV);
+      }
       renderPower();
     }
   }
@@ -795,12 +1182,19 @@ const btnClear = document.getElementById('btnClear');
 
 function logLevelClass(text) {
   // ESPHome 日志形如 [W][web_server:123]: ... 或 [12:34:56][I][di:262]: ...
-  const m = text.match(/\[([A-Z])\]/);
+  // ⚠ 必须按 "][X][" 定位等级：首字母匹配会误判时间戳 [12:34:56] 里的数字/字母，
+  //   也会把 [I] 之后的正文一起算进来。等级是紧跟时间戳（或行首）的那个单字母。
+  const m = text.match(/^(?:\[[\d:.]+\])?\[([EIWVD])\]/);
   return m ? 'lvl-' + m[1] : '';
 }
 
 function appendLog(text) {
   if (logPaused) return;
+  // ESPHome 的 log 事件正文是纯文本；但某些代理/预览服务会把它包成 JSON 字符串
+  // (形如 "\"[12:34:56][I][di:001]: ...\"")，先剥离一层引号与转义，避免日志区出现多余引号。
+  if (typeof text === 'string' && text.length > 1 && text[0] === '"' && text[text.length - 1] === '"') {
+    try { text = JSON.parse(text); } catch (e) { text = text.slice(1, -1); }
+  }
   const line = document.createElement('div');
   const cls = logLevelClass(text);
   line.className = cls;
@@ -936,6 +1330,7 @@ renderScenes();
 renderPower();
 renderMPPT();
 renderSys();
+drawTrend();          // 先画空态，等 SolarTrend 推上来再重绘
 loadPref();
 tickClock();
 appendLog('FORAGER 调试台 · 等待 ESP32 日志…');

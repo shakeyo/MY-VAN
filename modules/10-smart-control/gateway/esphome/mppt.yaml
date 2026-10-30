@@ -101,6 +101,12 @@ text_sensor:
     name: "SolarAlert 告警"
     id: solar_alert
     update_interval: never
+  # 充电趋势（24h，每点 5 分钟）：base64 编码的 uint16 小端数组，面板解码后画折线。
+  # 格式："v1:<count>:<idx>:<base64>"  count=已采集点数, idx=当前写指针（用于还原时间顺序）
+  - platform: template
+    name: "SolarTrend 充电趋势"
+    id: solar_trend
+    update_interval: never
 
 # ============ 控制实体 ============
 switch:
@@ -200,6 +206,11 @@ interval:
   - interval: 100ms
     then:
       - script.execute: solar_read
+  # 充电趋势采样：每 5 分钟一点（避开轮询瞬间，错开 30s 以免与其他定时撞车）
+  - interval: 5min
+    then:
+      - delay: 30s              # 错开 10s 轮询，确保 solar_ok/power 是最新的
+      - script.execute: trend_sample
 
 globals:
   - id: solar_ok            # 本次轮询是否收到有效应答
@@ -214,6 +225,21 @@ globals:
   - id: solar_standby       # 是否已进入待机断电
     type: bool
     initial_value: 'false'
+  # ---- 充电趋势环形缓冲（面板画 24h 折线用）----
+  # MPPT 自身只有「日发电量/总发电量」两个累计值，**没有历史曲线**，
+  # 故在固件里自己攒：每 5 分钟记一个功率(W)，288 点 = 24 小时 = 576 字节。
+  # ⚠ 纯 RAM，重启清零。长期趋势待 HA/InfluxDB 就位后另做（见 README）。
+  # ⚠ 用 std::array 而非 std::vector：vector 的 initial_value 会让
+  #   GlobalsComponent 构造函数产生重载歧义（已实测编译报错）。
+  - id: trend_power
+    type: std::array<uint16_t, 288>
+    initial_value: '{0}'
+  - id: trend_idx           # 下一个写入位置（0~287 循环）
+    type: int
+    initial_value: '0'
+  - id: trend_count         # 已采集点数（<288 时表示还没攒满）
+    type: int
+    initial_value: '0'
 
 script:
   # 发 0xA3/02 查询实时数据（38 字节应答）
@@ -360,3 +386,62 @@ script:
 
           id(solar_ok) = true;
           id(solar_miss) = 0;
+
+  # ---- 充电趋势采样（每 5 分钟一点，288 点 = 24h）----
+  # 只记录「收到的有效功率」，MPPT 离线时记 0（曲线断层即代表离线/夜间）。
+  # 编码格式 "v1:<count>:<idx>:<base64>"
+  #   base64 存 uint16 小端序列，按 **时间正序** 输出（从最旧到最新），
+  #   面板拿到就能直接画，不用再处理环形回绕。
+  - id: trend_sample
+    mode: single
+    then:
+      - lambda: |-
+          const int CAP = 288;                       // 288 × 5min = 24h（= std::array 大小）
+
+          float w = id(solar_ok) ? id(solar_power).state : 0.0f;
+          if (w < 0) w = 0;
+          if (w > 65535) w = 65535;
+
+          int i = id(trend_idx) % CAP;
+          id(trend_power)[i] = (uint16_t) w;
+          id(trend_idx) = (i + 1) % CAP;
+          if (id(trend_count) < CAP) id(trend_count)++;
+
+          // 按时间正序展开：最旧 → 最新（环形回绕时从 idx 开始读）
+          int n = id(trend_count);
+          int start = (n == CAP) ? (int)id(trend_idx) : 0;
+          std::string raw;
+          raw.reserve(CAP * 2);
+          for (int k = 0; k < n; k++) {
+            uint16_t v = id(trend_power)[(start + k) % CAP];
+            raw.push_back((char)(v & 0xFF));         // 小端低字节
+            raw.push_back((char)(v >> 8));
+          }
+
+          // base64 编码（ESPHome 无现成库，这里手写 20 行）
+          static const char* B64 =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+          std::string out;
+          out.reserve((raw.size() + 2) / 3 * 4);
+          size_t p = 0;
+          while (p + 2 < raw.size()) {
+            uint32_t v = ((uint8_t)raw[p] << 16) | ((uint8_t)raw[p+1] << 8) | (uint8_t)raw[p+2];
+            out.push_back(B64[(v >> 18) & 0x3F]);
+            out.push_back(B64[(v >> 12) & 0x3F]);
+            out.push_back(B64[(v >> 6) & 0x3F]);
+            out.push_back(B64[v & 0x3F]);
+            p += 3;
+          }
+          if (p < raw.size()) {                      // 尾部 1~2 字节补 '='
+            uint32_t v = ((uint8_t)raw[p] << 16);
+            bool two = (p + 1 < raw.size());
+            if (two) v |= ((uint8_t)raw[p+1] << 8);
+            out.push_back(B64[(v >> 18) & 0x3F]);
+            out.push_back(B64[(v >> 12) & 0x3F]);
+            out.push_back(two ? B64[(v >> 6) & 0x3F] : '=');
+            out.push_back('=');
+          }
+
+          char head[32];
+          snprintf(head, sizeof(head), "v1:%d:%d:", n, (int)id(trend_idx));
+          id(solar_trend).publish_state(std::string(head) + out);

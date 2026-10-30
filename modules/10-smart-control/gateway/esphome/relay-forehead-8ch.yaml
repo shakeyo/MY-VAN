@@ -9,7 +9,7 @@
 
 switch:
   - platform: template
-    name: "[额头.R1] 射灯"
+    name: "[额头.R1] 前射灯"
     id: sw_spot
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
