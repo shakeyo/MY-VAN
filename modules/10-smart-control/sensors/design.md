@@ -41,6 +41,6 @@
 
 ## 跨模块引用
 
-- 电量计（PZEM-017）已归入 [energy/](../energy/) 能源设备集成
+- 库仑计（TF03K）已归入 [energy/](../energy/) 能源设备集成
 - 电池温度低温禁充走 MPPT，见 [energy/mppt-protocol.md](../energy/mppt-protocol.md)
 - 设备安装位置见 [04-power-system](../../04-power-system/)

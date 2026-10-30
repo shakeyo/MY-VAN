@@ -20,7 +20,7 @@
 | 1 | [build-guide.md](build-guide.md) | **施工主线**：10 个阶段按序执行，每阶段有入口条件 / 验收点 / 配图 |
 | 2 | [n100-ha/design.md](n100-ha/design.md) | HA 角色边界（定稿）、N100/网络/车机/平板方案 |
 | 3 | [gateway/design.md](gateway/design.md) + [gateway/build-guide.md](gateway/build-guide.md) | 网关架构 + 485 总线规范（9600 定稿）+ 制作/烧录/总线改造全流程 |
-| 4 | [energy/](energy/) | MPPT 协议速查与自动化规划、PZEM-017 集成 |
+| 4 | [energy/](energy/) | MPPT 协议速查与自动化规划、TF03K 库仑计集成 |
 | 5 | [sensors/](sensors/) · [media/](media/) · [robot/](robot/) | 传感器三路径、监控/音响链路、机器人架构（均含定稿边界） |
 | 6 | 各子目录 `bom.md` | 材料清单（按阶段采购） |
 
@@ -45,7 +45,7 @@
 |------|------|------|
 | [n100-ha/](n100-ha/) | N100 主机、HA Core、网络、安卓车机、平板移动中控 | 设计中 |
 | [gateway/](gateway/) | ESP32-S3 网关、MAX3485、485 总线（9600 定稿）、ESPHome 固件（含 16DO/MPPT）、继电器模块集成 | 调试中 |
-| [energy/](energy/) | 能源设备 485 集成：MPPT（易科，**固件已就绪**）、库仑计 PZEM-017 | 设计中 |
+| [energy/](energy/) | 能源设备集成：MPPT（易科，**固件已就绪**）、库仑计 TF03K（**固件已就绪**） | 调试中 |
 | [sensors/](sensors/) | 温湿度、水位、门磁、漏水、OBD-II（三条接入路径） | 设计中 |
 | [media/](media/) | 监控（DVR/Frigate）+ 音响（Alpine DSP） | 设计中 |
 | [robot/](robot/) | 中控台 DIY 表情机器人：语音（HA Assist）+ 表情 + 舵机动作控制全车 | 设计中（待选型） |

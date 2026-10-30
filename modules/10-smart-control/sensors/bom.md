@@ -13,5 +13,5 @@
 > 选型要点（无需密钥、广播间隔可调）见 [ble-sensors.md §八](ble-sensors.md)。
 > **ESP32 代理建议独立一台**：主网关同跑 485+MPPT+BLE 时 Flash 会涨到 75%，偏紧。
 >
-> 库仑计 PZEM-017 + 分流器已归入 [energy/](../energy/)（采购项在 [04-power-system/bom.md](../../04-power-system/bom.md) 系统级清单）。
+> 库仑计 TF03K + 分流器已归入 [energy/](../energy/)（采购项在 [04-power-system/bom.md](../../04-power-system/bom.md) 系统级清单）。
 > 485 传感器地址从 0x20 起分配（避开 1-5 继电器模块与 0x10/0x11 能源设备）。

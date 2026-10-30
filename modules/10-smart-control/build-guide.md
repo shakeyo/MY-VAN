@@ -89,7 +89,7 @@
 
 **出口验收**：4 模块 9600 读回 `00 01` + prod 复验无回归 + 总线空闲无 0x00 噪声流。
 
-## 阶段 5：能源设备接入（MPPT / PZEM）
+## 阶段 5：能源设备接入（MPPT / 库仑计）
 
 **入口**：阶段 4 完成；MPPT 已按 04-power-system 物理接线（DC 输出 → 空气开关 → 汇流排 → 电池）。
 
@@ -98,10 +98,10 @@
 3. 上车：MPPT 485 并上总线（菊花链，终端电阻位置不变）
 4. 固件：`esphome/mppt.yaml`（**已建**）：10s 轮询 + 8 sensor + 2 text_sensor + 控制实体；待机断电/低温禁充自动化**待实测定档后补**（[mppt-protocol.md §五](energy/mppt-protocol.md)）
 5. 联调：待机断电（发电 <5W 持续 30min）→ 晨间恢复 → 低温禁充（冰箱温度计模拟 <2°C / >5°C 回差）
-6. PZEM-017（待购到货后）：48V 主回路负极串分流器（位置见 04-power-system）、地址改 0x11、集成方式定案（[pzem-017.md](energy/pzem-017.md)）
-7. HA：SolarTotal 总电量 + PZEM 累计电量进能源面板
+6. TF03K 库仑计：48V 主回路串分流器（位置见 04-power-system）；**19200 独立 UART**（非总线），接线与协议见 [coulomb-tf03k.md](energy/coulomb-tf03k.md)
+7. HA：SolarTotal 总电量 + TF03K 库仑计数据进能源面板
 
-**配图**：[smart-architecture.svg](./diagrams/smart-architecture.svg)（MPPT/PZEM 在总线中的位置）
+**配图**：[smart-architecture.svg](./diagrams/smart-architecture.svg)（MPPT 在总线中的位置）
 
 **出口验收**：
 - [ ] 能源面板数据正确（PV 电压/充电电流/总电量与 MPPT LCD 一致）
@@ -187,4 +187,4 @@
 
 - **车尾 4 路模块**：新导轨 → 485 末端并线 → 车尾保险盒供电 → 倒车灯就近出线 → 终端电阻移到车尾端（[switch-assignment.md §十二](../04-power-system/switch-assignment.md)）
 - **485 传感器扩容**：总线末端并线 + 0x20 起分配地址（9600）
-- **能源面板**：PZEM-017 到货后补入 HA Energy dashboard（[pzem-017.md](energy/pzem-017.md)）
+- **能源面板**：库仑计接入后补入 HA Energy dashboard（[coulomb-tf03k.md](energy/coulomb-tf03k.md)）
