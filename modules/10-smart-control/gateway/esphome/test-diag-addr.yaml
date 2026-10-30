@@ -194,7 +194,7 @@ script:
   - id: toggle_coil1_a5
     mode: single
     then:
-      - logger.log: "地址5 写线圈1 = 开"
+      - logger.log: "地址5 写线圈1 = 开（⚠ 16DO 已退役，地址 5 现为空闲；保留此帧仅作地址探测用）"
       - script.execute:
           id: send_frame
           frame: [0x05, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xBE]

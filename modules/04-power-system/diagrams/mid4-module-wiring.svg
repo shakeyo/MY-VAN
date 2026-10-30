@@ -7,39 +7,39 @@
   </defs>
 
   <text x="700" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#222">中4 模块 · 未来负载扩展 + DI · 对线接线图（上半端子 · 下半说明）</text>
-  <text x="700" y="58" text-anchor="middle" font-size="12.5" fill="#666">中4 = 未来负载4路(10A·现空) + DI读键5-6 · 485=对绞黑白 · 电源=红黑 · LED 不接这里(走16DO)</text>
+  <text x="700" y="58" text-anchor="middle" font-size="12.5" fill="#666">中4 = 3路低功率负载(5A·泵线圈/水阀/后窗扇) + Y4 灯光模式逻辑LED + DI读键5-6 · 485=对绞黑白 · 电源=红黑</text>
 
-  <!-- ============ 上半：继电器 Y1~Y4（未来负载） ============ -->
-  <text x="40" y="92" font-size="14" font-weight="bold" fill="#4527a0">【上排】继电器 Y1~Y4（未来负载 · COM=保险正极 · NO=负载正极 · NC=空）</text>
+  <!-- ============ 上半：继电器 Y1~Y4（3 路负载 + 1 路逻辑 LED） ============ -->
+  <text x="40" y="92" font-size="14" font-weight="bold" fill="#4527a0">【上排】Y1 上水泵线圈 · Y2 电控水阀 · Y3 后窗排气扇 · Y4 灯光模式LED（逻辑LED · COM/NO 见卡）</text>
 
   <g font-size="10" text-anchor="middle">
-    <rect x="40" y="104" width="300" height="92" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
-    <text x="190" y="124" font-size="12" font-weight="bold" fill="#757575">Y1 · 未来负载1</text>
-    <text x="190" y="144" fill="#999">NO = 空</text>
-    <text x="190" y="162" fill="#999">COM = 空</text>
-    <text x="190" y="180" fill="#999">NC = 空</text>
-    <text x="190" y="192" font-size="8" fill="#9e9e9e">10A · 现空</text>
+    <rect x="40" y="104" width="300" height="92" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="190" y="122" font-size="12" font-weight="bold" fill="#4527a0">Y1 · 上水泵（线圈）</text>
+    <text x="190" y="140" fill="#c62828">NO = 外部继电器 12V 线圈+</text>
+    <text x="190" y="156" fill="#c62828">COM = F12-1+（控制电源）</text>
+    <text x="190" y="172" fill="#999">NC = 空</text>
+    <text x="190" y="188" font-size="8" fill="#78909c">48V 动力侧由外部继电器隔离</text>
 
-    <rect x="348" y="104" width="300" height="92" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
-    <text x="498" y="124" font-size="12" font-weight="bold" fill="#757575">Y2 · 未来负载2</text>
-    <text x="498" y="144" fill="#999">NO = 空</text>
-    <text x="498" y="162" fill="#999">COM = 空</text>
-    <text x="498" y="180" fill="#999">NC = 空</text>
-    <text x="498" y="192" font-size="8" fill="#9e9e9e">10A · 现空</text>
+    <rect x="348" y="104" width="300" height="92" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="498" y="122" font-size="12" font-weight="bold" fill="#4527a0">Y2 · 电控水阀</text>
+    <text x="498" y="140" fill="#c62828">NO = 水阀+ 红0.75</text>
+    <text x="498" y="156" fill="#c62828">COM = F12-1+ 红1.0</text>
+    <text x="498" y="172" fill="#999">NC = 空</text>
+    <text x="498" y="188" font-size="8" fill="#78909c">12V 常闭球阀 · 入口键1</text>
 
-    <rect x="656" y="104" width="300" height="92" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
-    <text x="806" y="124" font-size="12" font-weight="bold" fill="#757575">Y3 · 未来负载3</text>
-    <text x="806" y="144" fill="#999">NO = 空</text>
-    <text x="806" y="162" fill="#999">COM = 空</text>
-    <text x="806" y="180" fill="#999">NC = 空</text>
-    <text x="806" y="192" font-size="8" fill="#9e9e9e">10A · 现空</text>
+    <rect x="656" y="104" width="300" height="92" rx="5" fill="#f3e5f5" stroke="#5e35b1" stroke-width="2"/>
+    <text x="806" y="122" font-size="12" font-weight="bold" fill="#4527a0">Y3 · 后窗排气扇</text>
+    <text x="806" y="140" fill="#c62828">NO = 排气扇+ 红1.0</text>
+    <text x="806" y="156" fill="#c62828">COM = F12-3+ 红0.75</text>
+    <text x="806" y="172" fill="#999">NC = 空</text>
+    <text x="806" y="188" font-size="8" fill="#78909c">4 小风扇 · 排气扇场景键</text>
 
-    <rect x="964" y="104" width="300" height="92" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
-    <text x="1114" y="124" font-size="12" font-weight="bold" fill="#757575">Y4 · 未来负载4</text>
-    <text x="1114" y="144" fill="#999">NO = 空</text>
-    <text x="1114" y="162" fill="#999">COM = 空</text>
-    <text x="1114" y="180" fill="#999">NC = 空</text>
-    <text x="1114" y="192" font-size="8" fill="#9e9e9e">10A · 现空</text>
+    <rect x="964" y="104" width="300" height="92" rx="5" fill="#fff8e1" stroke="#f9a825" stroke-width="2"/>
+    <text x="1114" y="122" font-size="12" font-weight="bold" fill="#e65100">Y4 · 灯光模式LED</text>
+    <text x="1114" y="140" fill="#e65100">COM = LED阴(串 1~3.3kΩ)</text>
+    <text x="1114" y="156" fill="#333">NO = GND 黑</text>
+    <text x="1114" y="172" fill="#999">NC = 空</text>
+    <text x="1114" y="188" font-size="8" fill="#9e9e9e">逻辑LED · LED阳极→+12V控+</text>
   </g>
 
   <text x="40" y="220" font-size="14" font-weight="bold" fill="#1565c0">【下排】数字量输入 X4~X1（DI）· DI-COM · A B · 485GND · 电源</text>
@@ -115,11 +115,11 @@
   <text x="40" y="366" font-size="15" font-weight="bold" fill="#f57f17">接线说明</text>
 
   <g font-size="11" fill="#333">
-    <text x="40" y="390" font-size="12.5" font-weight="bold" fill="#00695c">中4 = 未来负载扩展（4路DO·10A）+ DI读键5-6</text>
-    <text x="40" y="412">· Y1-Y4 现空，留给未来负载（配电箱 DO 全给负载，稀缺资源藏墙不拆）</text>
-    <text x="40" y="434">· 未来负载接法：COM = 保险盒正极、NO = 负载正极、NC = 空（同中8 负载接法）</text>
+    <text x="40" y="390" font-size="12.5" font-weight="bold" fill="#00695c">中4 = 3 路低功率负载 + Y4 灯光模式逻辑LED + DI读键5-6</text>
+    <text x="40" y="412">· Y1 上水泵（切外部继电器 12V 线圈）、Y2 电控水阀、Y3 后窗排气扇 —— 5A 规格，不得接 10A 负载</text>
+    <text x="40" y="434">· 负载接法：COM = 保险盒正极、NO = 负载正极、NC = 空（同中8 负载接法）</text>
     <text x="40" y="456">· DI：X1(键5冰箱)、X2(键6灯光模式)，X3/X4 预留未来分散按钮</text>
-    <text x="40" y="478">· LED 不接中4（LED 全走 16DO 模块），中4 的 DO 只做负载</text>
+    <text x="40" y="478">· Y4 = 灯光模式「逻辑LED」（吸地开关）：COM=LED阴、NO=GND、阳极=+12V（16DO 已退役）</text>
   </g>
 
   <rect x="720" y="378" width="640" height="150" rx="8" fill="#ffffff" stroke="#b0bec5" stroke-width="2"/>
@@ -128,18 +128,18 @@
     <text x="740" y="424">主干位1黑=GND（并电源负）· 主干位2红=+12V（控+）</text>
     <text x="740" y="442">中4.DI1(键5冰箱NO)→主干位11 · 中4.DI2(键6灯光NO)→主干位12</text>
     <text x="740" y="460">中4.DI3/DI4(预留)→主干位13/14 · 搬干接点到中门柜汇总排 DI9-12</text>
-    <text x="740" y="478">键5-6 的 LED 阴走主控复合线(14P)位13/14 → 汇总排 → 16DO.Y9/Y10</text>
+    <text x="740" y="478">键5-6 的 LED 阴：有负载的键**负载侧直连**（并到该路 Y 的 NO）；场景键才占用模块 DO</text>
     <line x1="740" y1="488" x2="1340" y2="488" stroke="#e0e0e0" stroke-width="1.5"/>
     <text x="740" y="504" font-size="10.5" font-weight="bold" fill="#00695c">键5-6 → 主控复合线</text>
-    <text x="740" y="520" fill="#555">键5单色：DI→复合线位7、LED阴→复合线位13；键6：DI→位8、LED阴→位14（都进中门柜汇总排）</text>
+    <text x="740" y="520" fill="#555">键5(冰箱)LED 并到中8.Y6 NO；键6(灯光模式)无负载可并 → 本模块 Y4 逻辑LED（决4）</text>
   </g>
 
   <!-- 底部 -->
   <rect x="40" y="566" width="1320" height="180" rx="10" fill="#fffde7" fill-opacity="0.85" stroke="#f9a825" stroke-width="2"/>
   <text x="64" y="594" font-size="14" font-weight="bold" fill="#f57f17">中4 要点</text>
-  <text x="64" y="622" font-size="12.5" fill="#333">◆ Y1-Y4 = 未来负载(10A)，现在全空；配电箱 DO 稀缺，全留负载，不接 LED</text>
+  <text x="64" y="622" font-size="12.5" fill="#333">◆ Y1/Y2/Y3 = 负载（泵线圈/水阀/后窗扇，5A）；Y4 = 灯光模式逻辑LED</text>
   <text x="64" y="646" font-size="12.5" fill="#333">◆ 供电 VCC+红/GND-黑 从箱内「控B/控D」跨箱引出；485 A=白 B=黑，485GND 独立，屏蔽单端</text>
   <text x="64" y="670" font-size="12.5" fill="#333">◆ DI：X1键5冰箱(主干位11深绿)、X2键6灯光(主干位12棕)；X3/X4 预留未来按钮(主干位13/14)</text>
-  <text x="64" y="694" font-size="12.5" fill="#333">⚠ 键5-6 的 LED 阴在 主控复合线 位13(灰)→16DO.Y9、位14(棕)→16DO.Y10，不随 DI 主干；LED 全在 16DO</text>
-  <text x="64" y="722" font-size="10.5" fill="#78909c">中4 的 Y1-4 只做负载，不含 LED。完整分配见 switch-assignment.md「LED策略」。</text>
+  <text x="64" y="694" font-size="12.5" fill="#333">⚠ 逻辑LED 接法：Y4.COM = LED 阴极（经 1~3.3kΩ）、Y4.NO = GND、LED 阳极 = +12V 控+；Y4 吸合=灯亮</text>
+  <text x="64" y="722" font-size="10.5" fill="#78909c">LED 主策略（决4）：有负载的键 → LED 并到负载 NO（负载侧直连）；无负载可并的场景键 → 空余 DO 做逻辑LED。16DO 已退役备用。完整分配见 switch-assignment.md「决4 终局接线表」。</text>
 </svg>

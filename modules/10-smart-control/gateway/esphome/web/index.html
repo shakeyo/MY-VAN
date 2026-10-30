@@ -690,10 +690,10 @@ const ENTITIES = {
   ambient:   { domain:'switch', name:'[中8.Y2] 氛围灯' },
   fridge:    { domain:'switch', name:'[中8.Y6] 冰箱' },
   reverse:   { domain:'switch', name:'[中8.Y7] 车尾灯' },
-  spot:      { domain:'switch', name:'[额头.R1] 前射灯' },
-  outdoor:   { domain:'switch', name:'[额头.R2] 户外灯' },
-  dsp:       { domain:'switch', name:'[额头.R3] DSP' },
-  fanPass:   { domain:'switch', name:'[额头.R4] 副驾排气扇' },
+  spot:      { domain:'switch', name:'[驾驶室A.Y1] 前射灯' },
+  outdoor:   { domain:'switch', name:'[驾驶室A.Y3] 户外灯' },
+  dsp:       { domain:'switch', name:'[驾驶室A.Y2] DSP' },
+  fanPass:   { domain:'switch', name:'[驾驶室A.Y4] 副驾排气扇' },
   pump:      { domain:'switch', name:'[中4.Y1] 上水泵' },
   valve:     { domain:'switch', name:'[中4.Y2] 电控水阀' },
   fanRear:   { domain:'switch', name:'[中4.Y3] 后窗排气扇' },
@@ -857,7 +857,7 @@ async function toggleSwitch(k, btn) {
 
 /* ---------- 场景(只读展示;档位来自 scene-state.yaml 暴露的 sensor) ---------- */
 const SCENE_META = {
-  light: { names:['全关','明亮','夜灯'] },
+  light: { names:['全关','明亮','睡眠'] },
   camp:  { names:['正常','离车','驻车'] },
   fan:   { names:['全关','后窗','全开'] },
 };

@@ -136,7 +136,7 @@
   <rect x="960" y="104" width="160" height="60" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2.5" stroke-dasharray="5,3"/>
   <text x="1040" y="128" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#757575">原泵LED汇接位（已取消）</text>
   <text x="1040" y="146" text-anchor="middle" font-size="10.5" fill="#999">双控泵改为两颗独立LED</text>
-  <text x="1040" y="160" text-anchor="middle" font-size="10.5" fill="#999">16DO.Y3 + 16DO.Y8（不并线）</text>
+  <text x="1040" y="160" text-anchor="middle" font-size="10.5" fill="#999">按键 LED 负载侧直连（决4）</text>
 
   <!-- ========== 底部规则 ========== -->
   <g>

@@ -23,7 +23,8 @@ esphome:
       then:
         - lambda: 'gpio_set_direction(${de_pin}, GPIO_MODE_OUTPUT);'
         - delay: 3s          # 等模块上电就绪
-        # 三个模块输入主动上传开启（保持寄存器 0031H=1；掉电保存状态不确定，每次上电写一次）
+        # 有 DI 的模块开启输入主动上传（保持寄存器 0031H=1；掉电保存状态不确定，每次上电写一次）
+        # 2026-10-30 站号重编：0x01 驾驶室A / 0x02 驾驶室B / 0x06 中8（8DO 无 DI，跳过）
         - lambda: 'gpio_set_level(${de_pin}, 1);'
         - delay: 1ms
         - uart.write:
@@ -39,24 +40,22 @@ esphome:
             id: rs485_bus
             data: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
         - lambda: 'id(rs485_bus).flush();'
-        - delay: 2ms                # 等移位寄存器排空再释放 DE（防帧尾 CRC 截断，见 rs485.yaml）
+        - delay: 2ms
         - lambda: 'gpio_set_level(${de_pin}, 0);'
         - delay: 10ms
-        # ⚠ 2026-10 桌面调试：地址 3（中4）【暂不开启】主动上传。
-        #   实测该模块 DI 引脚悬空时电平抖动 → 模块持续发上传帧 → 与写帧抢总线
-        #   → 同一开关连点 10 次会漏 1~2 次（继电器不动作）。
-        #   ✅ 装车恢复条件：接口面板 COM 接电源一极、DI 接到实际按键（电平确定）后，
-        #      取消下面这段注释即可恢复主动上传。
+        - lambda: 'gpio_set_level(${de_pin}, 1);'
+        - delay: 1ms
+        - uart.write:
+            id: rs485_bus
+            data: [0x06, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x72]
+        - lambda: 'id(rs485_bus).flush();'
+        - delay: 2ms
+        - lambda: 'gpio_set_level(${de_pin}, 0);'
+        - delay: 10ms
+        # 中4（0x07）：4 路 DI 现全部空置（主控键已取消，见 决2/决8），无按键可读，
+        #   故不写 0031H 上传使能。将来接分散按钮后，在此追加：
+        #     data: [0x07, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xA3]
         #
-        # - lambda: 'gpio_set_level(${de_pin}, 1);'
-        # - delay: 1ms
-        # - uart.write:
-        #     id: rs485_bus
-        #     data: [0x03, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x27]
-        # - lambda: 'id(rs485_bus).flush();'
-        # - delay: 2ms
-        # - lambda: 'gpio_set_level(${de_pin}, 0);'
-        # - delay: 10ms
         # 安全负载：每次上电强制关（覆盖 restore 恢复值）
         - switch.turn_off: sw_spot
         - switch.turn_off: sw_outdoor
@@ -67,7 +66,7 @@ esphome:
         - switch.turn_off: sw_valve
         # 倒车灯：纯手动，上电强制关（防止熄火前状态残留）
         - switch.turn_off: sw_reverse
-        # LED DO（全部在中门 16DO 模块，地址 0x05）：强制灭，
+        # 逻辑 LED（场景键双色，8DO 0x03 的 Y1-Y5）：强制灭，
         # 与场景 globals 初始值（全关/正常）保持一致
         - script.execute: led_all_off
 
@@ -181,6 +180,10 @@ interval:
       - script.execute:
           id: rs485_write
           frame: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
+      - delay: 50ms
+      - script.execute:
+          id: rs485_write
+          frame: [0x06, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x72]
 
 script:
   - id: read_upload
@@ -272,42 +275,39 @@ script:
               last_up_r[slot] = r;
               ESP_LOGI("di", "keys addr=%02X n=%d: %04X%s", buf[i], n, r, rep ? " (补释放沿)" : "");
             }
+            // 【面板终局 2026-10-30（决1/决2/决3）】只保留在役按键的发布；
+            //   已取消的键（中8 X5-X8 中门主控 6 键、中4 X1-X2 键5/键6、中8 X2 原户外灯）
+            //   在下方注明位号但**不发布**，避免编译时引用不存在的实体 id。
+            //   位图位号与模块丝印严格对应：bit0=X1 … bit7=X8，不随面板改动而变。
+            // 【面板重排 2026-10-30 · 决8 + 站号重编】位号严格按模块丝印：
+            //   0x01 驾驶室A(4DI) : X1 射灯 / X2 倒车灯 / X3 DSP / X4 户外灯
+            //   0x02 驾驶室B(4DI) : X1 灯光模式 / X2 离车驻车（X3-X4 预留）
+            //   0x06 中8(8DI)     : X1 排水 / X2 上水泵（X3-X8 空）
+            //   0x07 中4(4DI)     : 全空
             switch (buf[i]) {
-              case 0x01:  // 额头
+              case 0x01:  // 驾驶室A
                 if (rep & 0x01) id(bs_cabin_spot).publish_state(false);
                 if (rep & 0x02) id(bs_cabin_reverse).publish_state(false);
                 if (rep & 0x04) id(bs_cabin_dsp).publish_state(false);
-                if (rep & 0x08) id(bs_cabin_fan).publish_state(false);
-                if (rep & 0x20) id(bs_cabin_scene).publish_state(false);
+                if (rep & 0x08) id(bs_cabin_outdoor).publish_state(false);
                 id(bs_cabin_spot).publish_state(r & 0x01);
                 id(bs_cabin_reverse).publish_state(r & 0x02);
                 id(bs_cabin_dsp).publish_state(r & 0x04);
-                id(bs_cabin_fan).publish_state(r & 0x08);
-                id(bs_cabin_scene).publish_state(r & 0x20);
+                id(bs_cabin_outdoor).publish_state(r & 0x08);
                 break;
-              case 0x02:  // 中8
+              case 0x06:  // 中8（入口面板：排水 / 上水泵）
                 if (rep & 0x01) id(bs_door_drain).publish_state(false);
-                if (rep & 0x02) id(bs_door_outdoor).publish_state(false);
-                if (rep & 0x04) id(bs_door_pump).publish_state(false);
-                if (rep & 0x08) id(bs_door_camp).publish_state(false);
-                if (rep & 0x10) id(bs_bed_light).publish_state(false);
-                if (rep & 0x20) id(bs_bed_ambient).publish_state(false);
-                if (rep & 0x40) id(bs_bed_fan).publish_state(false);
-                if (rep & 0x80) id(bs_bed_pump).publish_state(false);
+                if (rep & 0x02) id(bs_door_pump).publish_state(false);
                 id(bs_door_drain).publish_state(r & 0x01);
-                id(bs_door_outdoor).publish_state(r & 0x02);
-                id(bs_door_pump).publish_state(r & 0x04);
-                id(bs_door_camp).publish_state(r & 0x08);
-                id(bs_bed_light).publish_state(r & 0x10);
-                id(bs_bed_ambient).publish_state(r & 0x20);
-                id(bs_bed_fan).publish_state(r & 0x40);
-                id(bs_bed_pump).publish_state(r & 0x80);
+                id(bs_door_pump).publish_state(r & 0x02);
                 break;
-              case 0x03:  // 中4（4 路 DI，位图可能只有 1 字节）
-                if (rep & 0x01) id(bs_bed_fridge).publish_state(false);
-                if (rep & 0x02) id(bs_bed_scene).publish_state(false);
-                id(bs_bed_fridge).publish_state(r & 0x01);
-                id(bs_bed_scene).publish_state(r & 0x02);
+              case 0x07:  // 中4：无按键（4 路 DI 全空，留给未来分散按钮）
+                break;
+              case 0x02:  // 驾驶室B（场景键）
+                if (rep & 0x01) id(bs_cabin_scene).publish_state(false);
+                if (rep & 0x02) id(bs_cabin_camp).publish_state(false);
+                id(bs_cabin_scene).publish_state(r & 0x01);
+                id(bs_cabin_camp).publish_state(r & 0x02);
                 break;
             }
             i += flen;   // 本帧处理完，继续扫下一帧（不 break）
@@ -319,25 +319,20 @@ script:
             len = rem;
           }
 
-  # LED 全灭（上电初始化共用入口）。16DO 全部在用 LED 一次性关掉；
-  # 新增 LED 通道时只需在此加一行（配合 relay-mid-16do.yaml 的 sw_led_* 定义）。
+  # 逻辑 LED 全灭（上电初始化共用入口）。
+  # 【决8 终局】场景键双色 LED 集中在 8DO(0x05)：5 路一起灭，与场景 globals 初始值（全关/正常）一致。
   - id: led_all_off
     mode: restart
     then:
-      - switch.turn_off: sw_led_y1
-      - switch.turn_off: sw_led_y2
-      - switch.turn_off: sw_led_y3
-      - switch.turn_off: sw_led_y4
-      - switch.turn_off: sw_led_y5
-      - switch.turn_off: sw_led_y6
-      - switch.turn_off: sw_led_y7
-      - switch.turn_off: sw_led_y8
-      - switch.turn_off: sw_led_y9
-      - switch.turn_off: sw_led_y10
+      - switch.turn_off: sw_led_scene_red
+      - switch.turn_off: sw_led_scene_green
+      - switch.turn_off: sw_led_camp_red
+      - switch.turn_off: sw_led_camp_green
+      - switch.turn_off: sw_led_reverse
 
 # ============ 场景状态（重启后回到初始值，与 LED 初始态一致） ============
 globals:
-  - id: light_scene          # 灯光模式: 0=全关 1=明亮 2=夜灯
+  - id: light_scene          # 灯光模式: 0=全关 1=明亮 2=睡眠（原「夜灯」，2026-10-30 改名并联动踏板收回）
     type: int
     initial_value: '0'
   - id: camp_scene           # 离车/驻车: 0=正常 1=离车 2=驻车
@@ -346,9 +341,6 @@ globals:
   - id: fan_scene            # 排气扇: 0=全关 1=仅后窗 2=全开
     type: int
     initial_value: '0'
-  - id: hold_triggered       # 主控键1 长按标记
-    type: bool
-    initial_value: 'false'
   # ---- 诊断计数（2026-10-23 排查「按键时灵时不灵」用，稳定后可删）----
   - id: g_poll_cnt           # 收到的 FC04 轮询回包数（应约 6.7/s）
     type: int

@@ -1,10 +1,20 @@
 # 额头模块（8 路，额头柜，地址 0x01，软件设置）
-# R1 射灯 / R2 户外灯 / R3 DSP / R4 副驾排气扇 / R5 预留 / R6 MPPT 接触器(备选) / R7-8 预留
+# R1 射灯 / R2 户外灯 / R3 DSP / R4 副驾排气扇 / **R5 踏板收回** / R6 MPPT 接触器(备选) / R7-8 预留
 #
-# 【硬件变更】原 R5「户外灯LED」（预留跨箱线）已取消：
-#   LED 全部集中到中门 16DO 模块（地址 0x05），见 relay-mid-16do.yaml。
-#   户外灯 LED = 16DO.Y2，由 relay-mid-16do.yaml 的 led_outdoor 脚本按 sw_outdoor 状态驱动。
-# 【上水泵 48V】中8.Y4，续流二极管 1N5408（见 switch-assignment.md §四）
+# 【R5 = 电动踏板「收回」信号（2026-10-30 新增）】见 switch-assignment.md §决7。
+#   由「睡眠模式」驱动：进睡眠 → R5 吸合（发收回信号），离开睡眠 → R5 释放。
+#   ⚠ 物理接法**待实测定档**（踏板控制器是「短接即收回」还是「保持短接」还是「切门碰信号线」，
+#     见 §决7 的三种接法）。固件这一侧只负责「吸合/释放」，与具体接法解耦：
+#     - 脉冲型：吸合后由 scenes.yaml 延时再释放（见 sleep_enter 脚本）
+#     - 保持型：睡眠期间一直吸合
+#   R5 是 10A 干接点，带一只小型车规继电器线圈（mA~0.2A）绰绰有余；
+#   若最终走「切门碰信号线」，R5 触点串在控制器与门碰线之间即可。
+#
+# 【LED 终局（switch-assignment.md §决策更新 决4/决3）】16DO 退役备用，本模块不驱动任何 LED：
+#   户外灯键与负载同柜（决3），其 LED **负载侧直连** —— LED 阳极 → +12V，
+#   阴极串 1~3.3kΩ 后并到 R2 的 NO 输出（= 户外灯正极），灯亮 = 负载真实得电。
+#   射灯 / DSP / 副驾扇同理，一律并到各自 Y 的 NO，不经固件、不占模块通道。
+# 【上水泵 48V】中8.Y4（已迁至中4.Y1 切外部继电器线圈），续流二极管 1N5408
 # 【按键动作】= 执行 act_xxx script（prod 在 scenes.yaml）
 
 switch:
@@ -34,9 +44,6 @@ switch:
       - script.execute:
           id: rs485_write
           frame: [0x01, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x0A]
-    on_state:
-      # 入口键2 LED（16DO.Y2）跟户外灯状态
-      - script.execute: led_outdoor
   - platform: template
     name: "[额头.R3] DSP"
     id: sw_dsp
@@ -64,7 +71,31 @@ switch:
           id: rs485_write
           frame: [0x01, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3D, 0xCA]
 
+  # ---- R5：电动踏板「收回」信号（睡眠模式驱动，见 §决7）----
+  # 帧：线圈 0x0004（通道 N = 地址 N-1 → R5=4）
+  - platform: template
+    name: "[额头.R5] 踏板收回"
+    id: sw_step_retract
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true          # 场景实体，不上面板（面板无「踏板」页）
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x04, 0xFF, 0x00, 0xCD, 0xFB]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x04, 0x00, 0x00, 0x8C, 0x0B]
+
 # 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
+#
+# 【面板终局 2026-10-30（switch-assignment.md §决策更新 决3）】驾驶室面板 6 键：
+#   射灯 / 倒车灯 / DSP / 换气风扇 / 户外灯(新) / 灯光模式
+#     X1 射灯 · X2 倒车灯 · X3 DSP · X4 换气风扇 · X5 户外灯 · X6 灯光模式 · X7-8 预留
+#   ⚠「户外灯」键从入口移到本柜（决3）：键与负载（额头.R2）同柜，LED 负载侧直连。
+#   ⚠ X5 原为「预留」，现启用为户外灯键 —— **接线时把户外灯按钮接到额头模块 X5**。
+#   ⚠ X4 换气风扇仍是蓝牙扇（无协议、无继电器），键按下只打日志，不控任何 DO。
 binary_sensor:
   - platform: template
     name: "[额头.DI1] 驾驶室-射灯"
@@ -86,9 +117,15 @@ binary_sensor:
   - platform: template
     name: "[额头.DI4] 驾驶室-换气风扇"
     id: bs_cabin_fan
-    # TODO: 蓝牙风扇，后期解析协议
+    # TODO: 蓝牙风扇，后期解析协议（当前只上报按下状态，不驱动任何继电器）
   - platform: template
-    name: "[额头.DI5] 驾驶室-灯光模式"
+    name: "[额头.DI5] 驾驶室-户外灯"
+    id: bs_cabin_outdoor
+    # 决3：户外灯键移驾驶室，键与负载（额头.R2）同柜
+    on_press:
+      - script.execute: act_outdoor
+  - platform: template
+    name: "[额头.DI6] 驾驶室-灯光模式"
     id: bs_cabin_scene
     on_press:
       - script.execute: act_scene

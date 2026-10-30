@@ -1,0 +1,100 @@
+# 驾驶室 A 模块（4DI+4DO，5A，额头柜，地址 0x01）—— 驾驶室功率键
+#
+# 【2026-10-30 面板重排（switch-assignment.md §决策更新 决8）】
+#   「额头 8 路模块」实际未购买，改用**两台 4DI+4DO（5A）**承载驾驶室面板：
+#     本文件 = 驾驶室 A（0x01）：4 个「有负载」的功率键
+#     relay-cabin-b-4ch.yaml = 驾驶室 B（0x02）：2 个场景键
+#     relay-led-8ch.yaml     = 8DO（0x03）：场景键双色 LED + 倒车灯 LED（固件同步）
+#
+# DI: X1 射灯 / X2 倒车灯 / X3 DSP / X4 户外灯
+# DO: Y1 射灯大继电器线圈 / Y2 DSP 大继电器线圈 / Y3 户外灯直切 / Y4 副驾排气扇
+#
+# ⚠ **两级切换（决5）**：射灯（10~20A）、DSP+低音炮（20~30A）远超 5A 模块额定，
+#   本模块 DO **只驱动外部大继电器的 12V 线圈（mA~0.2A）**，动力线走额头柜预留的
+#   「3 路大功率继电器 + 保险」。LED 并到**大继电器的输出侧**（不是线圈侧）才表示负载真得电。
+#
+# ⚠ **车尾灯不占本模块 DO**：倒车灯负载在 中8.Y7（中门拉线到车尾），本模块只提供按键 DI2，
+#   执行由 relay-mid-8ch.yaml 的 sw_reverse 跨模块完成；该键 LED 由 8DO 同步驱动（见下）。
+
+switch:
+  # ---- Y1：前射灯（切外部大功率继电器线圈）----
+  - platform: template
+    name: "[驾驶室A.Y1] 前射灯"
+    id: sw_spot
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x3A]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xCA]
+  # ---- Y2：DSP + 低音炮（切外部大功率继电器线圈）----
+  - platform: template
+    name: "[驾驶室A.Y2] DSP"
+    id: sw_dsp
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xFA]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x0A]
+  # ---- Y3：户外灯（直切，实测 ≤5A）----
+  - platform: template
+    name: "[驾驶室A.Y3] 户外灯"
+    id: sw_outdoor
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0xFA]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x0A]
+  # ---- Y4：副驾窗排气扇（直切，小功率；无物理键，手机面板/大屏控制 + 排气扇场景）----
+  - platform: template
+    name: "[驾驶室A.Y4] 副驾排气扇"
+    id: sw_fan_pass
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7C, 0x3A]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x01, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3D, 0xCA]
+
+# 驾驶室面板功率键（4 个）
+binary_sensor:
+  - platform: template
+    name: "[驾驶室A.DI1] 驾驶室-射灯"
+    id: bs_cabin_spot
+    on_press:
+      - script.execute: act_spot
+  - platform: template
+    name: "[驾驶室A.DI2] 驾驶室-倒车灯"
+    id: bs_cabin_reverse
+    # 负载在 中8.Y7（中门拉线到车尾），纯手动、不联动倒挡（跨模块执行）
+    on_press:
+      - script.execute: act_reverse
+  - platform: template
+    name: "[驾驶室A.DI3] 驾驶室-DSP"
+    id: bs_cabin_dsp
+    on_press:
+      - script.execute: act_dsp
+  - platform: template
+    name: "[驾驶室A.DI4] 驾驶室-户外灯"
+    id: bs_cabin_outdoor
+    # 户外灯键与负载同柜，LED 负载侧直连并到 Y3 的 NO
+    on_press:
+      - script.execute: act_outdoor

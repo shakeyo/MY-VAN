@@ -1,9 +1,13 @@
 # =============================================================
 # 阶段3：中8 模块全逻辑验证（桌面，模块地址 2，厂家软件已改）
-# 验证目标：中8 全部按键逻辑——双控/场景循环/长按全关/断电恢复
+# 验证目标：在役按键逻辑 + 三个场景循环
 #   - 杜邦线短接 DI↔GND 模拟按键（0.5s 松手）
-#   - 跨模块动作（入口-户外灯 → 额头.R2）此处只打日志，上车用 prod 验证
+#   - 跨模块动作（驾驶室-户外灯 → 额头.R2）此处只打日志，上车用 prod 验证
 #   - web 测试按钮可直接触发三个场景循环
+# ⚠【面板终局 2026-10-30（决1/决2/决3）】物理键只剩 驾驶室 6 键 + 入口 3 键：
+#     入口 X1 排水 / X2 上水泵 / X4 离车驻车；中8 X5-X8（中门主控 6 键）已取消
+#   → 本文件的 BedLight/BedAmbient/BedFan/BedPump 四个主控键实体与「键1 长按 2s 全关」
+#     已随之删除；场景循环改由下方 LightTest/CampTest/FanTest 按钮验证。
 # 烧录: esphome run test-mid8-logic.yaml
 # =============================================================
 
@@ -78,7 +82,7 @@ uart:
   baud_rate: 38400
 
 globals:
-  - id: light_scene          # 灯光模式: 0=全关 1=明亮 2=夜灯
+  - id: light_scene          # 灯光模式: 0=全关 1=明亮 2=睡眠（原「夜灯」）
     type: int
     initial_value: '0'
   - id: camp_scene           # 离车/驻车: 0=正常 1=离车 2=驻车
@@ -87,9 +91,6 @@ globals:
   - id: fan_scene            # 排气扇: 0=全关 1=仅后窗 2=全开
     type: int
     initial_value: '0'
-  - id: hold_triggered       # 主控键1 长按标记
-    type: bool
-    initial_value: 'false'
 
 # 中8 模块（0x01，暂用默认地址）：R1 主灯 / R2 氛围灯 / R3 驻车LED / R4 后窗扇 / R5 离车LED / R6 水泵 / R7 水阀 / R8 冰箱
 switch:
@@ -254,14 +255,6 @@ binary_sensor:
     on_press:
       - script.execute: act_drain
   - platform: template
-    name: "DoorOutdoor 入口-户外灯"
-    id: bs_door_outdoor
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
-    on_press:
-      - script.execute: act_outdoor
-  - platform: template
     name: "DoorPump 入口-上水泵"
     id: bs_door_pump
     filters:
@@ -277,47 +270,6 @@ binary_sensor:
       - delayed_off: 50ms
     on_press:
       - script.execute: act_camp
-  - platform: template
-    name: "BedLight 主控-主灯"
-    id: bs_bed_light
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
-    on_press:
-      - lambda: 'id(hold_triggered) = false;'
-      - script.execute: key1_hold_timer
-    on_release:
-      - script.stop: key1_hold_timer
-      - if:
-          condition:
-            lambda: 'return !id(hold_triggered);'
-          then:
-            - switch.toggle: sw_main_light
-      - lambda: 'id(hold_triggered) = false;'
-  - platform: template
-    name: "BedAmbient 主控-氛围灯"
-    id: bs_bed_ambient
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
-    on_press:
-      - script.execute: act_ambient
-  - platform: template
-    name: "BedFan 主控-排气扇"
-    id: bs_bed_fan
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
-    on_press:
-      - script.execute: act_fan
-  - platform: template
-    name: "BedPump 主控-上水泵"
-    id: bs_bed_pump
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
-    on_press:
-      - script.execute: act_pump_bed
 
 # web 测试按钮：直接触发场景循环（不用杜邦线也能验脚本）
 button:
@@ -388,14 +340,10 @@ script:
               if ((uint8_t) crc == buf[i+5] && (uint8_t) (crc >> 8) == buf[i+6]) {
                 uint16_t r = ((uint16_t) buf[i+3] << 8) | buf[i+4];
                 ESP_LOGI("di", "keys X1-X8: %04X", r);
+                // 面板终局（决1/决2）：X1 排水 / X2 上水泵 / X4 离车驻车；X3 空、X5-X8 已取消
                 id(bs_door_drain).publish_state(r & 0x01);
-                id(bs_door_outdoor).publish_state(r & 0x02);
                 id(bs_door_pump).publish_state(r & 0x04);
                 id(bs_door_camp).publish_state(r & 0x08);
-                id(bs_bed_light).publish_state(r & 0x10);
-                id(bs_bed_ambient).publish_state(r & 0x20);
-                id(bs_bed_fan).publish_state(r & 0x40);
-                id(bs_bed_pump).publish_state(r & 0x80);
                 break;
               }
             }
@@ -414,17 +362,11 @@ script:
   - id: act_camp
     then:
       - script.execute: camp_scene_next
-  - id: act_ambient
-    then:
-      - switch.toggle: sw_ambient
   - id: act_fan
     then:
       - script.execute: fan_scene_next
-  - id: act_pump_bed
-    then:
-      - switch.toggle: sw_pump
 
-  # 灯光模式：0 全关 → 1 明亮 → 2 夜灯 循环（中4 的场景LED 此处没有，上车看 prod）
+  # 灯光模式：0 全关 → 1 明亮 → 2 睡眠模式 循环（中4 的场景LED 此处没有，上车看 prod）
   - id: light_scene_next
     mode: single
     then:
@@ -445,7 +387,7 @@ script:
           condition:
             lambda: 'return id(light_scene) == 2;'
           then:
-            - logger.log: "场景: 灯光-夜灯"
+            - logger.log: "场景: 睡眠模式"
             - switch.turn_off: sw_main_light
             - switch.turn_on: sw_ambient
       - if:
@@ -523,13 +465,3 @@ script:
             - logger.log: "场景: 排气扇-全开"
             - switch.turn_on: sw_fan_rear
 
-  # 主控键1 长按 2s 计时器（到达则灯光全关，短按逻辑在 on_release 里）
-  - id: key1_hold_timer
-    mode: restart
-    then:
-      - delay: 2s
-      - lambda: 'id(hold_triggered) = true;'
-      - logger.log: "按键: 主灯长按 2s → 灯光全关"
-      - switch.turn_off: sw_main_light
-      - switch.turn_off: sw_ambient
-      - lambda: 'id(light_scene) = 0;'

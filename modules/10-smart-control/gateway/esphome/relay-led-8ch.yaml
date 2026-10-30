@@ -1,0 +1,132 @@
+# 8DO 模块（8 路纯 DO，5A，额头柜，地址 0x03）—— 场景键双色 LED + 倒车灯 LED
+#
+# 【2026-10-30 新增（switch-assignment.md §决策更新 决8）】
+#   用途：驾驶室面板 6 个键里，**没有负载可并**的那几个 LED 集中在这里，
+#   与额头柜同柜，LED 阴线只走到旁边的本模块，零长线。
+#
+# ┌─ 通道分配 ───────────────────────────────────────────────┐
+# Y1 = 灯光模式键 · 红 LED 阴      Y2 = 灯光模式键 · 绿 LED 阴
+# Y3 = 离车/驻车键 · 红 LED 阴     Y4 = 离车/驻车键 · 绿 LED 阴
+# Y5 = 倒车灯键 · 单色 LED 阴      （倒车灯负载在 中8.Y7，本路只做「状态显示」）
+# Y6-Y8 = 预留
+# └──────────────────────────────────────────────────────────┘
+#
+# 【接线（吸地开关）】双色按钮 5 线：黄白=触点、红=共阳(+12V)、黑=红LED阴、绿=绿LED阴
+#   LED 阳极（共阳，红）→ +12V 控+
+#   LED 阴极（黑 / 绿）→ 串 1~3.3kΩ → 本模块对应 Y 的 COM
+#   本模块对应 Y 的 NO → GND
+#   → Y 吸合 = COM-NO 导通 = LED 阴极接地 = 该色亮
+#
+# 【三态定义（颜色跟真实档位，不跟按键次数）】
+#   灯光模式键：灭=全关 / 绿=睡眠模式 / 红=明亮
+#   离车/驻车键：灭=正常 / 绿=离车 / 红=驻车
+#   倒车灯键：  灭=灭 / 亮=亮（跟随 中8.Y7 的真实状态）
+#
+# 【为什么倒车灯 LED 要走这里】倒车灯负载在中门（中8.Y7），灯却在驾驶室柜；
+#   把 LED 阴拉到中门并 中8.Y7 的输出要一根长线且绕路，改用本模块由固件同步更省线，
+#   且状态真实（固件监听 sw_reverse 的 on_state）。
+
+switch:
+  # ============ Y1/Y2：灯光模式键 双色 LED ============
+  - platform: template
+    name: "[8DO.Y1] 灯光模式·红LED"
+    id: sw_led_scene_red
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xD8]}
+    on_turn_off:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x28]}
+  - platform: template
+    name: "[8DO.Y2] 灯光模式·绿LED"
+    id: sw_led_scene_green
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDC, 0x18]}
+    on_turn_off:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9D, 0xE8]}
+  # ============ Y3/Y4：离车/驻车键 双色 LED ============
+  - platform: template
+    name: "[8DO.Y3] 离车驻车·红LED"
+    id: sw_led_camp_red
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2C, 0x18]}
+    on_turn_off:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0xE8]}
+  - platform: template
+    name: "[8DO.Y4] 离车驻车·绿LED"
+    id: sw_led_camp_green
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7D, 0xD8]}
+    on_turn_off:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3C, 0x28]}
+  # ============ Y5：倒车灯键 单色 LED（跟随 中8.Y7 真实状态）============
+  - platform: template
+    name: "[8DO.Y5] 倒车灯LED"
+    id: sw_led_reverse
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x04, 0xFF, 0x00, 0xCC, 0x19]}
+    on_turn_off:
+      - script.execute: {id: rs485_write, frame: [0x03, 0x05, 0x00, 0x04, 0x00, 0x00, 0x8D, 0xE9]}
+  # ============ Y6-Y8：预留（线圈 0x0005~0x0007）============
+
+# ============ LED 同步脚本（场景与负载共用入口）============
+script:
+  # 灯光模式键：灭=全关 / 绿=睡眠(2) / 红=明亮(1)
+  - id: led_scene_sync
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(light_scene) == 1;'}
+          then:
+            - switch.turn_on: sw_led_scene_red
+            - switch.turn_off: sw_led_scene_green
+      - if:
+          condition: {lambda: 'return id(light_scene) == 2;'}
+          then:
+            - switch.turn_off: sw_led_scene_red
+            - switch.turn_on: sw_led_scene_green
+      - if:
+          condition: {lambda: 'return id(light_scene) == 0;'}
+          then:
+            - switch.turn_off: sw_led_scene_red
+            - switch.turn_off: sw_led_scene_green
+  # 离车/驻车键：灭=正常(0) / 绿=离车(1) / 红=驻车(2)
+  - id: led_camp_sync
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(camp_scene) == 1;'}
+          then:
+            - switch.turn_off: sw_led_camp_red
+            - switch.turn_on: sw_led_camp_green
+      - if:
+          condition: {lambda: 'return id(camp_scene) == 2;'}
+          then:
+            - switch.turn_on: sw_led_camp_red
+            - switch.turn_off: sw_led_camp_green
+      - if:
+          condition: {lambda: 'return id(camp_scene) == 0;'}
+          then:
+            - switch.turn_off: sw_led_camp_red
+            - switch.turn_off: sw_led_camp_green
+  # 倒车灯 LED：跟随 中8.Y7 的真实状态（由 relay-mid-8ch.yaml 的 on_state 调用）
+  - id: led_reverse_sync
+    mode: restart
+    then:
+      - if:
+          condition: {lambda: 'return id(sw_reverse).state;'}
+          then: [switch.turn_on: sw_led_reverse]
+          else: [switch.turn_off: sw_led_reverse]

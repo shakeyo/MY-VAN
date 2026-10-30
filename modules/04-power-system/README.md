@@ -34,7 +34,9 @@
 | 48V 水泵主回路 + 控制回路 | [pump-48v.svg](./diagrams/pump-48v.svg) | 阶段 2/5：核心安全回路 |
 | 单按键 3 回路（含"三个 COM"辨析） | [button-wiring.svg](./diagrams/button-wiring.svg) | 阶段 3：面板接线前 |
 | 中门柜汇总方案面板线缆定义 | [switch-assignment.md §七](switch-assignment.md#七、面板线缆定义中门柜汇总方案) | 阶段 3：压 JST 插头、按色找芯 |
-| 16DO 模块接线图 | [16do-module-wiring.svg](./diagrams/16do-module-wiring.svg) | 阶段 3：16DO 接 LED |
+| 中8 模块接线图（含 Y8 离车驻车LED） | [mid8-module-wiring.svg](./diagrams/mid8-module-wiring.svg) | 阶段 3：配电箱负载接线 |
+| 中4 模块接线图（含 Y4 灯光模式LED） | [mid4-module-wiring.svg](./diagrams/mid4-module-wiring.svg) | 阶段 3：低功率负载接线 |
+| ~~16DO 模块接线图~~ | [16do-module-wiring.svg](./diagrams/16do-module-wiring.svg) | 16DO **已退役备用**（决4），仅作复活参考 |
 | 中门走线分层（DI 主干 / 面板复合线分离） | [mid-door-wiring.svg](./diagrams/mid-door-wiring.svg) | 阶段 3：中门柜走线 |
 | 端子排布局（功率区 + 控制区） | [terminal-block.svg](./diagrams/terminal-block.svg) | 阶段 2/3：对位接线 |
 | 485 总线拓扑 | [485-bus.svg](./diagrams/485-bus.svg) | 阶段 4：总线布线 |

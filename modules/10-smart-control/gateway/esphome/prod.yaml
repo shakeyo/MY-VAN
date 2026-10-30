@@ -5,11 +5,11 @@
 # 文件结构:
 #   rs485.yaml            485 写帧公共件（DE 时序 + 参数化写帧脚本）
 #   base.yaml             基础（网络/串口/上电策略/场景状态/DI 上传驱动解析）
-#   relay.yaml            继电器模块汇总（含 4 个子模块 + 模块×站号×路数索引表）
+#   relay.yaml            继电器模块汇总（含 3 个子模块 + 模块×站号×路数索引表）
 #     ├─ relay-forehead-8ch.yaml  额头 8 路继电器（地址 0x01）
-#     ├─ relay-mid-8ch.yaml       中门 8 路继电器（地址 0x02）—— 纯负载
-#     ├─ relay-mid-4ch.yaml       中门 4 路继电器（地址 0x03）—— 低功率负载
-#     └─ relay-mid-16do.yaml      中门 16DO（地址 0x05）—— 全部 LED
+#     ├─ relay-mid-8ch.yaml       中门 8 路继电器（地址 0x02）—— 负载 + Y8 离车驻车LED
+#     └─ relay-mid-4ch.yaml       中门 4 路继电器（地址 0x03）—— 低功率负载 + Y4 灯光模式LED
+#   （relay-mid-16do.yaml 地址 0x05 已退役备用，不 include —— 见 决4）
 #   mppt.yaml             光伏控制器（地址 0x10）—— 监控 + 控制 + 本地自动化
 #   pzem-tf03k.yaml       库仑计 TF03K —— 独立第二路 UART(19200 只收) + 16 字节帧解析
 #   scenes.yaml           场景自动化脚本

@@ -1,10 +1,13 @@
-# 中门 8 路模块（配电箱内，地址 0x02，软件设置）—— 纯负载
-# Y1 主灯 / Y2 氛围灯+睡眠灯 / Y3 后窗排气扇 / Y4 上水泵(48V直切+续流二极管)
-# Y5 电控水阀 / Y6 冰箱 / Y7 倒车灯（车尾并进） / Y8 预留
+# 中门 8 路模块（配电箱内，地址 0x06，软件设置）—— 4 路负载 + 踏板收回信号
+# Y1 主灯 / Y2 氛围灯+睡眠灯 / **Y3 踏板收回** / Y4-Y5 预留
+# Y6 冰箱 / Y7 倒车灯（车尾并进） / Y8 预留
+# （后窗排气扇→中4.Y3、上水泵→中4.Y1、电控水阀→中4.Y2，2026-10 已迁走）
 #
-# 【硬件变更】LED 全部移到中门 16DO 模块（地址 0x05），见 relay-mid-16do.yaml。
-#   本文件不再有任何 LED 通道；负载 on_state 只调用 relay-mid-16do.yaml 里的 led_* 脚本。
-#   原 中8.Y3/Y5 曾被当作 LED 用的设计已废弃（现 Y3=排气扇、Y5=水阀，均为负载）。
+# 【LED（2026-10-30 决8 终局）】本模块不再承担任何 LED：
+#   有负载的键 → LED 负载侧直连（并在该路 Y 的 NO）；
+#   两个场景键（灯光模式 / 离车驻车）→ 双色 LED 由 **8DO 模块（0x03）** 驱动，见 relay-led-8ch.yaml。
+#   曾经的「Y8 离车驻车逻辑 LED」已作废（Y8 回归预留）。
+
 # 【按键动作】= 执行 act_xxx script（prod 在 scenes.yaml）
 
 switch:
@@ -16,14 +19,11 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x09]
+          frame: [0x06, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0x8D]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xF9]
-    on_state:
-      # 主控键1 LED（16DO.Y5）
-      - script.execute: led_main
+          frame: [0x06, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x7D]
   - platform: template
     name: "[中8.Y2] 氛围灯"
     id: sw_ambient
@@ -32,14 +32,11 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xC9]
+          frame: [0x06, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDC, 0x4D]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x39]
-    on_state:
-      # 主控键2 LED（16DO.Y6）
-      - script.execute: led_ambient
+          frame: [0x06, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9D, 0xBD]
   - platform: template
     name: "[中8.Y6] 冰箱"
     id: sw_fridge
@@ -48,14 +45,11 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x05, 0xFF, 0x00, 0x9C, 0x08]
+          frame: [0x06, 0x05, 0x00, 0x05, 0xFF, 0x00, 0x9D, 0x8C]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x05, 0x00, 0x00, 0xDD, 0xF8]
-    on_state:
-      # 主控键5 冰箱 LED（16DO.Y9）
-      - script.execute: led_fridge
+          frame: [0x06, 0x05, 0x00, 0x05, 0x00, 0x00, 0xDC, 0x7C]
   - platform: template
     name: "[中8.Y7] 车尾灯"
     id: sw_reverse
@@ -64,14 +58,43 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x06, 0xFF, 0x00, 0x6C, 0x08]
+          frame: [0x06, 0x05, 0x00, 0x06, 0xFF, 0x00, 0x6D, 0x8C]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x02, 0x05, 0x00, 0x06, 0x00, 0x00, 0x2D, 0xF8]
-  # Y8（线圈 0x0007）预留：帧 [0x02, 0x05, 0x00, 0x07, 0xFF/0x00, 0x00, 0x3D, 0xC8 / 0x7C, 0x38]
+          frame: [0x06, 0x05, 0x00, 0x06, 0x00, 0x00, 0x2C, 0x7C]
+    on_state:
+      # 倒车灯 LED 在驾驶室柜，由 8DO(0x03) Y5 同步（固件跟随真实状态，见 决8）
+      - script.execute: led_reverse_sync
+  # ---- Y3：电动踏板「收回」信号（睡眠模式驱动，见 §决7）----
+  # 就近装在中门配电箱：踏板在中门附近，拉到额头柜不现实（决8 改到此处）。
+  # 中8 是 10A 干接点，只带外部小继电器线圈或串/并踏板信号线，绝不直切 40A 动力线。
+  # 物理接法待实测（A 脉冲 / B 保持 / C 切门碰线，见 §决7）。
+  - platform: template
+    name: "[中8.Y3] 踏板收回"
+    id: sw_step_retract
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x06, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2C, 0x4D]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x06, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0xBD]
 
 # 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
+#
+# 【面板终局 2026-10-30（switch-assignment.md §决策更新 决1/决2）】
+#   入口面板只剩 **2 个 485 键**（离车/驻车键 2026-10-30 移到驾驶室B.X2，见 决8）：
+#     X1 排水 → X2 上水泵                    （X3-X8 全空）
+#   踏板兜底物理开关已取消（改睡眠模式自动收回，见 决7）。
+#   中门主控 6 键（原 X5-X8）**已取消**，由 P4 车机大屏 + 手机面板 + 床头 2 键替代，
+#   故本文件只保留入口 3 键实体；X5-X8 的位图位**照样解析但不发布任何状态**。
+#   ⚠ 位图位号不可改：模块丝印 X1..X8 固定对应 bit0..bit7（见 base.yaml read_upload）。
+#   入口键2「户外灯」已移驾驶室（决3），本模块不再有该键。
 binary_sensor:
   - platform: template
     name: "[中8.DI1] 入口-排水"
@@ -79,48 +102,17 @@ binary_sensor:
     on_press:
       - script.execute: act_drain
   - platform: template
-    name: "[中8.DI2] 入口-户外灯"
-    id: bs_door_outdoor
-    on_press:
-      - script.execute: act_outdoor
-  - platform: template
-    name: "[中8.DI3] 入口-上水泵"
+    name: "[中8.DI2] 入口-上水泵"
     id: bs_door_pump
+    # ⚠ 2026-10 面板重排：上水泵键由 X3 移到 X2（原 X2 户外灯键移驾驶室，见 决1/决3）
     on_press:
       - script.execute: act_pump_in
-  - platform: template
-    name: "[中8.DI4] 入口-离车驻车"
-    id: bs_door_camp
-    on_press:
-      # X4 = 离车/驻车场景键（离车 → 驻车 → 正常 三态循环，见 scenes.yaml）。
-      # 临时测试版的「X4 直切主灯 Y1」已于验收后回退。
-      - script.execute: act_camp
-  - platform: template
-    name: "[中8.DI5] 主控-主灯"
-    id: bs_bed_light
-    on_press:
-      - lambda: 'id(hold_triggered) = false;'
-      - script.execute: key1_hold_timer
-    on_release:
-      - script.stop: key1_hold_timer
-      - if:
-          condition:
-            lambda: 'return !id(hold_triggered);'
-          then:
-            - switch.toggle: sw_main_light
-      - lambda: 'id(hold_triggered) = false;'
-  - platform: template
-    name: "[中8.DI6] 主控-氛围灯"
-    id: bs_bed_ambient
-    on_press:
-      - script.execute: act_ambient
-  - platform: template
-    name: "[中8.DI7] 主控-排气扇"
-    id: bs_bed_fan
-    on_press:
-      - script.execute: act_fan
-  - platform: template
-    name: "[中8.DI8] 主控-上水泵"
-    id: bs_bed_pump
-    on_press:
-      - script.execute: act_pump_bed
+
+# 已取消（决1/决2，2026-10-30 固件层面下线）：
+#   bs_door_outdoor  [中8.DI2] 入口-户外灯  → 户外灯键移驾驶室（额头.DI5，见 relay-forehead-8ch.yaml）
+#   bs_bed_light     [中8.DI5] 主控-主灯    → 中门主控 6 键取消
+#   bs_bed_ambient   [中8.DI6] 主控-氛围灯
+#   bs_bed_fan       [中8.DI7] 主控-排气扇
+#   bs_bed_pump      [中8.DI8] 主控-上水泵
+#   注意：随 bs_bed_light 一起作废的还有「主控键1 长按 2s 灯光全关」——该交互依赖已取消的实体。
+#   X5-X8 空出来后可留给未来分散独立按钮（见 switch-assignment.md §五）。

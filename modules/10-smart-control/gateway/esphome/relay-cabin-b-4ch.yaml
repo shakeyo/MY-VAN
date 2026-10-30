@@ -1,0 +1,26 @@
+# 驾驶室 B 模块（4DI+4DO，5A，额头柜，地址 0x02）—— 场景键（双色 LED 由 8DO 驱动）
+#
+# 【2026-10-30 面板重排（switch-assignment.md §决策更新 决8）】
+#   本文件承担驾驶室面板的 2 个**场景键**（无对应负载）：
+#     X1 = 灯光模式（全关 → 明亮 → 睡眠模式 循环）
+#     X2 = 离车/驻车（正常 → 离车 → 驻车 循环）
+#   场景键是**双色按钮**：颜色状态由「8DO 模块（地址 0x03）」驱动，见 relay-led-8ch.yaml。
+#   本模块 4 路 DO 全预留（将来驾驶室功率扩展）。
+#
+# DI: X1 灯光模式 / X2 离车驻车 / X3-X4 预留
+# DO: Y1-Y4 全预留（新增负载时按 通道 N = 地址 N-1 追加帧即可）
+
+switch: []
+
+# 场景键（双色按钮，5 线制：黄白=触点、红=共阳、黑=红LED阴、绿=绿LED阴）
+binary_sensor:
+  - platform: template
+    name: "[驾驶室B.DI1] 驾驶室-灯光模式"
+    id: bs_cabin_scene
+    on_press:
+      - script.execute: act_scene
+  - platform: template
+    name: "[驾驶室B.DI2] 驾驶室-离车驻车"
+    id: bs_cabin_camp
+    on_press:
+      - script.execute: act_camp

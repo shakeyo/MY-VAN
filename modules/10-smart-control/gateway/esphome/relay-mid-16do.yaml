@@ -1,6 +1,18 @@
+# ⚠⚠ 本文件已退役，不再被 relay.yaml include（prod 固件里没有 0x05）⚠⚠
+#
+# 【状态 2026-10-30】按 04-power-system/switch-assignment.md「§决策更新 决4」：
+#   16DO 模块**退役备用**。原因：砍掉中控 6 键后只剩入口 4 键 LED，16 路只用 4 路。
+#   LED 改为「能负载侧直连的就并到负载继电器 NO」+「场景键用空余 DO 做逻辑 LED」：
+#     离车/驻车 LED = 中8.Y8（relay-mid-8ch.yaml  sw_led_camp）
+#     灯光模式 LED  = 中4.Y4（relay-mid-4ch.yaml  sw_led_scene）
+#   本文件**保留备用**：模块实物还在手上；要复活就在 relay.yaml 取消 include 注释，
+#   并把 LED 策略改回「集中」。以下为退役前的原始内容，仅供复活时参考。
+# ⚠ 复活前必须同步：base.yaml 的 led_all_off、scenes.yaml 的 LED 实体、各负载 on_state
+#   与 mid8/mid4 的 Y8/Y4 逻辑 LED 互斥（同一路不能既当负载又当 LED）。
+#
 # 中门 16DO 模块（中门柜内，地址 0x05，一个 485 地址 = 一个设备）—— 全部 LED
 #
-# 【硬件定稿】LED 全集中到这一台（见 04-power-system/switch-assignment.md §LED 策略）：
+# 【硬件定稿（已作废，见上）】LED 全集中到这一台（见 04-power-system/switch-assignment.md §LED 策略）：
 #   每个开关配一颗 LED，12 现用 + 4 预留；16DO = 16 路 DO（5A，无 DI）。
 #   接线：LED 阳极 → +12V；LED 阴极 → 电阻 → 本模块对应 Y 的 COM；Y 的 NO → 模块 GND。
 #   即「独立 Y 的 COM/NO 当吸地开关用」，Y 吸合 → LED 阴极回 GND → 灯亮。

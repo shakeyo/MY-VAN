@@ -11,10 +11,13 @@
 | `rs485.yaml` | **485 写帧公共件**：DE/RE 方向时序 + 参数化 `rs485_write` 脚本 |
 | `base.yaml` | 基础：网络/串口/上电策略/场景状态/DI 上传驱动解析/LED 全灭 |
 | `relay.yaml` | **继电器模块汇总入口**：include 下面 4 个子模块，并附「模块×站号×路数」索引表。站号因与帧 CRC 绑定，实际值仍写在各自子文件里 |
-| └ `relay-forehead-8ch.yaml` | 额头 8 路（地址 0x01）：负载 + 按键 |
-| └ `relay-mid-8ch.yaml` | 中门 8 路（地址 0x02）：纯负载 7 路 + 1 预留 |
-| └ `relay-mid-4ch.yaml` | 中门 4 路（地址 0x03）：低功率负载 3 路 + 1 预留 + 读键5-6 |
-| └ `relay-mid-16do.yaml` | **中门 16DO（地址 0x05）：全部 LED（12 现用 + 4 预留）** |
+| `relay-cabin-a-4ch.yaml` | 驾驶室 A（0x01，4DI+4DO 5A）：射灯/DSP 大继电器线圈 + 户外灯 + 副驾扇 + 4 键 |
+| `relay-cabin-b-4ch.yaml` | 驾驶室 B（0x02，4DI+4DO 5A）：场景键 2（灯光模式/离车驻车） |
+| `relay-led-8ch.yaml` | 8DO（0x03，5A）：场景键双色 LED ×2 + 倒车灯 LED |
+| ~~`relay-forehead-8ch.yaml`~~ | ~~额头 8 路~~ — **已作废**（原模块未购买，由 cabin-a/b 取代） |
+| `relay-mid-8ch.yaml` | 中门 8 路（地址 **0x06**）：主灯/氛围/冰箱/车尾灯 + **Y3 踏板收回** |
+| `relay-mid-4ch.yaml` | 中门 4 路（地址 **0x07**）：泵线圈/水阀/后窗扇（Y4 预留） |
+| ~~`relay-mid-16do.yaml`~~ | ~~中门 16DO（地址 0x05）~~ — **已退役备用，不 include**（决4） |
 | `mppt.yaml` | **光伏控制器（地址 0x10）**：监控实体 + 控制 + 时钟同步 + 应答解析 |
 | `pzem-tf03k.yaml` | **库仑计 TF03K**：独立第二路 UART（19200 只收）+ 16 字节帧解析（见下） |
 | `scenes.yaml` | 场景自动化（灯光模式/离车驻车/排气扇/长按全关） |
@@ -53,7 +56,7 @@ FORAGER 主题，但彻底零依赖、离线可用。
   后，必须同步改 `web/index.html` 里的对应映射，否则该开关在面板上会读不到。
   改完可用这条命令自查「面板 ↔ 固件」是否逐字一致：
   ```bash
-  diff <(grep -h 'name: "\[' relay-forehead-8ch.yaml relay-mid-8ch.yaml relay-mid-4ch.yaml \
+  diff <(grep -h 'name: "\[' relay-cabin-a-4ch.yaml relay-mid-8ch.yaml relay-mid-4ch.yaml \
          | sed 's/.*name: "//;s/".*//' | grep -vE 'DI|LED' | sort) \
        <(grep -o "domain:'switch', name:'[^']*'" web/index.html \
          | sed "s/domain:'switch', name:'//;s/'\$//" | sort) && echo '一致'
@@ -154,18 +157,24 @@ python3 dev-preview.py --no-coulomb   # 模拟库仑计未上线（验证 -- 占
 
 ### 485 地址占用
 
+> **2026-10-30 重编：只动继电器模块，能源设备不动。以 0x05 为分界线。**
+
 | 地址 | 设备 |
 |------|------|
-| 0x01 | 额头模块（8 路，未买） |
-| 0x02 | 中门 8 路（纯负载） |
-| 0x03 | 中门 4 路（未来负载扩展） |
-| 0x05 | **中门 16DO（全部 LED，已到货）** |
+| **0x01** | 驾驶室 A（4DI+4DO 5A，额头柜） |
+| **0x02** | 驾驶室 B（4DI+4DO 5A，额头柜，场景键） |
+| **0x03** | 8DO（额头柜，场景双色 LED） |
+| 0x04 | （空）额头柜预留 |
+| **0x05** | **分界线（不分配）** |
+| **0x06** | 中门 8 路（8DI+8DO 10A） |
+| **0x07** | 中门 4 路（4DI+4DO 5A） |
+| 0x08~0x0F | （空）中门预留 |
 | 0x10 | MPPT（易科 Fcu，**固件已就绪**，见 `mppt.yaml`） |
 | — | **TF03K 库仑计**（无地址、非 Modbus、19200 独立 UART，不在此总线） |
-| 0x11 | （空出，可用） |
 | 0x20+ | 485 传感器（建议） |
 
-> 0x04 原规划给车尾模块，**该模块已取消**（倒车灯并进 中8.Y7），如未来要加设备可用 0x04。
+> **加模块规则**：额头往后排 0x04，中门往后排 0x08、0x09…，**永不重编**。
+> 16DO 库存备用（可占 0x08，或更低优先级的空位）。
 
 ### 写帧方式
 

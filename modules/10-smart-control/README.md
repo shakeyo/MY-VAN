@@ -16,7 +16,7 @@
 
 | 顺序 | 文档 | 看什么 |
 |------|------|--------|
-| 0 | [execution-plan.md](execution-plan.md) | **本次施工执行计划**：按当前实物状态（额头/16DO 已到货、MPPT 待装）排好 0-6 步，每步有入口/动作/验收 |
+| 0 | [execution-plan.md](execution-plan.md) | **本次施工执行计划**：按当前实物状态（中8/中4 已接、4DI+4DO 1 台在用+1 台待买、8DO 在用、16DO 库存、MPPT 待装）排好 0-6 步 |
 | 1 | [build-guide.md](build-guide.md) | **施工主线**：10 个阶段按序执行，每阶段有入口条件 / 验收点 / 配图 |
 | 2 | [n100-ha/design.md](n100-ha/design.md) | HA 角色边界（定稿）、N100/网络/车机/平板方案 |
 | 3 | [gateway/design.md](gateway/design.md) + [gateway/build-guide.md](gateway/build-guide.md) | 网关架构 + 485 总线规范（9600 定稿）+ 制作/烧录/总线改造全流程 |
@@ -29,7 +29,7 @@
 | 阶段 | 目标 | 出口验收 |
 |------|------|----------|
 | 0 中枢与网络 | N100 PVE + HAOS + add-on + 路由器 + 固定 IP | HA 可访问、Tailscale 车外可达 |
-| 1 485 总线就绪 | 模块就位（中8 已接、中4 未通电、**额头/16DO 已到货**）、总线菊花链 + 120Ω | 与 [04-power-system 阶段 2/4](../04-power-system/build-guide.md) 验收一致 |
+| 1 485 总线就绪 | 模块就位（中8 已接、中4 未通电、驾驶室A/B + 8DO 额头柜；16DO 库存不参与）、总线菊花链 + 120Ω（末端 = 中4） | 与 [04-power-system 阶段 2/4](../04-power-system/build-guide.md) 验收一致 |
 | 2 网关上车 | 面包板自测 → 烧录 → 桌面中8 全逻辑 → 组装 → 车上接线 | gateway/build-guide 4.6 通道映射通过 |
 | 3 模块通电与按键 | 插 F12-1 保险 → prod.yaml → 全按键/场景验证（含断网） | 按键/场景/断电恢复全过 |
 | 4 总线改造 9600 | 逐台改波特率 + 固件切 9600（**MPPT 上车前必做**） | 4 模块 9600 读回通过，prod 复验 |
@@ -44,7 +44,7 @@
 | 目录 | 内容 | 状态 |
 |------|------|------|
 | [n100-ha/](n100-ha/) | N100 主机、HA Core、网络、安卓车机、平板移动中控 | 设计中 |
-| [gateway/](gateway/) | ESP32-S3 网关、MAX3485、485 总线（9600 定稿）、ESPHome 固件（含 16DO/MPPT）、继电器模块集成 | 调试中 |
+| [gateway/](gateway/) | ESP32-S3 网关、MAX3485、485 总线（9600 定稿）、ESPHome 固件（含 MPPT；16DO 已退役）、继电器模块集成 | 调试中 |
 | [energy/](energy/) | 能源设备集成：MPPT（易科，**固件已就绪**）、库仑计 TF03K（**固件已就绪**） | 调试中 |
 | [sensors/](sensors/) | 温湿度、水位、门磁、漏水、OBD-II（三条接入路径） | 设计中 |
 | [media/](media/) | 监控（DVR/Frigate）+ 音响（Alpine DSP） | 设计中 |

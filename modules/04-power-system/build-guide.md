@@ -18,12 +18,14 @@
 2. 该并的先并好，套热缩管 + 贴标签：
    - 氛围灯/睡眠灯 4 路：中8.Y2.NO 并 4 路出线（位 5-8）
    - Y1/Y2 COM 分叉：F12-2 的 1.5mm² 分叉到 Y1.COM + Y2.COM
-   - 双控泵 LED：入口键3 LED 阴 → 16DO.Y3，主控键4 LED 阴 → 16DO.Y8（软件同步，一起亮灭）
+   - 按键 LED（**负载侧直连**，决4）：每个键的 LED 阳极 → +12V 控+，阴极串 1~3.3kΩ 后并到该键所控负载继电器 Y 的 NO（例：排水键 LED → 中4.Y2 NO、上水泵键 LED → 中4.Y1 的线圈侧 NO、户外灯键 LED → 额头.R2 NO）
+   - 场景键逻辑 LED（无负载可并）：离车/驻车 → 中8.Y8（Y8.COM = LED 阴、Y8.NO = GND）、灯光模式 → 中4.Y4（同接法）
 3. 每个负载 2P 正负各一芯，正进红色区对应位、负进黑色桥
 4. 信号线两端压 JST 插头（DI 主干灰皮 / 面板复合线蓝皮）：
    - DI 汇总主干 14P（配电箱 中8+中4 DI → 中门柜汇总排）
    - 入口复合线 14P（中门柜汇总排 → 入口面板）
-   - 主控复合线 14P（中门柜汇总排 → 主控面板）
+   - ~~主控复合线 14P（中门柜汇总排 → 主控面板）~~ → **中门主控面板已取消（决2），这根线不再做**
+   - 入口 3 键的 DI 只需 3 芯（中8 X1/X2/X4），踏板兜底键走独立物理线，不进 14P
 5. 按钮侧：单色/双色按钮线按 [switch-assignment.md §七](switch-assignment.md#七、面板线缆定义中门柜汇总方案) 压入面板 JST 插座，焊并点：入口 2 个（GND 并 1、+12V 并 1）、主控 2 个（GND 并 1、+12V 并 1）
 
 **验收（出口条件）**：
@@ -87,22 +89,23 @@
    - 主控：GND 并 1（6 键 COM → 复合线#1 黑）、+12V 并 1（6 键 LED+ → 复合线#2 红）
 3. 信号线 → JST 插头压接（芯序对照 [switch-assignment.md §七](switch-assignment.md#七、面板线缆定义中门柜汇总方案) 统一色序表）：DI 主干 14P / 入口复合线 14P / 主控复合线 14P（**全车统一 14P**）
 4. 插头插入面板插座，面板装位
-5. 双控上水泵：两颗按钮 LED 阴（入口键3 → 16DO.Y3、主控键4 → 16DO.Y8），ESPhome 同步亮灭
+5. 按键 LED：有负载的键一律**负载侧直连**（LED 阴经电阻并到该路 Y 的 NO）；场景键走中8.Y8（离车驻车）/ 中4.Y4（灯光模式）逻辑 LED
 
 **验收**：
 - [ ] 逐芯通断：主干 + 2 根复合线每根一端一对，无错芯/短路
 - [ ] DI 主干灰皮 / 面板复合线蓝皮区分正确；主干两端配电箱+汇总排，复合线两端汇总排+面板
-- [ ] 双色按钮：红阴/绿阴对应芯位正确（现全降单色：入口键4 单色、主控键6 单色，见 §七面板侧接线表）
-- [ ] 明白"三个 COM"的区别（[button-wiring.svg](./diagrams/button-wiring.svg)）：按键 COM = GND 侧；负载继电器 COM = 正侧；16DO.Y.COM = LED 电阻侧（阴极）
+- [ ] 全车按键 LED 已改「负载侧直连」（并到对应负载 Y 的 NO）+ 场景键逻辑 LED（中8.Y8 离车驻车 / 中4.Y4 灯光模式），不再有 16DO 走线
+- [ ] 明白"三个 COM"的区别（[button-wiring.svg](./diagrams/button-wiring.svg)）：按键 COM = GND 侧；负载继电器 COM = 正侧；逻辑 LED 的 Y.COM（中8.Y8 / 中4.Y4）= LED 电阻侧（阴极）
 
-**配图**：[16do-module-wiring.svg](./diagrams/16do-module-wiring.svg) · [mid-door-wiring.svg](./diagrams/mid-door-wiring.svg) · [button-wiring.svg](./diagrams/button-wiring.svg)
+**配图**：[mid8-module-wiring.svg](./diagrams/mid8-module-wiring.svg) · [mid4-module-wiring.svg](./diagrams/mid4-module-wiring.svg) · [mid-door-wiring.svg](./diagrams/mid-door-wiring.svg) · [button-wiring.svg](./diagrams/button-wiring.svg)
+（16DO 已退役： [16do-module-wiring.svg](./diagrams/16do-module-wiring.svg) 仅作复活参考）
 
 ## 4. 485 总线 + ESP32
 
 **入口**：阶段 3 完成。ESP32 网关制作见 [10-smart-control/gateway/build-guide.md](../10-smart-control/gateway/build-guide.md)。
 
-1. 菊花链并线（**严禁星型**）：ESP32 → 额头模块 → 中8 → 中4 → 16DO模块
-2. 终端电阻 120Ω ×2：ESP32 端 + 最远端（16DO模块端）
+1. 菊花链并线（**严禁星型**）：ESP32 → 额头模块 → 中8 → 中4（**中4 即末端**，16DO 已退役）
+2. 终端电阻 120Ω ×2：ESP32 端 + 最远端（**中4 端**）
 3. 屏蔽层单端接地；总线与功率线分槽，间距 ≥15cm
 4. 核对每个模块地址（厂家软件改，重启生效）与 ESPhome 固件配置一致
 5. **波特率**：本阶段桌面联调可用出厂 38400；**MPPT 上车前全车必须统一改 9600 8N1**（MPPT 最高只支持 9600），操作步骤与逐台帧见 [10-smart-control/gateway/build-guide.md 阶段 4.7](../10-smart-control/gateway/build-guide.md)
@@ -161,5 +164,5 @@ README 底部的 AutoGallery 只收集 `assets/` 一级目录的图片（不含�
 ## 后期扩展（零拆改）
 
 - **中门 4 路通电**：插保险 → ESPhome 加模块配置 → 主控键5-6 可用（详见 [switch-assignment.md §十二](switch-assignment.md#十二、后期扩展路径-零拆改)）
-- **加 16DO 模块**：新导轨 → 485 菊花链并线 → 12V 从控制区取 → 全部 LED 接这里（一个485地址，一个设备），零拆改
+- ~~**加 16DO 模块**~~：**16DO 已退役备用**（决4，2026-10-30）。要复活见 [switch-assignment.md §十二](switch-assignment.md#十二、后期扩展路径零拆改)（须先拆掉中8.Y8/中4.Y4 上的逻辑 LED 线）
 - **车尾灯**：中8.Y7 → 拉一对线到车尾灯，负极回中门负排；驾驶室键2 走 ESPhome 跨模块驱动

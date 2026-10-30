@@ -56,7 +56,7 @@
     <text x="1235" y="192" font-size="8" fill="#78909c">12V · 键5</text>
   </g>
 
-  <text x="40" y="220" font-size="14" font-weight="bold" fill="#4527a0">【下排】Y7 倒车灯 · Y8 预留 · 数字量输入 X8~X1 · COM · A B · 485GND · 电源</text>
+  <text x="40" y="220" font-size="14" font-weight="bold" fill="#4527a0">【下排】Y7 倒车灯 · Y8 离车驻车LED（逻辑LED） · 数字量输入 X8~X1 · COM · A B · 485GND · 电源</text>
 
   <g font-size="9" text-anchor="middle">
     <!-- Y7 倒车灯 -->
@@ -67,12 +67,14 @@
     <text x="85" y="302" fill="#999">NC=空</text>
     <text x="85" y="322" font-size="8" fill="#78909c">拉线到车尾</text>
 
-    <!-- Y8 预留 -->
-    <rect x="138" y="232" width="90" height="100" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
-    <text x="183" y="252" font-size="11" font-weight="bold" fill="#757575">Y8 预留</text>
-    <text x="183" y="272" fill="#999">NO / COM / NC</text>
-    <text x="183" y="290" fill="#999">全部空</text>
-    <text x="183" y="316" font-size="8" fill="#9e9e9e">未来扩展负载</text>
+    <!-- Y8 离车驻车LED（逻辑LED，吸地开关） -->
+    <rect x="138" y="232" width="90" height="100" rx="5" fill="#fff8e1" stroke="#f9a825" stroke-width="2"/>
+    <text x="183" y="250" font-size="10.5" font-weight="bold" fill="#e65100">Y8 离车驻车</text>
+    <text x="183" y="266" font-size="8.5" fill="#e65100">COM=LED阴(电阻)</text>
+    <text x="183" y="280" font-size="8.5" fill="#333">NO=GND黑</text>
+    <text x="183" y="294" font-size="8.5" fill="#999">NC=空</text>
+    <text x="183" y="310" font-size="8" fill="#78909c">逻辑LED·场景键</text>
+    <text x="183" y="324" font-size="7.5" fill="#9e9e9e">阳极→+12V控+</text>
 
     <!-- X8~X1 -->
     <rect x="236" y="232" width="52" height="100" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
@@ -208,5 +210,5 @@
   <text x="64" y="646" font-size="12.5" fill="#333">◆ 供电 VCC+红/GND-黑（12V，F12-1）；485GND 独立，与电源黑不并；485 A=白 B=黑 同对绞，屏蔽单端接地</text>
   <text x="64" y="670" font-size="12.5" fill="#333">◆ 48V 上水泵(Y4)：COM=F48-2+、NO=泵+，泵负回48V汇流排；续流二极管1N5408 阴极朝正并联在泵线圈两端</text>
   <text x="64" y="694" font-size="12.5" fill="#333">⚠ 并线点：DI-COM(主干位1黑)+电源负并、主干位2红(汇总排电源)从控+取 —— DI 干接点 12 路各自独立芯，不可并；NC 一律空</text>
-  <text x="64" y="722" font-size="10.5" fill="#78909c">LED 指示不接中8，全走 16DO 模块（独立DO驱动，ESPhome绑定）。见 16do-module-wiring.svg 及 switch-assignment.md「LED策略」。</text>
+  <text x="64" y="722" font-size="10.5" fill="#78909c">LED（决4 终局）：按键 LED 一律「负载侧直连」——LED 阳极→+12V控+，阴极串 1~3.3kΩ 后并到该路 Y 的 NO（与负载同得电），不占模块通道；只有无负载可并的「离车/驻车」场景键用 Y8 当逻辑 LED。16DO 已退役备用。</text>
 </svg>

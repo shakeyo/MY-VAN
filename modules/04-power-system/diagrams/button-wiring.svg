@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 560" width="1080" height="560" font-family="sans-serif">
   <text x="540" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">单个带灯按键的 3 个回路（中门柜汇总方案：复合线 DI+LED 合一 · 功率独立）</text>
-  <text x="540" y="54" text-anchor="middle" font-size="12" fill="#666">DI 与 LED 阴走同一根面板复合线 → 中门柜汇总排（DI 经主干到配电箱模块，LED 就地并 16DO），负载走继电器 —— ESPhome 软件同步</text>
+  <text x="540" y="54" text-anchor="middle" font-size="12" fill="#666">DI 走面板复合线 → 中门柜汇总排（经主干到配电箱模块）；LED 改为「负载侧直连」（并到该路继电器 NO）为主，仅场景键用逻辑 LED（中8.Y8 / 中4.Y4）—— 决4，16DO 已退役</text>
 
   <!-- ========== 左：按键 + 复合线 ========== -->
   <text x="60" y="96" font-size="14" font-weight="bold" fill="#283593">信号侧（面板复合线 = DI + LED）</text>
@@ -54,11 +54,11 @@
   <text x="280" y="290" text-anchor="middle" font-size="9.5" fill="#d32f2f">LED+ → 复合线 +12V</text>
   <text x="280" y="328" text-anchor="middle" font-size="9.5" fill="#1e88e5">LED− → 复合线 LED阴</text>
 
-  <!-- 16DO LED 回路说明 -->
+  <!-- 逻辑 LED 回路说明（原 16DO 方案，决4 后仅场景键用） -->
   <rect x="280" y="262" width="270" height="62" rx="6" fill="#ede7f6" fill-opacity="0.7" stroke="#5e35b1" stroke-width="1.5"/>
-  <text x="415" y="282" text-anchor="middle" font-size="10" font-weight="bold" fill="#4527a0">16DO 侧（汇总排 LED 区并线后）</text>
-  <text x="290" y="300" font-size="9.5" fill="#333">LED阴 → 汇总排 → 电阻1-3.3kΩ → 16DO.Yx.COM</text>
-  <text x="290" y="316" font-size="9.5" fill="#333">16DO.Yx.NO → 汇总排 GND · 吸地开关</text>
+  <text x="415" y="282" text-anchor="middle" font-size="10" font-weight="bold" fill="#4527a0">逻辑 LED 侧（仅场景键）</text>
+  <text x="290" y="300" font-size="9.5" fill="#333">LED阴 → 电阻1-3.3kΩ → 中8.Y8.COM（或 中4.Y4.COM）</text>
+  <text x="290" y="316" font-size="9.5" fill="#333">该 Y 的 NO → GND · 吸地开关（无负载可并时才用）</text>
 
   <!-- ========== 右：功率回路 ========== -->
   <text x="580" y="96" font-size="14" font-weight="bold" fill="#b71c1c">功率侧（端子排，不在面板线内）</text>
@@ -98,7 +98,7 @@
     <text x="990" y="156" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#4527a0">动作时序（软件同步）</text>
     <text x="990" y="178" text-anchor="middle" font-size="10.5" fill="#333">ESPhome 收到 DI 按下</text>
     <text x="990" y="194" text-anchor="middle" font-size="10.5" fill="#333">→ 吸负载继电器（功率通）</text>
-    <text x="990" y="210" text-anchor="middle" font-size="10.5" fill="#333">→ 吸 16DO.Yx（LED 阴接地）</text>
+    <text x="990" y="210" text-anchor="middle" font-size="10.5" fill="#333">→ 吸逻辑 LED Y（LED 阴接地）</text>
     <text x="990" y="226" text-anchor="middle" font-size="10.5" fill="#333">→ 按键 LED 亮</text>
     <text x="990" y="248" text-anchor="middle" font-size="10.5" fill="#777">两个模块、一个 485 指令</text>
   </g>
@@ -109,7 +109,7 @@
     <text x="76" y="396" font-size="13" font-weight="bold" fill="#b71c1c">⚠ 三个 COM 不要混</text>
     <text x="76" y="420" font-size="11.5" fill="#333">① 按键开关的 COM → 复合线 GND（负侧）：DI 内部上拉，按下把 NO 拉到 GND 触发。</text>
     <text x="76" y="440" font-size="11.5" fill="#333">② 负载继电器的 COM → 负载正极（正侧）：切正极，NO 出线到负载。在配电箱内。</text>
-    <text x="76" y="460" font-size="11.5" fill="#333">③ 16DO 的 Y.COM → LED 电阻侧（阴极）：Y.NO 接汇总排 GND，吸地时 LED 亮。在中门柜。</text>
+    <text x="76" y="460" font-size="11.5" fill="#333">③ 逻辑 LED 的 Y.COM → LED 电阻侧（阴极）：Y.NO 接 GND，吸地时 LED 亮（中8.Y8 离车驻车 / 中4.Y4 灯光模式）。</text>
     <text x="76" y="482" font-size="11" fill="#777">同名不同物：一个在信号回路（负），一个在功率回路（正），一个在 LED 回路（阴）。接反 = DI 常触发 / 负载常电 / LED 常亮。</text>
     <text x="76" y="496" font-size="11" fill="#777">LED 只是指示灯（mA 级），不承载负载电流；裸 LED 每色串 1~3.3kΩ，双色灯自带限流电阻可直接接 12V。</text>
   </g>

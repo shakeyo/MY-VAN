@@ -6,8 +6,8 @@
     </marker>
   </defs>
 
-  <text x="700" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#222">16DO 模块 · 全部 LED · 对线接线图（上半端子 · 下半说明）</text>
-  <text x="700" y="58" text-anchor="middle" font-size="12.5" fill="#666">16DO = 16路继电器全做LED(吸地开关·无DI·5A·一个485地址) · 12现用+4预留 · 485=对绞黑白 · 电源=红黑</text>
+  <text x="700" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#b71c1c">16DO 模块 · 已退役备用（仅供参考，不再施工）</text>
+  <text x="700" y="58" text-anchor="middle" font-size="12.5" fill="#b71c1c">2026-10-30 按 switch-assignment.md 决4 退役：0x05 不上总线 · 本图仅作复活参考 · 现行 LED 用「负载侧直连 + 中8.Y8/中4.Y4 逻辑LED」</text>
 
   <!-- ============ 上排 Y1~Y8 ============ -->
   <text x="40" y="92" font-size="14" font-weight="bold" fill="#00695c">【上排】Y1~Y8 · 入口4键 + 主控键1-4 LED（吸地开关：COM=LED阴 · NO=GND）</text>
@@ -172,4 +172,13 @@
   <text x="64" y="776" font-size="12.5" fill="#333">◆ 并线点：16DO 阴极限(COM)就地并进中门柜汇总排 LED 区；GND(NO端)/12V(共阳) 公共 —— 面板复合线从汇总排取对应 Y，不并</text>
   <text x="64" y="800" font-size="12.5" fill="#333">⚠ 场景键(键4离车驻车、键6灯光模式)已降单色；双控泵两键各占 Y3/Y8 两颗 LED；Y13-16 预留未来按钮</text>
   <text x="64" y="824" font-size="10.5" fill="#78909c">完整 LED 分配见 switch-assignment.md「LED策略」；两端标签格式 模块-性质-去向。</text>
+
+  <!-- 退役标记（复活时删除本块即可）：只淡出图面，醒目提示放在下方空白区 -->
+  <rect x="0" y="70" width="1400" height="1330" fill="#ffffff" fill-opacity="0.7"/>
+  <rect x="120" y="1040" width="1160" height="230" rx="14" fill="#ffebee" stroke="#b71c1c" stroke-width="4"/>
+  <text x="700" y="852" text-anchor="middle" font-size="34" font-weight="bold" fill="#b71c1c">这是一张历史图：16DO 已退役，请勿照此施工</text>
+  <text x="700" y="900" text-anchor="middle" font-size="17" fill="#333">现行 LED 方案（switch-assignment.md「决策更新 · 决4 终局接线表」）：</text>
+  <text x="700" y="936" text-anchor="middle" font-size="17" fill="#333">① 有负载的键 → LED 阳极接 +12V、阴极串 1~3.3kΩ 并到该路继电器的 NO（负载侧直连）</text>
+  <text x="700" y="972" text-anchor="middle" font-size="17" fill="#333">② 场景键 → 中8.Y8 离车/驻车 LED、中4.Y4 灯光模式 LED（Y.COM=LED阴 · Y.NO=GND · 阳极=+12V）</text>
+  <text x="700" y="1008" text-anchor="middle" font-size="17" fill="#333">③ 0x05 不上总线；本模块留作备用，复活步骤见 switch-assignment.md §十二</text>
 </svg>

@@ -1,10 +1,12 @@
 # 场景自动化脚本（按键动作 / 灯光模式 / 离车驻车 / 排气扇 / 主控键1 长按）
 #
-# 【LED 变更】LED 全部在中门 16DO（地址 0x05），见 relay-mid-16do.yaml。
-#   场景键 LED 为**单色**（switch-assignment.md §LED 策略：亮=进入模式，灭=正常）：
-#     离车/驻车 LED = 16DO.Y4（sw_led_y4）
-#     灯光模式 LED  = 16DO.Y10（sw_led_y10）
-#   原红绿双色脚本（sw_led_camp_red/green、sw_led_scene_red/green）已废弃。
+# 【LED 终局（switch-assignment.md §决策更新 决4）】16DO 已退役备用，场景键 LED
+#   改用负载模块的空余 DO（逻辑 LED，单色：亮=进入模式、灭=正常）：
+#     离车/驻车 = 8DO Y3/Y4 红绿（led_camp_sync，relay-led-8ch.yaml）
+#     灯光模式  = 8DO Y1/Y2 红绿（led_scene_sync，relay-led-8ch.yaml）
+#   有负载可并的键（主灯/氛围/排水/泵/户外灯等）不再走逻辑 LED —— LED 直接并到
+#   负载继电器 NO 输出（负载侧直连），状态=真实得电。
+#   历史：16DO 集中方案、中8.Y8/中4.Y4 单色逻辑 LED 均已作废（决8 改 8DO 双色）。
 #
 # 【场景键节流 2026-10-23 实测】场景键一次触发要改 10+ 路继电器（每路一帧 485），
 #   DI 抖动/连按会让写帧瞬间打满 rs485_write 队列（ESPHome 2026.7 queued 默认
@@ -14,6 +16,11 @@
 
 script:
   # ---- 按键动作（每键一个，对应各模块文件 on_press 的 script.execute）----
+  # 【面板终局 2026-10-30（决1/决2/决3）】物理键只剩：
+  #   驾驶室 6 键（额头 X1-X6）：射灯/倒车灯/DSP/换气风扇(无动作)/户外灯/灯光模式
+  #   入口 3 键（中8 X1/X2/X4）：排水/上水泵/离车驻车   （入口键4 = 踏板兜底物理开关，不经 485）
+  #   已删除：act_ambient（主控氛围）、act_pump_bed（主控泵双控）、act_fridge（键5 冰箱）、
+  #           act_scene_bed（键6 灯光模式，改由驾驶室键6 负责）、key1_hold_timer（主控键1 长按全关）
   - id: act_spot
     then:
       - switch.toggle: sw_spot
@@ -38,23 +45,12 @@ script:
   - id: act_camp
     then:
       - script.execute: camp_scene_next
-  - id: act_ambient
-    then:
-      - switch.toggle: sw_ambient
   - id: act_fan
     then:
       - script.execute: fan_scene_next
-  - id: act_pump_bed
-    then:
-      - switch.toggle: sw_pump
-  - id: act_fridge
-    then:
-      - switch.toggle: sw_fridge
-  - id: act_scene_bed
-    then:
-      - script.execute: light_scene_next
 
-  # 灯光模式：0 全关 → 1 明亮 → 2 夜灯 循环
+  # 灯光模式：0 全关 → 1 明亮 → 2 睡眠模式 循环
+  #   ⚠ 2026-10-30：第 3 档由「夜灯」改名「睡眠模式」，并在进入时联动收回电动踏板（§决7）
   - id: light_scene_next
     mode: single
     then:
@@ -73,16 +69,20 @@ script:
             # 明亮：主灯 + 氛围灯全开；模式 LED 亮
             - switch.turn_on: sw_main_light
             - switch.turn_on: sw_ambient
-            - switch.turn_on: sw_led_y10
+            - script.execute: led_scene_sync
+            # 离开睡眠模式 → 松开踏板收回信号（踏板恢复正常联动）
+            - script.execute: step_release
       - if:
           condition:
             lambda: 'return id(light_scene) == 2;'
           then:
-            - logger.log: "场景: 灯光-夜灯"
-            # 夜灯：仅氛围灯；模式 LED 亮（单色无法区分档位，亮=已进入模式）
+            - logger.log: "场景: 睡眠模式"
+            # 睡眠：主灯关 + 氛围灯开（与原「夜灯」相同）；模式 LED 亮（单色=已进入模式）
             - switch.turn_off: sw_main_light
             - switch.turn_on: sw_ambient
-            - switch.turn_on: sw_led_y10
+            - script.execute: led_scene_sync
+            # ⭐ 睡眠模式专用动作：电动踏板收回（见 switch-assignment.md §决7）
+            - script.execute: step_retract_signal
       - if:
           condition:
             lambda: 'return id(light_scene) == 0;'
@@ -91,7 +91,9 @@ script:
             # 全关；模式 LED 灭
             - switch.turn_off: sw_main_light
             - switch.turn_off: sw_ambient
-            - switch.turn_off: sw_led_y10
+            - script.execute: led_scene_sync
+            # 离开睡眠模式 → 松开踏板收回信号
+            - script.execute: step_release
 
   # 离车/驻车：0 正常 → 1 离车 → 2 驻车 循环
   - id: camp_scene_next
@@ -120,10 +122,9 @@ script:
             - switch.turn_off: sw_dsp
             - switch.turn_off: sw_fan_pass
             - switch.turn_off: sw_reverse
-            - switch.turn_on: sw_led_y4
+            - script.execute: led_camp_sync
             # 灯光/排气扇场景同步为全关
             - lambda: 'id(light_scene) = 0;'
-            - switch.turn_off: sw_led_y10
             - lambda: 'id(fan_scene) = 0;'
       - if:
           condition:
@@ -133,17 +134,41 @@ script:
             # 驻车：主灯 + 氛围灯开（暖光需灯自身支持，继电器只能开关）；模式 LED 亮
             - switch.turn_on: sw_main_light
             - switch.turn_on: sw_ambient
-            - switch.turn_on: sw_led_y4
             # 灯光场景同步为明亮
             - lambda: 'id(light_scene) = 1;'
-            - switch.turn_on: sw_led_y10
+            - script.execute: led_camp_sync
+            - script.execute: led_scene_sync
       - if:
           condition:
             lambda: 'return id(camp_scene) == 0;'
           then:
             - logger.log: "场景: 正常"
             # 正常：模式 LED 灭，不动负载
-            - switch.turn_off: sw_led_y4
+            - script.execute: led_camp_sync
+
+  # ============ 电动踏板收回信号（睡眠模式专用，见 switch-assignment.md §决7）============
+  # 中8.Y3 吸合 = 发出「收回」信号（就近中门配电箱，踏板在中门附近）。
+  # 物理接法待实测定档，固件这里做成「脉冲/保持」二选一：
+  #   ① 脉冲型（控制器「短接一下就收回」）：吸合 → 保持 1.5s → 释放，只需触发一次
+  #   ② 保持型（控制器要持续短接才保持收回）：吸合后不释放，直到离开睡眠模式
+  # 当前实现 = 脉冲型（step_retract_signal 里 1.5s 后自动 step_release）。
+  # 若实测是保持型：把 step_retract_signal 里的 `- script.execute: step_release` 一行删掉即可。
+  - id: step_retract_signal
+    mode: restart
+    then:
+      - logger.log: "踏板: 睡眠模式 → 收回（中8.Y3 吸合 1.5s）"
+      - switch.turn_on: sw_step_retract
+      - delay: 1500ms
+      - script.execute: step_release
+  - id: step_release
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(sw_step_retract).state;'
+          then:
+            - logger.log: "踏板: 松开收回信号 → 恢复正常联动"
+            - switch.turn_off: sw_step_retract
 
   # 排气扇：0 全关 → 1 仅后窗 → 2 全开 循环
   # （LED 由 led_fan 脚本跟随 sw_fan_rear 状态，见 relay-mid-16do.yaml）
@@ -173,15 +198,3 @@ script:
             - switch.turn_on: sw_fan_rear
             - switch.turn_on: sw_fan_pass
       - delay: 600ms   # 场景键节流：见文件头说明
-
-  # 主控键1 长按 2s 计时器（到达则灯光全关，短按逻辑在 on_release 里）
-  - id: key1_hold_timer
-    mode: restart
-    then:
-      - delay: 2s
-      - lambda: 'id(hold_triggered) = true;'
-      - logger.log: "按键: 主灯长按 2s → 灯光全关"
-      - switch.turn_off: sw_main_light
-      - switch.turn_off: sw_ambient
-      - lambda: 'id(light_scene) = 0;'
-      - switch.turn_off: sw_led_y10

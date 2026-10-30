@@ -8,6 +8,7 @@
 
   <text x="550" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">485 总线拓扑（手拉手菊花链 · 严禁星型）</text>
   <text x="550" y="54" text-anchor="middle" font-size="12" fill="#666">模块间用双绞线（A/B）· 两端各一个 120Ω 终端电阻 · 屏蔽层单端接地 · 与功率线间距 ≥15cm、禁止同管</text>
+  <text x="550" y="72" text-anchor="middle" font-size="11.5" fill="#c62828">链序：ESP32(额头柜) → 额头 → 中8 → 中4(当前末端)；16DO 已退役不上总线</text>
 
   <!-- 总线干线（A/B 双线） -->
   <g stroke-linecap="round">
@@ -52,29 +53,30 @@
   <rect x="460" y="210" width="160" height="86" rx="8" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
   <text x="540" y="236" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">中门 8 路模块</text>
   <text x="540" y="256" text-anchor="middle" font-size="10.5" fill="#555">中门配电箱内</text>
-  <text x="540" y="274" text-anchor="middle" font-size="10.5" fill="#555">入口 4 键 + 主控键1-4</text>
+  <text x="540" y="274" text-anchor="middle" font-size="10.5" fill="#555">入口/主控键 + 7负载 + 离车驻车LED</text>
 
   <!-- 中4 -->
   <rect x="670" y="210" width="160" height="86" rx="8" fill="#ede7f6" stroke="#5e35b1" stroke-width="3"/>
   <text x="750" y="236" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4527a0">中门 4 路模块</text>
-  <text x="750" y="256" text-anchor="middle" font-size="10.5" fill="#555">中门配电箱内 · 已接线未通电</text>
-  <text x="750" y="274" text-anchor="middle" font-size="10.5" fill="#555">主控键5-6 DI + 未来负载4路</text>
+  <text x="750" y="256" text-anchor="middle" font-size="10.5" fill="#555">中门配电箱内 · 总线末端</text>
+  <text x="750" y="274" text-anchor="middle" font-size="10.5" fill="#555">3路负载 + 灯光模式LED + 键5-6</text>
 
-  <!-- 16DO（待购） -->
+  <!-- 床头模块（规划，未来末端） -->
   <rect x="870" y="210" width="160" height="86" rx="8" fill="#fff3e0" stroke="#ef6c00" stroke-width="3" stroke-dasharray="7,5"/>
-  <text x="950" y="236" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e65100">16DO 模块</text>
-  <text x="950" y="256" text-anchor="middle" font-size="10.5" fill="#e65100">中门柜 · 待购</text>
-  <text x="950" y="274" text-anchor="middle" font-size="10.5" fill="#e65100">全部 LED（12现用+4预留）</text>
-  <!-- 终端电阻 2 -->
-  <rect x="920" y="312" width="34" height="14" rx="3" fill="#fff" stroke="#e65100" stroke-width="2"/>
-  <line x1="950" y1="296" x2="950" y2="319" stroke="#e65100" stroke-width="2"/>
-  <line x1="950" y1="319" x2="957" y2="319" stroke="#e65100" stroke-width="2"/>
-  <text x="950" y="348" text-anchor="middle" font-size="10.5" fill="#e65100">120Ω（最远端 · 装 16DO 时补）</text>
+  <text x="950" y="236" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#e65100">床头模块（规划）</text>
+  <text x="950" y="256" text-anchor="middle" font-size="10.5" fill="#e65100">床头 · 4DI+4DO · 暂不实施</text>
+  <text x="950" y="274" text-anchor="middle" font-size="10" fill="#e65100">接入后成为末端</text>
+  <!-- 终端电阻 2（当前在中4 端） -->
+  <rect x="700" y="312" width="34" height="14" rx="3" fill="#fff" stroke="#5e35b1" stroke-width="2"/>
+  <line x1="750" y1="296" x2="750" y2="319" stroke="#5e35b1" stroke-width="2"/>
+  <line x1="750" y1="319" x2="757" y2="319" stroke="#5e35b1" stroke-width="2"/>
+  <text x="750" y="348" text-anchor="middle" font-size="10.5" fill="#4527a0">120Ω（当前最远端 = 中4）</text>
+  <text x="950" y="330" text-anchor="middle" font-size="10" fill="#9e9e9e">（床头接入后 120Ω 移到这一端）</text>
 
   <!-- 模块供电说明 -->
   <g>
     <rect x="250" y="360" width="780" height="46" rx="8" fill="#fffde7" fill-opacity="0.8" stroke="#f9a825" stroke-width="2"/>
-    <text x="266" y="380" font-size="12" fill="#333">网关 12V 取自额头柜「控+」（F12-1 控制电源）· 中8/中4 取自配电箱 F12-1 · 16DO 取中门柜控制区 12V</text>
+    <text x="266" y="380" font-size="12" fill="#333">网关 12V 取自额头柜「控+」（F12-1 控制电源）· 中8/中4 取自配电箱 F12-1 · （16DO 已退役，原中门柜 12V 口空出）</text>
     <text x="266" y="398" font-size="11.5" fill="#777">485 并线点：新模块 = 总线末端并线（A 并 A、B 并 B），零拆改 —— 见 switch-assignment.md §十二</text>
   </g>
 </svg>
