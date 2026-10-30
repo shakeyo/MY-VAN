@@ -74,6 +74,20 @@ FORAGER 主题，但彻底零依赖、离线可用。
   - **电流方向配色**：正 → 绿色（`good`），负 → 橙色（`warn`）。⚠ 充/放对应正负哪一侧**待实测定档**。
   - **离线提示**：未收到任何帧时，卡片底部显示「库仑计未上线」条 + `BAD=` 计数（排查接线）。
   - 实体名映射集中在 `web/index.html` 的 `COULOMB_SENSORS`，与 `pzem-tf03k.yaml` 的 8 个 `name:` 一一对应。
+- **电池健康（JK 极空 BMS，2026-10-31）**：电池页新增**「电池健康 (JK BMS)」卡片**——
+  汇总值 + **16 节单体 4×4 网格**（列优先，01→04 竖排）+ 最高/最低单体高亮 + 压差分级
+  （`<0.02V` 绿 / `0.02~0.05V` 黄 / `>0.05V` 红）+ 充放电 MOS 状态 + 告警 + 「数据龄」。
+  - **数据源尚未接通**：BMS 只能走 BLE，需独立代理 ESP32；主网关当前没有 `Bms*` 实体，
+    故卡上显示「JK BMS 未上线 · 等待 BLE 代理数据」（一帧都没收到时不铺空 `--`）。
+  - **与库仑计并列、不覆盖**：库仑计 TF03K 仍是**主电量来源**（硬线、离线可靠），
+    BMS 的 SOC 仅作对照。BLE 掉线时只有本卡变灰，电量照常可读。
+  - **实体名映射**集中在 `web/index.html` 的 `BMS_SENSORS`/`BMS_BINARY`/`BMS_TEXT`/`BMS_CELLS`
+    （共 31 个），全部**只读展示**，面板不写 BMS。完整清单与固件实现要求：
+    [energy/jk-bms-integration.md §四](../../energy/jk-bms-integration.md)。
+  - ⚠ **`BmsFrames 有效帧数` 是必填实体**：ESPHome 只在值变化时推 SSE，电池静止时
+    没有事件到达，面板就无法区分「BLE 断了」和「数值没变」。计数器每帧 +1 提供心跳。
+  - 本地预览：`python3 dev-preview.py`（正常）/ `--no-bms`（未上线）/ `--bms-bad`（红色异常）
+    / `--bms-na-temp`（温度报 NA）。
 - **场景档位**：`light_scene`/`camp_scene`/`fan_scene` 本是 `base.yaml` 的 globals（非实体、
   REST 读不到），由 `scene-state.yaml` 用 3 个 template sensor（`SceneLight`/`SceneCamp`/`SceneFan`）
   每 1s 读出真实值，面板借此显示真实档位。

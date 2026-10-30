@@ -17,6 +17,9 @@
 参数：
     --port 8321     监听端口
     --no-coulomb    模拟「库仑计未上线」（验证 --占位与未上线提示条）
+    --no-bms        模拟「JK BMS 未上线」（验证电池健康卡的未上线占位）
+    --bms-bad       模拟单体压差异常 + 告警（验证红色分级与告警着色）
+    --bms-na-temp   模拟 BMS 温度报 NA（验证 -- 而不是 0）
     --scene N       指定场景页初始档位（0/1/2），默认 0
 """
 
@@ -87,6 +90,38 @@ TEXT_NAMES = {
     "SysWifi IP地址": "192.168.5.6",
 }
 
+# ── JK(极空)BMS 假数据(取自电池截图:16S / 220Ah / 压差 0.005V) ──
+# ⚠ 名称必须与 web/index.html 的 BMS_SENSORS / BMS_CELLS 逐字一致
+BMS_CELL_V = [
+    3.309, 3.308, 3.308, 3.308,   # 01~04
+    3.308, 3.309, 3.308, 3.309,   # 05~08
+    3.310, 3.310, 3.310, 3.310,   # 09~12
+    3.313, 3.310, 3.310, 3.309,   # 13~16
+]
+BMS_SENSOR_NAMES = {
+    "BmsSoc 电量": 57.0,
+    "BmsVolt 总电压": 52.95,
+    "BmsCurr 电流": 30.74,
+    "BmsPower 功率": 1627.7,
+    "BmsCap 剩余容量": 124.9,
+    "BmsTotalCap 总容量": 220.0,
+    "BmsCycles 循环次数": 0.0,
+    "BmsFrames 有效帧数": 0.0,
+    "BmsDelta 最大压差": 0.005,
+    "BmsBalCurr 均衡电流": -0.393,
+    "BmsTemp 电池温度": 28.5,
+}
+BMS_BINARY_NAMES = {
+    "BmsChgMos 充电MOS": True,
+    "BmsDchgMos 放电MOS": True,
+}
+BMS_TEXT_NAMES = {
+    "BmsState 运行状态": "充电中",
+    "BmsAlarm 告警": "无告警",
+}
+for _i, _v in enumerate(BMS_CELL_V, 1):
+    BMS_SENSOR_NAMES[f"BmsCell{_i} 单体电压{_i}"] = _v
+
 NUMBER_NAMES = {"SolarLimit 充电限流": 30.0}
 BUTTON_NAMES = [
     "SolarA 设为远程控制",
@@ -104,6 +139,10 @@ state = {
     "sensors": dict(SENSOR_VALUES),
     "texts": dict(TEXT_NAMES),
     "numbers": dict(NUMBER_NAMES),
+    # JK BMS（--no-bms 时整组不推，验证未上线占位）
+    "bms": dict(BMS_SENSOR_NAMES),
+    "bms_bin": dict(BMS_BINARY_NAMES),
+    "bms_text": dict(BMS_TEXT_NAMES),
 }
 boot_time = time.time()
 LOG_LINES = []
@@ -132,7 +171,9 @@ def state_event(domain, name, value, is_text=False):
         "name": name,
         "domain": domain,
         "value": value,
-        "state": value if is_text else ("ON" if value else "OFF") if domain == "switch" else str(value),
+        "state": value if is_text
+                 else ("ON" if value else "OFF") if domain in ("switch", "binary_sensor")
+                 else str(value),
     })
 
 
@@ -150,6 +191,13 @@ def full_snapshot():
             out.append(state_event("text_sensor", name, v, is_text=True))
         for name, v in state["numbers"].items():
             out.append(state_event("number", name, v))
+        # JK BMS：名称与 index.html 的 BMS_* 映射一致
+        for name, v in state["bms"].items():
+            out.append(state_event("sensor", name, v))
+        for name, on in state["bms_bin"].items():
+            out.append(state_event("binary_sensor", name, on))
+        for name, v in state["bms_text"].items():
+            out.append(state_event("text_sensor", name, v, is_text=True))
         return b"".join(out)
 
 
@@ -204,6 +252,23 @@ class Handler(BaseHTTPRequestHandler):
                         v = state["sensors"].get(name)
                     if v is not None:
                         self.wfile.write(state_event("sensor", name, round(v, 2)))
+
+                # JK BMS：真实 ESPHome 只在**值变化**时推 SSE，故这里每帧只推
+                # 会变的几个（有效帧数/电流/功率/均衡电流）。
+                # 有效帧数每帧 +1 → 保证面板总能看到事件，"数据龄"才不会被误判成掉线。
+                bms_out = []
+                with lock:
+                    if state["bms"]:
+                        st = state["bms"]
+                        st["BmsFrames 有效帧数"] += 1
+                        st["BmsCurr 电流"] = max(0.0, st["BmsCurr 电流"] + random.uniform(-0.6, 0.6))
+                        st["BmsPower 功率"] = round(st["BmsCurr 电流"] * st["BmsVolt 总电压"], 1)
+                        st["BmsBalCurr 均衡电流"] = -abs(st["BmsBalCurr 均衡电流"])
+                        bms_out = [state_event("sensor", n, round(st[n], 3))
+                                   for n in ("BmsFrames 有效帧数", "BmsCurr 电流",
+                                             "BmsPower 功率", "BmsBalCurr 均衡电流")]
+                if bms_out:
+                    self.wfile.write(b"".join(bms_out))
 
                 now = time.time()
                 if now - last_ping >= 5:
@@ -271,6 +336,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8321)
     ap.add_argument("--no-coulomb", action="store_true", help="模拟库仑计未上线")
+    ap.add_argument("--no-bms", action="store_true", help="模拟 JK BMS 未上线（BLE 代理未接入）")
+    ap.add_argument("--bms-bad", action="store_true", help="模拟单体压差异常 + 告警（验证红色分级）")
+    ap.add_argument("--bms-na-temp", action="store_true", help="模拟温度报 NA（传感器未接）")
     ap.add_argument("--no-trend", action="store_true", help="不注入充电趋势，验证空态")
     ap.add_argument("--scene", type=int, default=0, help="场景页初始档位 0/1/2")
     args = ap.parse_args()
@@ -278,6 +346,17 @@ def main():
     if args.no_coulomb:
         for k in [k for k in state["sensors"] if k.startswith("Coulomb")]:
             del state["sensors"][k]
+    if args.no_bms:
+        state["bms"].clear()
+        state["bms_bin"].clear()
+        state["bms_text"].clear()
+    if args.bms_bad:
+        # 第 4 节压到 3.262V → 压差 ≈ 0.051V，刚好越过 50mV 红线
+        state["bms"]["BmsCell4 单体电压4"] = 3.262
+        state["bms"]["BmsDelta 最大压差"] = 0.051
+        state["bms_text"]["BmsAlarm 告警"] = "单体压差过大"
+    if args.bms_na_temp:
+        state["bms"]["BmsTemp 电池温度"] = "NA"
     if args.scene:
         state["sensors"]["SceneLight 灯光模式"] = float(args.scene)
 
@@ -311,6 +390,10 @@ def main():
     print(f"面板预览: http://127.0.0.1:{args.port}/dashboard")
     if args.no_coulomb:
         print("  (库仑计未上线模式)")
+    if args.no_bms:
+        print("  (JK BMS 未上线模式)")
+    if args.bms_bad:
+        print("  (JK BMS 压差异常模式)")
     print("Ctrl-C 停止")
     try:
         srv.serve_forever()

@@ -277,6 +277,49 @@
   }
   .trend-empty.show { display: flex; }
 
+  /* ===================== 电池健康 (JK 极空 BMS) ===================== */
+  /* 数据只能走 BLE,链路会掉;故卡片头部常驻"数据龄",超时变色 */
+  .bms-age { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .bms-age.stale { color: var(--warning); }
+  .bms-age.off   { color: var(--danger); }
+  /* 未上线占位:BLE 代理没接时只留一行提示,不铺一排空的 -- */
+  .bms-offline {
+    display: none; align-items: center; justify-content: center;
+    padding: 16px 8px; font-size: 12px; color: var(--muted); text-align: center;
+  }
+  .bms-offline.show { display: flex; }
+  .bms-body.hidden { display: none; }
+  /* 16 节单体:4×4 网格,列优先(01~04 竖着排),与 BmsCell1..16 顺序一致 */
+  .bms-grid4 {
+    display: grid; grid-auto-flow: column;
+    grid-template-rows: repeat(4, 1fr); grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .cell {
+    background: var(--bg); border: 1px solid transparent;
+    border-radius: 8px; padding: 5px 2px; text-align: center;
+  }
+  .cell .n { font-size: 9px; color: var(--muted); font-family: var(--mono); }
+  .cell .u { font-family: var(--mono); font-size: 12px; font-weight: 650; }
+  /* 最高单体(充电时最先过压)= 蓝;最低单体(限制整包容量)= 琥珀 */
+  .cell.hi { border-color: var(--primary); }
+  .cell.hi .u { color: var(--primary); }
+  .cell.lo { border-color: var(--warning); }
+  .cell.lo .u { color: var(--warning); }
+  .bms-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font-size: 11px; color: var(--muted); margin-top: 8px;
+  }
+  .bms-row b { font-family: var(--mono); font-weight: 650; color: var(--text); }
+  .badge {
+    font-size: 10px; font-family: var(--mono); line-height: 1.6;
+    padding: 0 5px; border-radius: 4px; white-space: nowrap;
+  }
+  .badge.ok   { color: var(--success); background: rgba(74,222,128,.13); }
+  .badge.warn { color: var(--warning); background: rgba(251,191,36,.13); }
+  .badge.bad  { color: var(--danger);  background: rgba(239,68,68,.13); }
+  .badge.off  { color: var(--muted);   background: var(--bg); }
+
   /* ===================== 底部标签栏 ===================== */
   nav {
     flex: none;
@@ -508,6 +551,54 @@
     </section>
 
     <section>
+      <h3 class="sec-title">电池健康 (JK BMS)
+        <span class="sec-note bms-age" id="bmsAge">未上线</span>
+      </h3>
+      <div class="card">
+        <!-- 未上线占位：独立 BLE 代理没接入时只留一行提示，不铺一排空的 -- -->
+        <div class="bms-offline" id="bmsOffline">JK BMS 未上线 · 等待 BLE 代理数据</div>
+        <div class="bms-body hidden" id="bmsBody">
+          <div class="stat-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="stat"><div class="k">电量 SOC</div><div class="v" id="bmsSoc">--%</div></div>
+            <div class="stat"><div class="k">总电压</div><div class="v" id="bmsVolt">--V</div></div>
+            <div class="stat"><div class="k">电流</div><div class="v" id="bmsCurr">--A</div></div>
+            <div class="stat"><div class="k">功率</div><div class="v" id="bmsPower">--W</div></div>
+            <div class="stat"><div class="k">剩余 / 总容量</div><div class="v" id="bmsCap">--Ah</div></div>
+            <div class="stat"><div class="k">循环次数</div><div class="v" id="bmsCycles">--</div></div>
+          </div>
+
+          <div class="bms-row">
+            <span>最大压差 <b id="bmsDelta">--V</b>
+              <span class="badge off" id="bmsDeltaTag">--</span></span>
+            <span>均衡电流 <b id="bmsBalCurr">--A</b></span>
+          </div>
+          <div class="bms-row">
+            <span>运行状态 <b id="bmsState">--</b></span>
+            <span>电池温度 <b id="bmsTemp">--°C</b></span>
+          </div>
+          <div class="bms-row">
+            <span>充电 MOS <span class="badge off" id="bmsChgMos">--</span></span>
+            <span>放电 MOS <span class="badge off" id="bmsDchgMos">--</span></span>
+          </div>
+          <div class="bms-row">
+            <span>告警 <b id="bmsAlarm">--</b></span>
+            <span>有效帧 <b id="bmsFrames">--</b></span>
+          </div>
+
+          <div class="sec-title" style="font-size:11px; margin:14px 0 8px;">单体电压 16S</div>
+          <div class="bms-grid4" id="bmsCells"></div>
+          <div class="bms-row">
+            <span id="bmsHigh">最高 --</span>
+            <span id="bmsLow">最低 --</span>
+          </div>
+        </div>
+      </div>
+      <p class="hint">JK（极空）BMS 只能走 <strong>BLE</strong>，独立代理 ESP32 收数，
+        与上方库仑计<strong>并列对照、不互相覆盖</strong>；
+        压差是电池一致性核心指标。BLE 掉线时本卡变灰——<strong>电量请看库仑计</strong>。</p>
+    </section>
+
+    <section>
       <h3 class="sec-title">充电趋势 <span class="sec-note" id="trendNote">24h</span></h3>
       <div class="card">
         <div class="trend-head">
@@ -728,6 +819,41 @@ const COULOMB_SENSORS = {
   cbBad:    { name:'CoulombBad 校验错帧数' },
 };
 
+// JK(极空)BMS 传感器(实体名取自 BLE 代理的 jk_bms 配置,见 energy/jk-bms-integration.md)
+// ⚠ 与 COULOMB_SENSORS 同理:这些 name 必须与固件 name: 逐字一致
+// 温度可能为 NA(电池温度传感器未接)→ 解析失败按 null 处理,显示 -- 而不是 0
+// ⚠ key 必须与下方 state.bms 的字段名逐字一致(applyEntityState 按 key 直写 state.bms[k])
+const BMS_SENSORS = {
+  soc:      { name:'BmsSoc 电量' },
+  volt:     { name:'BmsVolt 总电压' },
+  curr:     { name:'BmsCurr 电流' },
+  power:    { name:'BmsPower 功率' },
+  cap:      { name:'BmsCap 剩余容量' },
+  totalCap: { name:'BmsTotalCap 总容量' },
+  cycles:   { name:'BmsCycles 循环次数' },
+  // ⚠ 必填:BMS 每收到一帧就 +1。ESPHome 只在值变化时推 SSE,
+  //   若电池静止(电流/电压不变),没有这个计数器面板就无法区分"链路断"与"数值恰好没变"。
+  //   与库仑计的 CoulombDiag 有效帧数同套路。
+  frames:   { name:'BmsFrames 有效帧数' },
+  delta:    { name:'BmsDelta 最大压差' },
+  balCurr:  { name:'BmsBalCurr 均衡电流' },
+  temp:     { name:'BmsTemp 电池温度' },
+};
+// 16 节单体:顺序即 BmsCell1..BmsCell16,面板 4×4 列优先铺图
+const BMS_CELL_COUNT = 16;
+const BMS_CELLS = Array.from({ length: BMS_CELL_COUNT },
+  (_, i) => ({ name: `BmsCell${i + 1} 单体电压${i + 1}` }));
+// 开关量(binary_sensor 或 switch 均可,面板只按 name + ON/OFF 匹配)
+const BMS_BINARY = {
+  chgMos:  { name:'BmsChgMos 充电MOS' },
+  dchgMos: { name:'BmsDchgMos 放电MOS' },
+};
+// 文本量(text_sensor)
+const BMS_TEXT = {
+  state: { name:'BmsState 运行状态' },
+  alarm: { name:'BmsAlarm 告警' },
+};
+
 // 充电趋势（mppt.yaml 的 text_sensor，format: "v1:count:idx:base64"）
 const TREND_SENSOR = { name:'SolarTrend 充电趋势' };
 
@@ -770,6 +896,17 @@ const state = {
     // 库仑计 TF03K(有数据时优先于电压估算)
     cbSoc: null, cbVolt: 0, cbCap: 0, cbCurr: 0,
     cbTime: 0, cbPow: 0, cbOk: 0, cbBad: 0,
+  },
+  // JK(极空)BMS:独立 BLE 代理推来的数据。null = 该字段还没收到过。
+  // 与库仑计分开存放,两者并列展示、互不覆盖。
+  bms: {
+    online: false,          // 收到过至少一帧
+    at: 0,                  // 最近一帧的时间戳(ms),用于算数据龄
+    soc: null, volt: null, curr: null, power: null,
+    cap: null, totalCap: null, cycles: null, frames: null,
+    delta: null, balCurr: null, temp: null,
+    cells: new Array(BMS_CELL_COUNT).fill(null),
+    chgMos: null, dchgMos: null, state: '', alarm: '',
   },
   sys: {
     solarCharge: false, solarEnable: true, solarLimit: 30,
@@ -1048,6 +1185,151 @@ function renderCoulomb() {
   }
 }
 
+/* ---------- 渲染:JK(极空)BMS 电池健康 ---------- */
+// 压差分级(16S 铁锂):<20mV 良好 / 20~50mV 留意 / >50mV 异常
+const BMS_DELTA_WARN = 0.02, BMS_DELTA_BAD = 0.05;
+// 数据龄阈值:BMS 只能走 BLE,刷新受连接间隔/重连影响,故给得比 485 宽
+const BMS_FRESH_MS = 20000, BMS_DEAD_MS = 90000;
+
+function deltaGrade(d) {
+  if (d === null || d === undefined || !isFinite(d)) return ['--', 'off'];
+  if (d < BMS_DELTA_WARN) return ['良好', 'ok'];
+  if (d <= BMS_DELTA_BAD) return ['留意', 'warn'];
+  return ['异常', 'bad'];
+}
+// 已收到的有效单体 [序号, 电压]
+function bmsCellVals() {
+  const out = [];
+  state.bms.cells.forEach((v, i) => {
+    if (v !== null && isFinite(v)) out.push([i, v]);
+  });
+  return out;
+}
+// 4×4 格子只建一次,之后只改文字(避免每帧重排 16 个 DOM)
+const bmsCellEls = [];
+function initBmsGrid() {
+  const box = document.getElementById('bmsCells');
+  if (!box) return;
+  for (let i = 0; i < BMS_CELL_COUNT; i++) {
+    const d = document.createElement('div');
+    d.className = 'cell';
+    d.innerHTML = '<div class="n">' + String(i + 1).padStart(2, '0') + '</div>' +
+                  '<div class="u">--</div>';
+    box.appendChild(d);
+    bmsCellEls.push({ box: d, val: d.querySelector('.u'), txt: '--' });
+  }
+}
+// "12s 前" / "1m20s 前"
+function bmsAgeText(ms) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  if (s < 60) return s + 's 前';
+  return Math.floor(s / 60) + 'm' + (s % 60 ? (s % 60) + 's' : '') + ' 前';
+}
+// 每秒刷一次数据龄:BLE 掉线时页面收不到新帧,只能靠时间戳感知
+function updateBmsAge() {
+  const el = document.getElementById('bmsAge');
+  if (!el) return;
+  const b = state.bms;
+  let txt, cls = '';
+  if (!b.online) {
+    txt = '未上线';
+  } else {
+    const age = Date.now() - b.at;
+    cls = age > BMS_DEAD_MS ? 'off' : age > BMS_FRESH_MS ? 'stale' : '';
+    txt = (cls === 'off' ? '数据中断 ' : cls === 'stale' ? '数据陈旧 ' : '') + bmsAgeText(age);
+  }
+  if (el.textContent !== txt) el.textContent = txt;
+  el.classList.remove('stale', 'off');
+  if (cls) el.classList.add(cls);
+}
+
+function renderBms() {
+  const b = state.bms;
+  const offline = !b.online;
+  const offEl = document.getElementById('bmsOffline');
+  const body = document.getElementById('bmsBody');
+  if (offEl) offEl.classList.toggle('show', offline);
+  if (body) body.classList.toggle('hidden', offline);
+  updateBmsAge();
+  if (offline) return;
+
+  // null(未收到)/NaN(如温度报 NA)→ 一律显示 --,不要显示 0
+  const num = (v, d, unit) => (v === null || v === undefined || !isFinite(v))
+    ? '--' + (unit || '') : Number(v).toFixed(d) + (unit || '');
+  const put = (id, txt) => {
+    const el = document.getElementById(id);
+    if (el && el.textContent !== txt) el.textContent = txt;
+  };
+
+  put('bmsSoc', num(b.soc, 1, '%'));
+  put('bmsVolt', num(b.volt, 2, 'V'));
+  put('bmsPower', num(b.power, 1, 'W'));
+  put('bmsCycles', num(b.cycles, 0, ' 次'));
+  // 电流带方向:正=充电(绿) 负=放电(橙),与库仑计同一约定
+  const currEl = document.getElementById('bmsCurr');
+  if (currEl) {
+    currEl.textContent = num(b.curr, 2, 'A');
+    currEl.classList.toggle('good', b.curr !== null && b.curr > 0);
+    currEl.classList.toggle('warn', b.curr !== null && b.curr < 0);
+  }
+  // 剩余/总容量,如 124.9/220Ah
+  put('bmsCap', (b.cap === null && b.totalCap === null)
+    ? '--Ah' : num(b.cap, 1, '') + '/' + num(b.totalCap, 0, 'Ah'));
+  put('bmsBalCurr', num(b.balCurr, 2, 'A'));
+  put('bmsTemp', num(b.temp, 1, '°C'));
+  put('bmsFrames', num(b.frames, 0, ''));
+  put('bmsState', b.state || '--');
+  put('bmsAlarm', b.alarm || '--');
+  const alarmEl = document.getElementById('bmsAlarm');
+  if (alarmEl) {
+    const bad = !!b.alarm && !/^(无|正常|none|no)/i.test(b.alarm.trim());
+    alarmEl.style.color = bad ? 'var(--danger)' : '';
+  }
+
+  // 充放电 MOS:ON=可通;OFF=已被 BMS 切断(此时逆变器会突然没电)
+  [['bmsChgMos', b.chgMos], ['bmsDchgMos', b.dchgMos]].forEach(pair => {
+    const el = document.getElementById(pair[0]);
+    if (!el) return;
+    const v = pair[1];
+    const txt = v === null ? '--' : (v ? 'ON' : 'OFF');
+    if (el.textContent !== txt) el.textContent = txt;
+    el.className = 'badge ' + (v === null ? 'off' : v ? 'ok' : 'bad');
+  });
+
+  // 单体:先定位最高/最低,再逐格上色
+  const vals = bmsCellVals();
+  let hiI = -1, loI = -1, hi = -Infinity, lo = Infinity;
+  vals.forEach(pair => {
+    if (pair[1] > hi) { hi = pair[1]; hiI = pair[0]; }
+    if (pair[1] < lo) { lo = pair[1]; loI = pair[0]; }
+  });
+  for (let i = 0; i < BMS_CELL_COUNT; i++) {
+    const el = bmsCellEls[i];
+    if (!el) continue;
+    const v = b.cells[i];
+    const txt = (v === null || !isFinite(v)) ? '--' : Number(v).toFixed(3);
+    if (el.txt !== txt) { el.val.textContent = txt; el.txt = txt; }
+    // 只有一节时高低重合,只标最低(缺单体时"最高"没有诊断意义)
+    el.box.classList.toggle('hi', hiI >= 0 && i === hiI && hiI !== loI);
+    el.box.classList.toggle('lo', i === loI);
+  }
+  const cellTxt = (i, v, lb) => lb + ' #' + String(i + 1).padStart(2, '0') + ' ' +
+    Number(v).toFixed(3) + 'V';
+  put('bmsHigh', hiI < 0 ? '最高 --' : cellTxt(hiI, hi, '最高'));
+  put('bmsLow',  loI < 0 ? '最低 --' : cellTxt(loI, lo, '最低'));
+
+  // 压差:优先用 BMS 自报;缺失时由已收到的单体实时算(与上方网格必然一致)
+  let delta = b.delta;
+  if ((delta === null || !isFinite(delta)) && vals.length >= 2) delta = hi - lo;
+  put('bmsDelta', (delta === null || !isFinite(delta)) ? '--V' : Number(delta).toFixed(3) + 'V');
+  const grade = deltaGrade(delta);
+  const tag = document.getElementById('bmsDeltaTag');
+  if (tag) {
+    if (tag.textContent !== grade[0]) tag.textContent = grade[0];
+    tag.className = 'badge ' + grade[1];
+  }
+}
+
 /* ---------- 页面切换 ---------- */
 document.querySelectorAll('nav button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1062,6 +1344,8 @@ function tickClock() {
   document.getElementById('clock').textContent = new Date().toTimeString().slice(0,5);
 }
 setInterval(tickClock, 1000);
+// BMS 走 BLE,掉线时不会再有事件到达;数据龄必须自己走时钟才会变
+setInterval(updateBmsAge, 1000);
 
 /* ---------- SSE 实时推送 + 状态映射 ---------- */
 // 反向映射:实体 name → UI key,用于把 SSE 的 state 事件对应回面板
@@ -1072,6 +1356,10 @@ const NAME_TO_MPPT_NUM = {};     // name -> key (MPPT number)
 const NAME_TO_SYS_TEXT = {};     // name -> key (SysWifi SSID/IP)
 const NAME_TO_SYS_SENSOR = {};   // name -> key (SysWifi 信号)
 const NAME_TO_COULOMB = {};      // name -> key (库仑计 TF03K)
+const NAME_TO_BMS_SENSOR = {};   // name -> key (JK BMS 数值)
+const NAME_TO_BMS_BIN = {};      // name -> key (JK BMS 开关量)
+const NAME_TO_BMS_TEXT = {};     // name -> key (JK BMS 文本)
+const NAME_TO_BMS_CELL = {};     // name -> 单体下标 0..15
 for (const [k, e] of Object.entries(ENTITIES)) NAME_TO_SWITCH[e.name] = k;
 for (const [k, s] of Object.entries(SENSORS)) NAME_TO_SENSOR[s.name] = k;
 for (const [k, s] of Object.entries(TEXT_SENSORS)) NAME_TO_SENSOR[s.name] = k;
@@ -1081,6 +1369,10 @@ for (const [k, s] of Object.entries(MPPT_NUMBERS)) NAME_TO_MPPT_NUM[s.name] = k;
 for (const [k, s] of Object.entries(SYS_TEXT)) NAME_TO_SYS_TEXT[s.name] = k;
 for (const [k, s] of Object.entries(SYS_SENSORS)) NAME_TO_SYS_SENSOR[s.name] = k;
 for (const [k, s] of Object.entries(COULOMB_SENSORS)) NAME_TO_COULOMB[s.name] = k;
+for (const [k, s] of Object.entries(BMS_SENSORS)) NAME_TO_BMS_SENSOR[s.name] = k;
+for (const [k, s] of Object.entries(BMS_BINARY)) NAME_TO_BMS_BIN[s.name] = k;
+for (const [k, s] of Object.entries(BMS_TEXT)) NAME_TO_BMS_TEXT[s.name] = k;
+BMS_CELLS.forEach((s, i) => { NAME_TO_BMS_CELL[s.name] = i; });
 const NAME_TREND = TREND_SENSOR.name;     // 充电趋势 text_sensor 的实体名
 
 // 从 json 提取实体 name(兼容 state 的 name_id 与 detail 的 name)
@@ -1149,6 +1441,47 @@ function applyEntityState(json) {
       state.power.batteryPercent = Math.max(0, Math.min(100, Math.round(Number(json.value))));
     }
     renderPower();
+    return;
+  }
+  // JK(极空)BMS —— 与库仑计并列,互不覆盖
+  // 任何一帧都刷新数据龄;值没变就不重绘,16 节单体不会互相触发整卡重排
+  const cellIdx = NAME_TO_BMS_CELL[name];
+  if (cellIdx !== undefined) {
+    const v = Number(json.value);
+    state.bms.online = true;
+    state.bms.at = Date.now();
+    const nv = isFinite(v) ? v : null;
+    if (state.bms.cells[cellIdx] !== nv) {
+      state.bms.cells[cellIdx] = nv;
+      renderBms();
+    } else {
+      updateBmsAge();
+    }
+    return;
+  }
+  if (name in NAME_TO_BMS_SENSOR) {
+    const k = NAME_TO_BMS_SENSOR[name];
+    const v = Number(json.value);
+    state.bms[k] = isFinite(v) ? v : null;   // 温度可能报 NA → null → 显示 --
+    state.bms.online = true;
+    state.bms.at = Date.now();
+    renderBms();
+    return;
+  }
+  if (name in NAME_TO_BMS_BIN) {
+    const k = NAME_TO_BMS_BIN[name];
+    state.bms[k] = (json.state === 'ON' || json.value === true);
+    state.bms.online = true;
+    state.bms.at = Date.now();
+    renderBms();
+    return;
+  }
+  if (name in NAME_TO_BMS_TEXT) {
+    const k = NAME_TO_BMS_TEXT[name];
+    state.bms[k] = json.value || json.state || '';
+    state.bms.online = true;
+    state.bms.at = Date.now();
+    renderBms();
     return;
   }
   // 光伏/场景传感器
@@ -1330,6 +1663,8 @@ renderScenes();
 renderPower();
 renderMPPT();
 renderSys();
+initBmsGrid();        // BMS 单体格子只建一次
+renderBms();          // 先渲染"未上线"占位,等 Bms* 推上来再展开
 drawTrend();          // 先画空态，等 SolarTrend 推上来再重绘
 loadPref();
 tickClock();
