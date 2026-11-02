@@ -1,11 +1,11 @@
-# 中门 4 路模块（中门柜内/桌面，地址 0x07，软件设置）
+# 中门 4 路模块（中门柜内/桌面，地址 0x03，软件设置）
 #
-# 【2026-10 迁移】原 DO 四路全空（未来负载扩展）。现将三个低功率负载从中8(0x06)
+# 【2026-10 迁移】原 DO 四路全空（未来负载扩展）。现将三个低功率负载从中8(0x02)
 #   迁到本模块，腾出中8 的通道，并让桌面只有中4 一块模块时也能测负载：
 #     Y1 = 上水泵（切外部继电器的 12V 控制线圈；48V 由该外部继电器隔离）
 #     Y2 = 电控水阀（12V 常闭球阀，控制级小电流）
 #     Y3 = 后窗排气扇（4 小风扇）
-#     Y4 = 预留（场景键 LED 已改由 8DO 驱动）
+#     Y4 = 踏板收回信号（mA级，用5A通道；场景键 LED 由 8DO 驱动）
 #   ⚠ 本模块 DO 为 5A 规格，**不得接 10A 级负载**（主灯/氛围灯/冰箱仍在 中8）。
 #   ⚠ switch 的 id 保持不变（sw_pump/sw_valve/sw_fan_rear），
 #     因此 base.yaml / scenes.yaml 的引用无需改动。
@@ -15,7 +15,7 @@
 # 【LED 终局（switch-assignment.md §决策更新 决4）】16DO 退役备用，LED 改为：
 #   · 有负载可并的 → 负载侧直连（并到负载继电器 NO 输出）；
 #   · 无负载可并的场景键 → 空余 DO 当逻辑 LED：
-#       （2026-10-30 决8 更新：场景键双色 LED 已集中到 8DO 模块 0x03，见 relay-led-8ch.yaml
+#       （2026-10-30 决8 更新：场景键双色 LED 已集中到 8DO 模块 0x07，见 relay-led-8ch.yaml
 #        本模块 Y1-Y4 现全部回归负载/预留，不再承担 LED）
 #   本文件其余 3 路（泵/水阀/排气扇）为负载，不再驱动任何 LED。
 # 【按键动作】= 执行 act_xxx script（prod 在 scenes.yaml）
@@ -31,11 +31,11 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x07, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x5C]
+          frame: [0x03, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0xD8]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x07, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xAC]
+          frame: [0x03, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x28]
   # ---- Y2：电控水阀（12V 常闭球阀，通电开/断电关）----
   - platform: template
     name: "[中4.Y2] 电控水阀"
@@ -45,11 +45,11 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x07, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0x9C]
+          frame: [0x03, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDC, 0x18]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x07, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x6C]
+          frame: [0x03, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9D, 0xE8]
   # ---- Y3：后窗排气扇（4 小风扇）----
   - platform: template
     name: "[中4.Y3] 后窗排气扇"
@@ -59,12 +59,31 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x07, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0x9C]
+          frame: [0x03, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2C, 0x18]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x07, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x6C]
-  # ---- Y4：预留（线圈 0x0003）；场景键 LED 已改由 8DO(0x03) 驱动，见 relay-led-8ch.yaml ----
+          frame: [0x03, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0xE8]
+  # ---- Y4：电动踏板「收回」信号（睡眠模式驱动，见 §决7）----
+  # 2026-10-30 按功率分级改到此处：踏板信号是 mA 级，用 5A 通道比占 10A 通道更合理。
+  # 中4 与中8 同在**中门配电箱**，物理就近性相同。
+  # 接法：只带外部小继电器线圈或并/串到踏板信号线，绝不直切 40A 动力线。
+  # 物理档位待实测（A 脉冲 / B 保持 / C 切门碰线，见 §决7）。
+  - platform: template
+    name: "[中4.Y4] 踏板收回"
+    id: sw_step_retract
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    internal: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x03, 0x05, 0x00, 0x03, 0xFF, 0x00, 0x7D, 0xD8]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x03, 0x05, 0x00, 0x03, 0x00, 0x00, 0x3C, 0x28]
+
 
 # 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X4 位图）
 #

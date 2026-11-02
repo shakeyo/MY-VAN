@@ -39,8 +39,8 @@ INDEX = WEB_DIR / "index.html"
 # ── 实体名必须与各 yaml 的 name: 完全一致（同 index.html 的 ENTITIES 等映射） ──
 SWITCH_NAMES = {
     "[中8.Y1] 主灯": False,
-    "[中8.Y2] 氛围灯": False,
-    "[中8.Y6] 冰箱": False,
+    "[中8.Y2] 氛围灯带": False,
+    "[中8.Y3] 后横床顶灯": False,
     "[中8.Y7] 车尾灯": False,
     "[驾驶室A.Y1] 前射灯": False,
     "[驾驶室A.Y3] 户外灯": False,
@@ -49,6 +49,22 @@ SWITCH_NAMES = {
     "[中4.Y1] 上水泵": False,
     "[中4.Y2] 电控水阀": False,
     "[中4.Y3] 后窗排气扇": False,
+}
+
+FRIDGE_BINARY = {
+    "FridgeComp 压缩机": True,
+}
+# 冰虎冰箱 BLE 数值（alpicool 组件；默认不推，--fridge 才有）
+FRIDGE_SENSOR_NAMES = {
+    "FridgeBox 箱内温度": 3.5,
+    "FridgeSet 设定温度": 2.0,
+    "FridgeVolt 电池电压": 12.4,
+    "FridgeFrames 有效帧数": 320.0,
+    "FridgeRssi 信号强度": -62.0,
+}
+FRIDGE_TEXT_NAMES = {
+    "FridgeMode 运行模式": "节能",
+    "FridgeFault 故障码": "无",
 }
 
 MPPT_SWITCH_NAMES = {
@@ -84,6 +100,7 @@ SENSOR_VALUES = {
 }
 
 TEXT_NAMES = {
+
     "SolarState 充电状态": "MPPT充电中",
     "SolarAlert 告警": "无告警",
     "SysWifi SSID": "ooxx",
@@ -116,6 +133,7 @@ BMS_BINARY_NAMES = {
     "BmsDchgMos 放电MOS": True,
 }
 BMS_TEXT_NAMES = {
+
     "BmsState 运行状态": "充电中",
     "BmsAlarm 告警": "无告警",
 }
@@ -142,6 +160,10 @@ state = {
     # JK BMS（--no-bms 时整组不推，验证未上线占位）
     "bms": dict(BMS_SENSOR_NAMES),
     "bms_bin": dict(BMS_BINARY_NAMES),
+    # 冰虎冰箱 BLE（--fridge 时才推）
+    "fridge": dict(FRIDGE_SENSOR_NAMES),
+    "fridge_bin": dict(FRIDGE_BINARY),
+    "fridge_text": dict(FRIDGE_TEXT_NAMES),
     "bms_text": dict(BMS_TEXT_NAMES),
 }
 boot_time = time.time()
@@ -197,6 +219,13 @@ def full_snapshot():
         for name, on in state["bms_bin"].items():
             out.append(state_event("binary_sensor", name, on))
         for name, v in state["bms_text"].items():
+            out.append(state_event("text_sensor", name, v, is_text=True))
+        # 冰虎冰箱（--fridge 时才有）
+        for name, v in state["fridge"].items():
+            out.append(state_event("sensor", name, v))
+        for name, on in state["fridge_bin"].items():
+            out.append(state_event("binary_sensor", name, on))
+        for name, v in state["fridge_text"].items():
             out.append(state_event("text_sensor", name, v, is_text=True))
         return b"".join(out)
 
@@ -339,6 +368,8 @@ def main():
     ap.add_argument("--no-bms", action="store_true", help="模拟 JK BMS 未上线（BLE 代理未接入）")
     ap.add_argument("--bms-bad", action="store_true", help="模拟单体压差异常 + 告警（验证红色分级）")
     ap.add_argument("--bms-na-temp", action="store_true", help="模拟温度报 NA（传感器未接）")
+    ap.add_argument("--fridge", action="store_true", help="模拟冰虎冰箱 BLE 已上线（默认未上线）")
+    ap.add_argument("--fridge-hot", action="store_true", help="模拟冰箱温度偏高 + 故障码（验证告警配色）")
     ap.add_argument("--no-trend", action="store_true", help="不注入充电趋势，验证空态")
     ap.add_argument("--scene", type=int, default=0, help="场景页初始档位 0/1/2")
     args = ap.parse_args()
@@ -346,6 +377,15 @@ def main():
     if args.no_coulomb:
         for k in [k for k in state["sensors"] if k.startswith("Coulomb")]:
             del state["sensors"][k]
+    if not args.fridge and not args.fridge_hot:
+        # 默认：冰箱 BLE 未上线（验证「继电器可用但温度卡灰」的降级表现）
+        state["fridge"].clear()
+        state["fridge_bin"].clear()
+        state["fridge_text"].clear()
+    if args.fridge_hot:
+        state["fridge"]["FridgeBox 箱内温度"] = 12.8
+        state["fridge"]["FridgeFault 故障码"] = "E2 传感器故障"
+        state["fridge_bin"]["FridgeComp 压缩机"] = False
     if args.no_bms:
         state["bms"].clear()
         state["bms_bin"].clear()

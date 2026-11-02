@@ -69,6 +69,7 @@ script:
             # 明亮：主灯 + 氛围灯全开；模式 LED 亮
             - switch.turn_on: sw_main_light
             - switch.turn_on: sw_ambient
+            - switch.turn_on: sw_bed_dome      # 2026-10-31 从氛围灯拆出，明亮场景一起亮
             - script.execute: led_scene_sync
             # 离开睡眠模式 → 松开踏板收回信号（踏板恢复正常联动）
             - script.execute: step_release
@@ -80,6 +81,7 @@ script:
             # 睡眠：主灯关 + 氛围灯开（与原「夜灯」相同）；模式 LED 亮（单色=已进入模式）
             - switch.turn_off: sw_main_light
             - switch.turn_on: sw_ambient
+            - switch.turn_off: sw_bed_dome     # 睡眠时顶灯关（可手动单开）
             - script.execute: led_scene_sync
             # ⭐ 睡眠模式专用动作：电动踏板收回（见 switch-assignment.md §决7）
             - script.execute: step_retract_signal
@@ -91,6 +93,7 @@ script:
             # 全关；模式 LED 灭
             - switch.turn_off: sw_main_light
             - switch.turn_off: sw_ambient
+            - switch.turn_off: sw_bed_dome
             - script.execute: led_scene_sync
             # 离开睡眠模式 → 松开踏板收回信号
             - script.execute: step_release
@@ -111,9 +114,10 @@ script:
             lambda: 'return id(camp_scene) == 1;'
           then:
             - logger.log: "场景: 离车"
-            # 离车：负载全关（冰箱不断电，后续由 HA 远程控制）；模式 LED 亮
+            # 离车：负载全关（冰箱常电直连，本场景不涉及）；模式 LED 亮
             - switch.turn_off: sw_main_light
             - switch.turn_off: sw_ambient
+            - switch.turn_off: sw_bed_dome
             - switch.turn_off: sw_fan_rear
             - switch.turn_off: sw_pump
             - switch.turn_off: sw_valve
@@ -134,6 +138,7 @@ script:
             # 驻车：主灯 + 氛围灯开（暖光需灯自身支持，继电器只能开关）；模式 LED 亮
             - switch.turn_on: sw_main_light
             - switch.turn_on: sw_ambient
+            - switch.turn_on: sw_bed_dome
             # 灯光场景同步为明亮
             - lambda: 'id(light_scene) = 1;'
             - script.execute: led_camp_sync
@@ -147,7 +152,7 @@ script:
             - script.execute: led_camp_sync
 
   # ============ 电动踏板收回信号（睡眠模式专用，见 switch-assignment.md §决7）============
-  # 中8.Y3 吸合 = 发出「收回」信号（就近中门配电箱，踏板在中门附近）。
+  # 中4.Y4 吸合 = 发出「收回」信号（就近中门配电箱，踏板在中门附近）。
   # 物理接法待实测定档，固件这里做成「脉冲/保持」二选一：
   #   ① 脉冲型（控制器「短接一下就收回」）：吸合 → 保持 1.5s → 释放，只需触发一次
   #   ② 保持型（控制器要持续短接才保持收回）：吸合后不释放，直到离开睡眠模式
@@ -156,7 +161,7 @@ script:
   - id: step_retract_signal
     mode: restart
     then:
-      - logger.log: "踏板: 睡眠模式 → 收回（中8.Y3 吸合 1.5s）"
+      - logger.log: "踏板: 睡眠模式 → 收回（中4.Y4 吸合 1.5s）"
       - switch.turn_on: sw_step_retract
       - delay: 1500ms
       - script.execute: step_release

@@ -120,7 +120,7 @@ switch:
       - lambda: 'gpio_set_level(${de_pin}, 0);'
       - delay: 10ms
   - platform: template
-    name: "Ambient 氛围灯"
+    name: "Ambient 氛围灯带"
     id: sw_ambient
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true

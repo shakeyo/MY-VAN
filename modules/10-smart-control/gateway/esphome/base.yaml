@@ -24,23 +24,14 @@ esphome:
         - lambda: 'gpio_set_direction(${de_pin}, GPIO_MODE_OUTPUT);'
         - delay: 3s          # 等模块上电就绪
         # 有 DI 的模块开启输入主动上传（保持寄存器 0031H=1；掉电保存状态不确定，每次上电写一次）
-        # 2026-10-30 站号重编：0x01 驾驶室A / 0x02 驾驶室B / 0x06 中8（8DO 无 DI，跳过）
-        - lambda: 'gpio_set_level(${de_pin}, 1);'
-        - delay: 1ms
-        - uart.write:
-            id: rs485_bus
-            data: [0x01, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xC5]
-        - lambda: 'id(rs485_bus).flush();'
-        - delay: 2ms                # 等移位寄存器排空再释放 DE（防帧尾 CRC 截断，见 rs485.yaml）
-        - lambda: 'gpio_set_level(${de_pin}, 0);'
-        - delay: 10ms
+        # 2026-10-30 站号重编：0x02 中8 / 0x03 中4 / 0x05 驾驶室A / 0x06 驾驶室B（8DO 无 DI，跳过）
         - lambda: 'gpio_set_level(${de_pin}, 1);'
         - delay: 1ms
         - uart.write:
             id: rs485_bus
             data: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
         - lambda: 'id(rs485_bus).flush();'
-        - delay: 2ms
+        - delay: 2ms                # 等移位寄存器排空再释放 DE（防帧尾 CRC 截断，见 rs485.yaml）
         - lambda: 'gpio_set_level(${de_pin}, 0);'
         - delay: 10ms
         - lambda: 'gpio_set_level(${de_pin}, 1);'
@@ -52,9 +43,18 @@ esphome:
         - delay: 2ms
         - lambda: 'gpio_set_level(${de_pin}, 0);'
         - delay: 10ms
-        # 中4（0x07）：4 路 DI 现全部空置（主控键已取消，见 决2/决8），无按键可读，
+        - lambda: 'gpio_set_level(${de_pin}, 1);'
+        - delay: 1ms
+        - uart.write:
+            id: rs485_bus
+            data: [0x05, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x41]
+        - lambda: 'id(rs485_bus).flush();'
+        - delay: 2ms
+        - lambda: 'gpio_set_level(${de_pin}, 0);'
+        - delay: 10ms
+        # 中4（0x03）：4 路 DI 现全部空置（主控键已取消，见 决2/决8），无按键可读，
         #   故不写 0031H 上传使能。将来接分散按钮后，在此追加：
-        #     data: [0x07, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xA3]
+        #     data: [0x03, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x27]
         #
         # 安全负载：每次上电强制关（覆盖 restore 恢复值）
         - switch.turn_off: sw_spot
@@ -175,15 +175,15 @@ interval:
     then:
       - script.execute:
           id: rs485_write
-          frame: [0x01, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xC5]
-      - delay: 50ms
-      - script.execute:
-          id: rs485_write
           frame: [0x02, 0x06, 0x00, 0x31, 0x00, 0x01, 0x19, 0xF6]
       - delay: 50ms
       - script.execute:
           id: rs485_write
           frame: [0x06, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x72]
+      - delay: 50ms
+      - script.execute:
+          id: rs485_write
+          frame: [0x05, 0x06, 0x00, 0x31, 0x00, 0x01, 0x18, 0x41]
 
 script:
   - id: read_upload
@@ -280,12 +280,12 @@ script:
             //   在下方注明位号但**不发布**，避免编译时引用不存在的实体 id。
             //   位图位号与模块丝印严格对应：bit0=X1 … bit7=X8，不随面板改动而变。
             // 【面板重排 2026-10-30 · 决8 + 站号重编】位号严格按模块丝印：
-            //   0x01 驾驶室A(4DI) : X1 射灯 / X2 倒车灯 / X3 DSP / X4 户外灯
-            //   0x02 驾驶室B(4DI) : X1 灯光模式 / X2 离车驻车（X3-X4 预留）
-            //   0x06 中8(8DI)     : X1 排水 / X2 上水泵（X3-X8 空）
-            //   0x07 中4(4DI)     : 全空
+            //   0x05 驾驶室A(4DI) : X1 射灯 / X2 倒车灯 / X3 DSP / X4 户外灯
+            //   0x06 驾驶室B(4DI) : X1 灯光模式 / X2 离车驻车（X3-X4 预留）
+            //   0x02 中8(8DI)     : X1 排水 / X2 上水泵（X3-X8 空）
+            //   0x03 中4(4DI)     : 全空
             switch (buf[i]) {
-              case 0x01:  // 驾驶室A
+              case 0x05:  // 驾驶室A
                 if (rep & 0x01) id(bs_cabin_spot).publish_state(false);
                 if (rep & 0x02) id(bs_cabin_reverse).publish_state(false);
                 if (rep & 0x04) id(bs_cabin_dsp).publish_state(false);
@@ -295,15 +295,15 @@ script:
                 id(bs_cabin_dsp).publish_state(r & 0x04);
                 id(bs_cabin_outdoor).publish_state(r & 0x08);
                 break;
-              case 0x06:  // 中8（入口面板：排水 / 上水泵）
+              case 0x02:  // 中8（入口面板：排水 / 上水泵）
                 if (rep & 0x01) id(bs_door_drain).publish_state(false);
                 if (rep & 0x02) id(bs_door_pump).publish_state(false);
                 id(bs_door_drain).publish_state(r & 0x01);
                 id(bs_door_pump).publish_state(r & 0x02);
                 break;
-              case 0x07:  // 中4：无按键（4 路 DI 全空，留给未来分散按钮）
+              case 0x03:  // 中4：无按键（4 路 DI 全空，留给未来分散按钮）
                 break;
-              case 0x02:  // 驾驶室B（场景键）
+              case 0x06:  // 驾驶室B（场景键）
                 if (rep & 0x01) id(bs_cabin_scene).publish_state(false);
                 if (rep & 0x02) id(bs_cabin_camp).publish_state(false);
                 id(bs_cabin_scene).publish_state(r & 0x01);

@@ -5,11 +5,13 @@
 # 文件结构:
 #   rs485.yaml            485 写帧公共件（DE 时序 + 参数化写帧脚本）
 #   base.yaml             基础（网络/串口/上电策略/场景状态/DI 上传驱动解析）
-#   relay.yaml            继电器模块汇总（含 3 个子模块 + 模块×站号×路数索引表）
-#     ├─ relay-forehead-8ch.yaml  额头 8 路继电器（地址 0x01）
-#     ├─ relay-mid-8ch.yaml       中门 8 路继电器（地址 0x02）—— 负载 + Y8 离车驻车LED
-#     └─ relay-mid-4ch.yaml       中门 4 路继电器（地址 0x03）—— 低功率负载 + Y4 灯光模式LED
-#   （relay-mid-16do.yaml 地址 0x05 已退役备用，不 include —— 见 决4）
+#   relay.yaml            继电器模块汇总（含 5 个子模块 + 模块×站号×路数索引表）
+#     ├─ relay-mid-8ch.yaml       中门 8 路继电器（地址 0x02）—— 主灯/氛围灯带/后横床顶灯/车尾灯
+#     ├─ relay-mid-4ch.yaml       中门 4 路继电器（地址 0x03）—— 泵/水阀/后窗扇 + Y4 踏板收回信号
+#     ├─ relay-cabin-a-4ch.yaml   驾驶室 A（地址 0x05）—— 射灯/DSP 线圈 + 户外灯 + 副驾扇 + 4 键
+#     ├─ relay-cabin-b-4ch.yaml   驾驶室 B（地址 0x06）—— 场景键 2（灯光模式 / 离车驻车）
+#     └─ relay-led-8ch.yaml       8DO（地址 0x07）—— 场景键双色 LED + 倒车灯 LED
+#   （relay-mid-16do.yaml 已退役备用，不 include —— 见 决4；relay-forehead-8ch.yaml 已作废）
 #   mppt.yaml             光伏控制器（地址 0x10）—— 监控 + 控制 + 本地自动化
 #   pzem-tf03k.yaml       库仑计 TF03K —— 独立第二路 UART(19200 只收) + 16 字节帧解析
 #   scenes.yaml           场景自动化脚本
@@ -20,7 +22,8 @@
 # 按键架构：模块主动上传驱动（FC06 0031H=1），零轮询、零总线竞争
 # 按键触发方式：X 与 COM 间电压差（双向光耦，任一极性），COM 必须接电源一极
 #
-# 485 地址占用：1=额头 2=中8 3=中4 5=16DO；0x10=MPPT；0x20+ 传感器
+# 485 地址占用（只针对继电器模块）：0x01 留空 / 0x02 中8 / 0x03 中4 / 0x04 分界线（不分配）
+#   / 0x05 驾驶室A / 0x06 驾驶室B / 0x07 8DO / 0x08~0x0F 额头柜预留；0x10=MPPT；0x20+ 传感器
 #   ⚠ 库仑计 TF03K **不在**此总线：它固定 19200、无地址、私有主动上报，
 #     走 base.yaml 之外的第二路 UART（coulomb_uart），见 pzem-tf03k.yaml
 # ⚠ 波特率 38400（出厂默认）→ 全车终局 9600，改造步骤见 build-guide.md §4.7

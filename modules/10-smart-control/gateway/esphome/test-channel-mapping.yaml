@@ -324,7 +324,7 @@ switch:
           id: rs485_write
           frame: [0x02, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xF9]
   - platform: template
-    name: "Ambient 氛围灯"
+    name: "Ambient 氛围灯带"
     id: sw_ambient
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
@@ -336,6 +336,19 @@ switch:
       - script.execute:
           id: rs485_write
           frame: [0x02, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x39]
+  - platform: template
+    name: "BedDome 后横床顶灯"
+    id: sw_bed_dome
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+    on_turn_on:
+      - script.execute:
+          id: rs485_write
+          frame: [0x02, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0xC9]
+    on_turn_off:
+      - script.execute:
+          id: rs485_write
+          frame: [0x02, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x39]
   - platform: template
     name: "FanRear 后窗排气扇"
     id: sw_fan_rear

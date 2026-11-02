@@ -1,11 +1,11 @@
-# 中门 8 路模块（配电箱内，地址 0x06，软件设置）—— 4 路负载 + 踏板收回信号
-# Y1 主灯 / Y2 氛围灯+睡眠灯 / **Y3 踏板收回** / Y4-Y5 预留
-# Y6 冰箱 / Y7 倒车灯（车尾并进） / Y8 预留
+# 中门 8 路模块（配电箱内，地址 0x02，软件设置）—— 4 路负载 + 4 路预留（Y4/Y5/Y6/Y8）
+# Y1 主灯+睡眠灯 / Y2 氛围灯带 / Y3 后横床顶灯 / Y4-Y5 预留
+# Y6 预留（冰箱改常电直连） / Y7 车尾灯 / Y8 预留
 # （后窗排气扇→中4.Y3、上水泵→中4.Y1、电控水阀→中4.Y2，2026-10 已迁走）
 #
 # 【LED（2026-10-30 决8 终局）】本模块不再承担任何 LED：
 #   有负载的键 → LED 负载侧直连（并在该路 Y 的 NO）；
-#   两个场景键（灯光模式 / 离车驻车）→ 双色 LED 由 **8DO 模块（0x03）** 驱动，见 relay-led-8ch.yaml。
+#   两个场景键（灯光模式 / 离车驻车）→ 双色 LED 由 **8DO 模块（0x07）** 驱动，见 relay-led-8ch.yaml。
 #   曾经的「Y8 离车驻车逻辑 LED」已作废（Y8 回归预留）。
 
 # 【按键动作】= 执行 act_xxx script（prod 在 scenes.yaml）
@@ -19,37 +19,42 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8D, 0x8D]
+          frame: [0x02, 0x05, 0x00, 0x00, 0xFF, 0x00, 0x8C, 0x09]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x7D]
+          frame: [0x02, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCD, 0xF9]
   - platform: template
-    name: "[中8.Y2] 氛围灯"
+    name: "[中8.Y2] 氛围灯带"
     id: sw_ambient
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDC, 0x4D]
+          frame: [0x02, 0x05, 0x00, 0x01, 0xFF, 0x00, 0xDD, 0xC9]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9D, 0xBD]
+          frame: [0x02, 0x05, 0x00, 0x01, 0x00, 0x00, 0x9C, 0x39]
+  # ---- Y3：后横床圆形顶灯（2026-10-31 从氛围灯里拆出，可独立控制）----
+  # 圆形扁平小灯，3~8W（0.3~0.7A）。功率小，但仍走中8（与灯带同柜、F12-2 同源）。
   - platform: template
-    name: "[中8.Y6] 冰箱"
-    id: sw_fridge
+    name: "[中8.Y3] 后横床顶灯"
+    id: sw_bed_dome
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: true
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x05, 0xFF, 0x00, 0x9D, 0x8C]
+          frame: [0x02, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2D, 0xC9]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x05, 0x00, 0x00, 0xDC, 0x7C]
+          frame: [0x02, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6C, 0x39]
+  # ---- Y6：预留（10A）----
+  # 冰箱已改为常电直连（2026-10-31，见 §决9）：不经本模块任何通道，
+  # 全局断电用独立大功率继电器解决。
   - platform: template
     name: "[中8.Y7] 车尾灯"
     id: sw_reverse
@@ -58,32 +63,15 @@ switch:
     on_turn_on:
       - script.execute:
           id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x06, 0xFF, 0x00, 0x6D, 0x8C]
+          frame: [0x02, 0x05, 0x00, 0x06, 0xFF, 0x00, 0x6C, 0x08]
     on_turn_off:
       - script.execute:
           id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x06, 0x00, 0x00, 0x2C, 0x7C]
+          frame: [0x02, 0x05, 0x00, 0x06, 0x00, 0x00, 0x2D, 0xF8]
     on_state:
-      # 倒车灯 LED 在驾驶室柜，由 8DO(0x03) Y5 同步（固件跟随真实状态，见 决8）
+      # 倒车灯 LED 在驾驶室柜，由 8DO(0x07) Y5 同步（固件跟随真实状态，见 决8）
       - script.execute: led_reverse_sync
-  # ---- Y3：电动踏板「收回」信号（睡眠模式驱动，见 §决7）----
-  # 就近装在中门配电箱：踏板在中门附近，拉到额头柜不现实（决8 改到此处）。
-  # 中8 是 10A 干接点，只带外部小继电器线圈或串/并踏板信号线，绝不直切 40A 动力线。
-  # 物理接法待实测（A 脉冲 / B 保持 / C 切门碰线，见 §决7）。
-  - platform: template
-    name: "[中8.Y3] 踏板收回"
-    id: sw_step_retract
-    restore_mode: RESTORE_DEFAULT_OFF
-    optimistic: true
-    internal: true
-    on_turn_on:
-      - script.execute:
-          id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x02, 0xFF, 0x00, 0x2C, 0x4D]
-    on_turn_off:
-      - script.execute:
-          id: rs485_write
-          frame: [0x06, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0xBD]
+  # ---- Y3/Y4/Y5/Y8：预留（线圈 0x0002 / 0x0003 / 0x0004 / 0x0007）----
 
 # 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
 #
