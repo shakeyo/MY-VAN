@@ -47,7 +47,10 @@
      ===================================================================== */
 
   /* --- 1. 字体族 --- */
-  --font-body:'PxBody','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --font-body:'PxBody',var(--cjk),sans-serif;
+  /* 中文字体栈：苹方优先（macOS/iPhone），Windows 退回微软雅黑；
+     像素字体没有中文字形，所以中文一定是这里出的字 */
+  --cjk:'PingFang SC','HarmonyOS Sans SC','MiSans','Noto Sans SC','Source Han Sans SC','Hiragino Sans GB','Microsoft YaHei','Heiti SC',sans-serif;
   --font-num:'PxCaps','PingFang SC',sans-serif;   /* 数值/大写字 */
   --font-mono:ui-monospace,"SFMono-Regular",Menlo,monospace;
 
@@ -220,7 +223,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
   margin:0;padding:0;background:var(--c-page-bg);color:var(--c-text);
-  font-family:var(--font-body);-webkit-font-smoothing:antialiased;user-select:none;height:100%;
+  font-family:var(--font-body);-webkit-font-smoothing:auto;-moz-osx-font-smoothing:auto;user-select:none;height:100%;
 }
 body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 
@@ -271,7 +274,7 @@ section{margin-bottom:22px}
 }
 .sec-title{
   display:flex;align-items:center;gap:8px;margin:0 0 10px 2px;
-  font-family:var(--font-body);font-size:var(--fs-sec);font-weight:500;letter-spacing:.5px;color:var(--c-text-2);
+  font-family:var(--font-body);font-size:var(--fs-sec);font-weight:600;letter-spacing:.4px;color:var(--c-text-2);
 }
 .sec-title::before{content:'';width:3px;height:14px;border-radius:2px;background:var(--deco-sec-bar)}
 .sec-note{font-size:10.5px;letter-spacing:.5px;color:var(--c-text-3);font-weight:400;text-transform:none}
@@ -317,7 +320,7 @@ section{margin-bottom:22px}
 .tile .ic{display:flex;align-items:center;justify-content:center;width:var(--icon-size);height:var(--icon-size);color:var(--c-text-2);opacity:var(--icon-off-opacity);transition:color .15s,opacity .15s}
 .tile .ic svg{width:var(--icon-size);height:var(--icon-size);display:block}
 .tile.on .ic{color:var(--c-accent);opacity:1}
-.tile .lb{font-size:var(--fs-body);text-align:center;line-height:1.25}
+.tile .lb{font-size:var(--fs-body);text-align:center;line-height:1.25;font-weight:500;letter-spacing:.3px}
 .tile .mark{width:6px;height:6px;border-radius:50%;background:var(--c-line-2);transition:background .15s}
 .tile.on{
   /* 照设计稿：底色**不换**，只让描边和图标承载"开"的状态；
