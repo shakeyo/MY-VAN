@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#EDEDEB">
+<title>FORAGER · 空调</title>
+<style>
+/* =====================================================================
+   FORAGER 空调页 —— 独立页面（不复用、不修改深蓝面板 index.html）
+   视觉：点阵贴纸风格（暖白底 / 点阵大字 / 细描边白卡 / 红色语义强调）
+   数据：纯本地演示，不下发任何指令（不 fetch、不开 SSE）
+   ===================================================================== */
+:root{
+  --bg:#EDEDEB; --bg2:#E4E4E1; --card:#FFF; --shell:#FAFAF8;
+  --ink:#2B2B2B; --soft:#6E6E6B; --fade:#9C9C98;
+  --line:#D7D7D3; --line2:#C4C4BF;
+  --red:#C4262E; --blue:#2C6E8F;
+  --mono:"SFMono-Regular","Roboto Mono","JetBrains Mono","Courier New",ui-monospace,Menlo,Consolas,monospace;
+  --r:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:var(--mono);-webkit-font-smoothing:none;user-select:none;height:100%;
+}
+body{display:flex;justify-content:center;height:100dvh;overflow:hidden}
+
+/* ===== 外壳 ===== */
+.app{
+  position:relative;flex:none;width:100%;max-width:430px;height:100dvh;
+  background:var(--shell);display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(0,0,0,.05),0 24px 60px -20px rgba(0,0,0,.18);
+}
+@media(min-width:640px){
+  body{align-items:center}
+  .app{height:min(100dvh - 32px,932px);border-radius:34px}
+}
+
+/* ===== 状态栏 ===== */
+.statusbar{
+  flex:none;display:flex;align-items:center;justify-content:space-between;
+  height:44px;padding:0 18px;padding-top:env(safe-area-inset-top);
+  font-size:12px;color:var(--soft);
+}
+.sb-icons{display:flex;align-items:center;gap:8px}
+.sb-icons svg{display:block}
+
+/* ===== 顶栏 ===== */
+header{
+  flex:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  padding:4px 18px 12px;
+}
+.icon-btn{
+  width:40px;height:40px;border-radius:50%;border:1.5px solid var(--ink);
+  background:var(--card);color:var(--ink);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;padding:0;transition:background .15s,transform .12s;
+}
+.icon-btn:active{transform:scale(.94);background:var(--bg2)}
+header .l{justify-self:start}
+header .r{justify-self:end}
+.duo{
+  width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;
+  background:linear-gradient(90deg,currentColor 0 50%,transparent 50%);display:block;
+}
+.title{font-size:19px;font-weight:600;letter-spacing:.5px}
+.crumbs{position:absolute;top:2px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.crumbs i{width:3px;height:3px;border-radius:50%;background:var(--line2);display:block}
+.crumbs i.on{background:var(--soft)}
+
+/* ===== 滚动区 ===== */
+main{
+  flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 18px calc(24px + env(safe-area-inset-bottom));
+}
+main::-webkit-scrollbar{width:0}
+
+/* ===== 车型抬头 ===== */
+.masthead{display:flex;align-items:flex-start;justify-content:space-between;padding:4px 0 2px}
+/* 点阵像素字：mask + 径向渐变打孔 */
+.dotword{
+  --px:3.4px;--gap:2.4px;
+  font-family:var(--mono);font-weight:800;font-size:41px;line-height:1.02;
+  letter-spacing:8px;padding-right:2px;color:var(--ink);
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,#000 calc(var(--px)/2),transparent calc(var(--px)/2 + .3px));
+  -webkit-mask-size:calc(var(--px) + var(--gap)) calc(var(--px) + var(--gap));
+  -webkit-mask-repeat:repeat;
+  mask-image:radial-gradient(circle at 50% 50%,#000 calc(var(--px)/2),transparent calc(var(--px)/2 + .3px));
+  mask-size:calc(var(--px) + var(--gap)) calc(var(--px) + var(--gap));
+  mask-repeat:repeat;
+}
+.trim{font-size:13px;color:var(--soft);letter-spacing:2px;padding-top:12px;white-space:nowrap}
+
+/* ===== 座舱可视化（纯 CSS/SVG） ===== */
+.hero{position:relative;margin:4px -18px 0;height:clamp(230px,38vh,310px);overflow:hidden}
+.hero-inner{
+  position:absolute;top:50%;left:50%;width:100%;max-width:460px;
+  aspect-ratio:1/.86;transform:translate(-50%,-50%);
+}
+.hero .dash{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(120% 90% at 50% 115%,#FFF 0 26%,transparent 62%),
+    radial-gradient(90% 60% at 50% 42%,#E9E9E6 0,transparent 70%),
+    linear-gradient(180deg,#F7F7F5,#EFEFEC 44%,#FFF 82%);
+}
+.dash-deck{
+  position:absolute;left:2%;right:2%;top:30%;height:34%;
+  border-radius:60% 46% 30% 34%/70% 62% 40% 44%;
+  background:radial-gradient(58% 130% at 34% 10%,#FDFDFB,#F1F1EE 46%,#E3E3DF);
+  box-shadow:0 -1px 0 rgba(255,255,255,.9) inset,0 14px 30px -14px rgba(40,40,45,.35);
+}
+.vent{
+  position:absolute;left:30%;top:47%;width:34%;height:5%;border-radius:4px;
+  background:linear-gradient(180deg,#2E2E30,#4A4A4D 40%,#1E1E20);
+  box-shadow:0 1px 0 rgba(255,255,255,.8);
+}
+.vent::before,.vent::after{
+  content:'';position:absolute;top:50%;left:4%;width:42%;height:1px;
+  background:rgba(255,255,255,.35);transform:translateY(-50%);
+}
+.vent::after{left:54%}
+.screen{
+  position:absolute;left:54%;top:31%;width:27%;aspect-ratio:1.42/1;
+  border-radius:8px 8px 5px 5px;background:#0A0A0A;padding:4px;
+  box-shadow:0 10px 24px -10px rgba(0,0,0,.6);
+}
+.screen .ui{
+  width:100%;height:100%;border-radius:5px;background:#F2F3F5;
+  padding:6% 6% 4%;display:flex;flex-direction:column;gap:5%;
+}
+.screen .row{display:flex;gap:5%;flex:1}
+.screen .tile{flex:1;border-radius:3px;background:#D9DDE3;display:grid;place-items:center}
+.screen .tile.hot{background:#C9D6E4}
+.screen .tile svg{width:62%;height:62%;opacity:.75}
+.screen .beam{height:16%;border-radius:2px;background:linear-gradient(90deg,#7FA8C9,#A9C4D8 50%,#7FA8C9);opacity:.8}
+.cluster{
+  position:absolute;left:17%;top:33%;width:21%;aspect-ratio:1.6/1;border-radius:8px;
+  background:linear-gradient(160deg,#14161B,#0A0B0E);
+  box-shadow:0 8px 18px -10px rgba(0,0,0,.65);display:grid;place-items:center;
+}
+.cluster svg{width:58%;height:58%}
+.wheel{
+  position:absolute;left:2%;top:30%;width:27%;aspect-ratio:1;border-radius:50%;
+  border:12px solid #F4F4F2;
+  box-shadow:0 0 0 1px rgba(0,0,0,.1),inset 0 0 0 1px rgba(0,0,0,.06);
+}
+.wheel .spoke-h{position:absolute;left:50%;top:50%;width:52%;height:15%;transform:translate(-50%,-50%);border-radius:6px;background:#EDEDEA}
+.wheel .spoke-v{position:absolute;left:50%;bottom:22%;width:14%;height:30%;transform:translateX(-50%);border-radius:6px;background:#EDEDEA}
+.wheel .hub{
+  position:absolute;left:50%;top:50%;width:30%;height:30%;transform:translate(-50%,-50%);
+  border-radius:44%;background:#FAFAF8;box-shadow:0 0 0 4px #E4E4E0;display:grid;place-items:center;
+}
+.wheel .hub svg{width:74%;height:74%;opacity:.8}
+.pillar{position:absolute;top:-6%;height:46%;width:16%;background:linear-gradient(90deg,#FFF,#E2E2DE);opacity:.85}
+.pillar.l{left:-3%;transform:rotate(11deg);border-radius:0 0 60% 0}
+.pillar.r{right:-3%;transform:rotate(-11deg);border-radius:0 0 0 60%}
+.airflow{position:absolute;inset:0;pointer-events:none}
+.airflow path{
+  fill:none;stroke:var(--blue);stroke-width:2.6;stroke-linecap:round;
+  opacity:.1;stroke-dasharray:10 16;
+  transition:opacity .45s ease;
+}
+.airflow.on path{opacity:.72;animation:flow 1.6s linear infinite}
+.airflow.on.heat path{stroke:var(--red);opacity:.55}
+@keyframes flow{to{stroke-dashoffset:-26}}
+.tint{
+  position:absolute;inset:0;pointer-events:none;transition:background .5s,opacity .4s;
+  background:radial-gradient(70% 55% at 50% 78%,rgba(44,110,143,.13),transparent 70%);
+}
+.tint.heat{background:radial-gradient(70% 55% at 50% 78%,rgba(196,38,46,.12),transparent 70%)}
+.haze{
+  position:absolute;left:28%;right:28%;top:58%;height:30%;
+  background:radial-gradient(60% 60% at 50% 30%,rgba(255,255,255,.95),transparent 70%);
+  filter:blur(6px);pointer-events:none;
+}
+.fade{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(180deg,var(--shell),rgba(250,250,248,0) 16%),
+    linear-gradient(0deg,var(--shell),rgba(250,250,248,0) 22%),
+    linear-gradient(90deg,var(--shell),rgba(250,250,248,0) 9%),
+    linear-gradient(270deg,var(--shell),rgba(250,250,248,0) 9%);
+}
+
+/* ===== 文字块 ===== */
+.lede{margin:10px 0 0;font-size:13.5px;line-height:1.55;color:var(--ink)}
+.soft{color:var(--soft)}
+.dim{color:var(--fade)}
+.sec-h{margin:22px 0 11px;font-size:17px;font-weight:500;letter-spacing:.3px}
+.sec-note{font-size:11px;color:var(--fade);letter-spacing:.5px}
+
+/* ===== 卡片 ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.card + .card{margin-top:10px}
+
+/* ===== 温度卡 ===== */
+.temp-card{padding:16px 16px 18px}
+.temp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
+.temp-head .l{display:flex;align-items:center;gap:8px}
+.temp-head .note{color:var(--soft);font-size:12.5px;white-space:nowrap}
+.temp-body{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin-top:16px}
+.round-btn{
+  width:62px;height:62px;border-radius:50%;border:none;background:#191919;color:#fff;
+  display:grid;place-items:center;cursor:pointer;padding:0;
+  box-shadow:0 6px 14px -6px rgba(0,0,0,.55);
+  transition:transform .1s,background .15s;
+}
+.round-btn svg{width:22px;height:22px}
+.round-btn:focus{outline:none}
+.round-btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.round-btn:active{transform:scale(.92);background:#000}
+.round-btn[disabled]{opacity:.22;cursor:not-allowed}
+.readout{display:flex;align-items:flex-start;justify-content:center;gap:2px;padding-top:6px}
+.value{
+  font-size:clamp(44px,15vw,62px);line-height:1;font-weight:500;letter-spacing:2px;
+  font-variant-numeric:tabular-nums;
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,#000 1.1px,transparent 1.6px);
+  -webkit-mask-size:3.2px 3.2px;-webkit-mask-repeat:repeat;
+  mask-image:radial-gradient(circle at 50% 50%,#000 1.1px,transparent 1.6px);
+  mask-size:3.2px 3.2px;mask-repeat:repeat;
+}
+.unit{font-size:17px;padding-top:2px;letter-spacing:-.5px}
+.scale-hint{
+  margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:11.5px;color:var(--fade);
+}
+
+/* ===== 模式按钮 ===== */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.mode{
+  appearance:none;cursor:pointer;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r);padding:16px 14px 14px;min-height:98px;
+  display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:18px;
+  color:var(--ink);font-family:var(--mono);font-size:14.5px;
+  transition:border-color .18s,background .18s,transform .1s,color .18s;
+}
+.mode svg{width:26px;height:26px;display:block}
+.mode:focus{outline:none}
+.mode:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.mode:active{transform:scale(.975)}
+.mode.on{border-color:var(--red);box-shadow:0 0 0 1px var(--red) inset}
+.mode.on svg,.mode.on .lbl{color:var(--red)}
+.mode.heating.on{
+  border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset;
+  background:linear-gradient(180deg,rgba(43,43,43,.05),transparent 70%);
+}
+.mode.heating.on svg,.mode.heating.on .lbl{color:var(--ink)}
+
+/* ===== 状态行 ===== */
+.status-line{margin:16px 2px 0;font-size:13px;line-height:1.5;color:var(--soft);min-height:20px}
+.status-line b{font-weight:500;color:var(--ink)}
+.status-line .r{color:var(--red)}
+
+/* ===== 风量 ===== */
+.fan-card{padding:14px 16px}
+.fan-head{display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.fan-head .v{color:var(--soft)}
+.segbar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}
+/* 档位格逐级变高，读作一条阶梯；选中段填墨黑 */
+.seg{
+  align-self:end;height:calc(18px + var(--h) * 5px);
+  border-radius:6px;border:1px solid var(--line);background:var(--card);
+  cursor:pointer;padding:0;
+  transition:background .15s,border-color .15s,transform .12s;
+}
+.seg:active{transform:scale(.96)}
+.seg.on{background:#191919;border-color:#191919}
+.seg[disabled]{opacity:.35;cursor:not-allowed}
+
+/* ===== 开关 ===== */
+.switch{
+  flex:none;position:relative;width:56px;height:32px;border-radius:999px;
+  background:#D3D3CF;border:none;cursor:pointer;padding:0;transition:background .22s;
+}
+.switch::after{
+  content:'';position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);
+  transition:transform .22s cubic-bezier(.3,1.4,.5,1);
+}
+.switch[aria-checked="true"]{background:var(--red)}
+.switch[aria-checked="true"]::after{transform:translateX(24px)}
+
+/* ===== 离开空调 / 排程 ===== */
+.departure{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px}
+.departure .txt{font-size:15px}
+.departure .sub{margin-top:6px;font-size:11.5px;color:var(--fade);line-height:1.75;letter-spacing:-.2px}
+.sched{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;font-size:13.5px;color:var(--soft);transition:opacity .2s}
+.sched .time{color:var(--ink);letter-spacing:1px;font-size:15px}
+.sched.off{opacity:.42;pointer-events:none}
+.sched-row + .sched-row{margin-top:10px}
+
+/* ===== 页脚 ===== */
+.foot{margin:22px 2px 0;font-size:11px;line-height:1.7;color:var(--fade)}
+.foot code{color:var(--soft)}
+
+@media(prefers-reduced-motion:reduce){
+  .airflow.on path{animation:none}
+  .round-btn,.switch,.switch::after,.mode,.tint{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="sb-icons">
+      <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true"><rect y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" width="3" height="11" rx="1"/></svg>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor" aria-hidden="true"><path d="M7.5 10.4 5.2 7.9a3.4 3.4 0 0 1 4.6 0zM3.3 5.9 1.7 4.2a8.3 8.3 0 0 1 11.6 0L11.7 5.9a6 6 0 0 0-8.4 0z"/></svg>
+      <svg width="24" height="11" viewBox="0 0 24 11" aria-hidden="true"><rect x=".5" y=".5" width="20" height="10" rx="3" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="15" height="7" rx="1.7" fill="currentColor"/><path d="M22.4 4v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".45"/></svg>
+    </span>
+  </div>
+
+  <header>
+    <div class="l">
+      <button class="icon-btn" aria-label="明暗模式"><span class="duo"></span></button>
+    </div>
+    <div class="title">Climate</div>
+    <div class="r">
+      <button class="icon-btn" aria-label="车辆连接" aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 10.5a14 14 0 0 1 18 0"/><path d="M6.5 14.5a9 9 0 0 1 11 0"/><path d="M10 18.4a4 4 0 0 1 4 0"/><circle cx="12" cy="21.2" r=".6" fill="currentColor" stroke="none"/></svg>
+      </button>
+    </div>
+    <div class="crumbs" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+  </header>
+
+  <main>
+    <div class="masthead">
+      <div class="dotword" aria-label="AC">AC</div>
+      <div class="trim">V80 · Forager</div>
+    </div>
+
+    <!-- 座舱 -->
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="dash"></div>
+        <div class="pillar l"></div><div class="pillar r"></div>
+        <div class="dash-deck"></div>
+
+        <div class="cluster">
+          <svg viewBox="0 0 80 44" fill="none" aria-hidden="true"><path d="M14 26c3-9 12-15 26-15s23 6 26 15c-9 4-17 6-26 6s-17-2-26-6z" fill="#3C7BB0" opacity=".9"/><path d="M14 26c3-9 12-15 26-15s23 6 26 15" stroke="#8FC0E4" stroke-width="1.2" opacity=".8"/></svg>
+        </div>
+
+        <div class="screen"><div class="ui">
+          <div class="row">
+            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19"/></svg></div>
+            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="1.6" stroke-linecap="round"><path d="M4 18V6l8 6 8-6v12"/></svg></div>
+          </div>
+          <div class="row">
+            <div class="tile hot"><svg viewBox="0 0 24 24" fill="none" stroke="#3B5A73" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v18M3 12h18M6 6l12 12M18 6 6 18"/></svg></div>
+            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 4v16"/></svg></div>
+            <div class="tile hot"><svg viewBox="0 0 24 24" fill="none" stroke="#3B5A73" stroke-width="1.6" stroke-linecap="round"><path d="M4 12h16M8 8l-4 4 4 4"/></svg></div>
+          </div>
+          <div class="beam"></div>
+        </div></div>
+
+        <div class="wheel">
+          <span class="spoke-v"></span><span class="spoke-h"></span>
+          <span class="hub"><svg viewBox="0 0 24 24" fill="none" stroke="#2B2B2B" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5v7M9 12.5l-4.6 7M15 12.5l4.6 7" stroke-linecap="round"/></svg></span>
+        </div>
+
+        <div class="vent"></div>
+
+        <svg class="airflow" id="airflow" viewBox="0 0 100 86" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M46 52C44 60 40 66 34 74"/><path d="M50 53v25"/><path d="M54 52c3 8 7 14 12 22"/>
+          <path d="M42 51c-6 7-14 11-24 17"/><path d="M58 51c6 7 14 11 24 17"/>
+        </svg>
+        <div class="haze"></div>
+        <div class="tint" id="tint"></div>
+      </div>
+      <div class="fade"></div>
+    </div>
+
+    <p class="lede">Cabin</p>
+    <p class="lede soft" style="margin-top:6px">Airflow preview · not sent to car</p>
+
+    <h2 class="sec-h">Cabin climate</h2>
+
+    <!-- 温度 -->
+    <div class="card temp-card">
+      <div class="temp-head">
+        <span class="l">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="2.2"/><path d="M12 4.4c1.6 0 2.4 1.2 2.4 2.6v1.3M12 19.6c-1.6 0-2.4-1.2-2.4-2.6v-1.3M4.4 12c0-1.6 1.2-2.4 2.6-2.4h1.3M19.6 12c0 1.6-1.2 2.4-2.6 2.4h-1.3"/><path d="M6.6 6.6c-1.1 1.1-.7 2.6 0 3.5l.9 1M17.4 17.4c1.1-1.1.7-2.6 0-3.5l-.9-1M17.4 6.6c1.1 1.1.7 2.6 0 3.5l-1 .9M6.6 17.4c-1.1 1.1-.7 2.6 0 3.5l.9-1"/></svg>
+          <span>Target</span><span class="dim">·</span><span class="soft">preview</span>
+        </span>
+        <span class="note">0.5°C steps</span>
+      </div>
+      <div class="temp-body">
+        <button class="round-btn" id="minus" aria-label="降低温度">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+        </button>
+        <div class="readout" aria-live="polite">
+          <span class="value" id="temp">16.0</span><span class="unit">°C</span>
+        </div>
+        <button class="round-btn" id="plus" aria-label="升高温度">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>
+        </button>
+      </div>
+      <div class="scale-hint"><span id="range">16.0 – 28.0 °C</span></div>
+    </div>
+
+    <!-- 模式 -->
+    <div class="modes" role="group" aria-label="空调模式">
+      <button class="mode" id="cool" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.6v18.8M3.9 7.3l16.2 9.4M20.1 7.3 3.9 16.7"/><path d="M12 6.2 9.6 4.4M12 6.2l2.4-1.8M12 17.8l-2.4 1.8M12 17.8l2.4 1.8"/><path d="M8 9.7 4.7 9.4M8 9.7 7 6.6M16 14.3l3.3.3M16 14.3l1-3.1"/><path d="M8 14.3l-3.3.3M8 14.3 7 17.4M16 9.7l3.3-.3M16 9.7l1 3.1"/></svg>
+        <span class="lbl">Cool</span>
+      </button>
+      <button class="mode heating" id="heat" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.4v2.6M12 19v2.6M2.4 12h2.6M19 12h2.6M5.2 5.2l1.9 1.9M16.9 16.9l1.9 1.9M18.8 5.2l-1.9 1.9M7.1 16.9l-1.9 1.9"/></svg>
+        <span class="lbl">Heat</span>
+      </button>
+      <button class="mode" id="stop" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 3.2v8.4"/><path d="M6.9 6.6a7.6 7.6 0 1 0 10.2 0"/></svg>
+        <span class="lbl">Stop</span>
+      </button>
+    </div>
+
+    <p class="status-line" id="status"></p>
+
+    <!-- 风量 -->
+    <h2 class="sec-h">Fan</h2>
+    <div class="card fan-card">
+      <div class="fan-head"><span>Airflow level</span><span class="v" id="fanTxt">2 / 5</span></div>
+      <div class="segbar" id="fanBar" role="group" aria-label="风量"></div>
+    </div>
+
+    <!-- 离开空调 -->
+    <h2 class="sec-h">Departure climate</h2>
+    <div class="card departure">
+      <div>
+        <div class="txt">Precondition on schedule</div>
+        <div class="sub">离开前按计划温度预热 / 预冷，避免上车即蒸桑拿。</div>
+      </div>
+      <button class="switch" id="dept" role="switch" aria-checked="false" aria-label="离开空调计划"></button>
+    </div>
+    <div class="sched-row">
+      <div class="card sched off" id="schedA"><span>Weekdays（周一 – 周五）</span><span class="time">07:30</span></div>
+      <div class="card sched off" id="schedB"><span>Weekend（周六 – 周日）</span><span class="time">09:00</span></div>
+    </div>
+
+    <p class="foot">
+      本地演示 · 不下发车辆，不连接网关<br>
+      <code>web/climate.html</code>
+    </p>
+  </main>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var MIN=16, MAX=28, STEP=.5, FAN_MAX=5;
+  var s={temp:16, mode:'cool', fan:2};
+
+  var $=function(id){return document.getElementById(id)};
+  var el={temp:$('temp'),minus:$('minus'),plus:$('plus'),cool:$('cool'),
+          heat:$('heat'),stop:$('stop'),status:$('status'),airflow:$('airflow'),
+          tint:$('tint'),dept:$('dept'),schedA:$('schedA'),schedB:$('schedB'),
+          fanBar:$('fanBar'),fanTxt:$('fanTxt')};
+
+  /* 风量分段按钮只建一次 */
+  for(var i=1;i<=FAN_MAX;i++){
+    (function(n){
+      var b=document.createElement('button');
+      b.className='seg'; b.dataset.n=n;
+      b.style.setProperty('--h', n);
+      b.setAttribute('aria-label','风量 '+n+' 档');
+      b.setAttribute('aria-pressed','false');
+      b.addEventListener('click',function(){ s.fan=n; render(); });
+      el.fanBar.appendChild(b);
+    })(i);
+  }
+
+  function render(){
+    var stopped = s.mode==='stop';
+    el.temp.textContent=s.temp.toFixed(1);
+    el.minus.disabled = stopped || s.temp<=MIN;
+    el.plus.disabled  = stopped || s.temp>=MAX;
+
+    el.cool.classList.toggle('on',s.mode==='cool');
+    el.heat.classList.toggle('on',s.mode==='heat');
+    el.stop.classList.toggle('on',stopped);
+    el.cool.setAttribute('aria-pressed',s.mode==='cool');
+    el.heat.setAttribute('aria-pressed',s.mode==='heat');
+    el.stop.setAttribute('aria-pressed',stopped);
+
+    /* 气流强度随风量变化；停止时气流关闭 */
+    el.airflow.classList.toggle('on',!stopped);
+    el.airflow.classList.toggle('heat',s.mode==='heat');
+    el.airflow.style.opacity = stopped ? '0' : String(.45 + s.fan*0.11);
+    el.tint.classList.toggle('heat',s.mode==='heat');
+    el.tint.style.opacity = stopped ? '0' : String(.4 + s.fan*0.12);
+
+    [].forEach.call(el.fanBar.children,function(b){
+      b.classList.toggle('on', Number(b.dataset.n)<=s.fan);
+      b.setAttribute('aria-pressed', String(Number(b.dataset.n)<=s.fan));
+      b.disabled = stopped;
+    });
+    el.fanTxt.textContent = stopped ? '-- / 5' : s.fan + ' / 5';
+
+    if(stopped){
+      el.status.innerHTML='<b>Climate preview off.</b> Nothing is being sent to your car.';
+    }else if(s.mode==='cool'){
+      el.status.innerHTML='<span class="r">Cooling preview active.</span> Not sent to your car.';
+    }else{
+      el.status.innerHTML='<span class="r">Heating preview active.</span> Not sent to your car.';
+    }
+  }
+
+  function bump(d){
+    if(s.mode==='stop') return;
+    var n=Math.round((s.temp+d)/STEP)*STEP;                 /* 吸附到 0.5 网格 */
+    s.temp=Math.min(MAX,Math.max(MIN,n));
+    render();
+  }
+  function setMode(m){ s.mode = s.mode===m ? 'stop' : m; render(); }  /* 再点一次→停止 */
+
+  el.minus.addEventListener('click',function(){bump(-STEP)});
+  el.plus .addEventListener('click',function(){bump(STEP)});
+  el.cool .addEventListener('click',function(){setMode('cool')});
+  el.heat .addEventListener('click',function(){setMode('heat')});
+  el.stop .addEventListener('click',function(){s.mode='stop';render()});
+
+  el.dept.addEventListener('click',function(){
+    var on=el.dept.getAttribute('aria-checked')==='true';
+    el.dept.setAttribute('aria-checked',String(!on));
+    el.schedA.classList.toggle('off',on);
+    el.schedB.classList.toggle('off',on);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

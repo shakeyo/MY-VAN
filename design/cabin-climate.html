@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#EDEDEB">
+<title>FORAGER · Cabin Climate</title>
+<style>
+  /* =====================================================================
+     座舱空调页 —— “点阵贴纸”版
+     参考 ID3 第三方车控 App 的视觉：白灰底、像素点阵大标题、
+     细描边白卡、红色语义强调、单色线稿图标、等宽/像素字体。
+     纯原生 HTML/CSS/JS，无外部依赖，离线可用。
+     交互全部为本地模拟（预览状态，不下发车辆）。
+     ===================================================================== */
+
+  /* 像素字体用系统等宽栈近似（不联网拉 font，离线也能看）：
+     方点感来自字号取整 + letter-spacing + 关闭抗锯齿 */
+  :root {
+    --bg:        #EDEDEB;
+    --bg-2:      #E4E4E1;
+    --card:      #FFFFFF;
+    --ink:       #2B2B2B;
+    --ink-soft:  #6E6E6B;
+    --ink-fade:  #9C9C98;
+    --line:      #D7D7D3;
+    --line-2:    #C4C4BF;
+    --red:       #C4262E;
+    --red-soft:  rgba(196, 38, 46, .07);
+    --blue:      #2C6E8F;
+    --shell:     #FAFAF8;
+
+    --mono: "SFMono-Regular", "Roboto Mono", "JetBrains Mono", "Courier New",
+            ui-monospace, Menlo, Consolas, monospace;
+    --pixel: "SFMono-Regular", "Roboto Mono", "JetBrains Mono", "Courier New",
+             ui-monospace, Menlo, Consolas, monospace;
+    --r: 18px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    -webkit-font-smoothing: none;      /* 让点阵/等宽字更“硬” */
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+    height: 100%;
+  }
+
+  body {
+    display: flex; justify-content: center;
+    height: 100dvh; overflow: hidden;
+  }
+
+  /* ===================== 手机壳 ===================== */
+  .app {
+    position: relative;
+    flex: none;
+    width: 100%; max-width: 430px;
+    height: 100dvh;
+    background: var(--shell);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 24px 60px -20px rgba(0,0,0,.18);
+  }
+  @media (min-width: 640px) {
+    body { align-items: center; }
+    .app {
+      height: min(100dvh - 32px, 932px);
+      border-radius: 34px;
+      overflow: hidden;
+    }
+  }
+
+  /* ===================== 状态栏 ===================== */
+  .statusbar {
+    flex: none; position: relative; z-index: 3;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 44px; padding: 0 18px;
+    padding-top: env(safe-area-inset-top);
+    font-size: 12px; color: var(--ink-soft);
+    letter-spacing: .5px;
+  }
+  .sb-icons { display: flex; align-items: center; gap: 8px; }
+  .sb-icons svg { display: block; }
+
+  /* ===================== 顶栏 ===================== */
+  header {
+    flex: none; position: relative; z-index: 3;
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 4px 18px 14px;
+  }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    background: var(--card); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0;
+    transition: background .15s, transform .12s;
+  }
+  .icon-btn:active { transform: scale(.94); background: var(--bg-2); }
+  header .left  { justify-self: start; }
+  header .right { justify-self: end; }
+
+  /* 半黑半白圆 —— 参考图里的明暗切换 */
+  .duo {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid currentColor;
+    background: linear-gradient(90deg, currentColor 0 50%, transparent 50% 100%);
+    display: block;
+  }
+  .title {
+    font-size: 19px; font-weight: 600; letter-spacing: .5px;
+    font-family: var(--mono);
+  }
+
+  /* ===================== 滚动区 ===================== */
+  main {
+    flex: 1; min-height: 0;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 0 18px calc(24px + env(safe-area-inset-bottom));
+  }
+  main::-webkit-scrollbar { width: 0; }
+
+  /* ===================== 车型抬头 ===================== */
+  .masthead {
+    position: relative;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 6px 0 2px;
+  }
+  /* 点阵像素字：用 mask + radial-gradient 打点，字随 mask 变化 */
+  .dotword {
+    --px: 3px;
+    --gap: 2px;
+    font-family: var(--pixel);
+    font-weight: 800;
+    font-size: 41px;
+    line-height: 1.02;
+    letter-spacing: 6px;
+    padding-right: 2px;
+    /* 等宽字体里 I 只有一竖，点阵化后容易读成数字 1：补一点横向留白 */
+    text-rendering: optimizeSpeed;
+    color: var(--ink);
+    -webkit-mask-image: radial-gradient(circle at 50% 50%,
+        #000 calc(var(--px) / 2), transparent calc(var(--px) / 2 + 0.3px));
+    -webkit-mask-size: calc(var(--px) + var(--gap)) calc(var(--px) + var(--gap));
+    -webkit-mask-repeat: repeat;
+    mask-image: radial-gradient(circle at 50% 50%,
+        #000 calc(var(--px) / 2), transparent calc(var(--px) / 2 + 0.3px));
+    mask-size: calc(var(--px) + var(--gap)) calc(var(--px) + var(--gap));
+    mask-repeat: repeat;
+  }
+  .trim {
+    font-size: 13px; color: var(--ink-soft);
+    letter-spacing: 2px; padding-top: 12px;
+    white-space: nowrap;
+  }
+
+  /* ===================== 座舱可视化 ===================== */
+  /* 高度用 px 钳住（而不是 aspect-ratio），避免画面在小屏上把首屏撑爆 */
+  .hero {
+    position: relative;
+    margin: 4px -18px 0;
+    height: clamp(240px, 40vh, 320px);
+    overflow: hidden;
+  }
+  .hero-inner {
+    position: absolute; top: 50%; left: 50%;
+    width: 100%; max-width: 460px;
+    aspect-ratio: 1 / 0.86;
+    transform: translate(-50%, -50%);
+  }
+  /* 用渐变 + 伪元素手绘一个“仪表台”视角，避免外链图片 */
+  .hero .dash {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120% 90% at 50% 115%, #FFFFFF 0 26%, transparent 62%),
+      radial-gradient(90% 60% at 50% 42%, #E9E9E6 0%, transparent 70%),
+      linear-gradient(180deg, #F7F7F5 0%, #EFEFEC 44%, #FFFFFF 82%, #FFFFFF 100%);
+  }
+  /* 仪表台面板 */
+  .dash-deck {
+    position: absolute; left: 2%; right: 2%; top: 30%; height: 34%;
+    border-radius: 60% 46% 30% 34% / 70% 62% 40% 44%;
+    background:
+      radial-gradient(58% 130% at 34% 10%, #FDFDFB 0%, #F1F1EE 46%, #E3E3DF 100%);
+    box-shadow:
+      0 -1px 0 rgba(255,255,255,.9) inset,
+      0 14px 30px -14px rgba(40,40,45,.35);
+  }
+  /* 上层缝线 / 出风口 */
+  .vent {
+    position: absolute; left: 30%; top: 47%;
+    width: 34%; height: 5%;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #2E2E30, #4A4A4D 40%, #1E1E20);
+    box-shadow: 0 1px 0 rgba(255,255,255,.8), 0 -1px 0 rgba(0,0,0,.06);
+  }
+  .vent::before, .vent::after {
+    content: ''; position: absolute; top: 50%; left: 4%;
+    width: 42%; height: 1px; background: rgba(255,255,255,.35);
+    transform: translateY(-50%);
+  }
+  .vent::after { left: 54%; }
+
+  /* 中控屏 */
+  .screen {
+    position: absolute; left: 54%; top: 31%;
+    width: 27%; aspect-ratio: 1.42 / 1;
+    border-radius: 8px 8px 5px 5px;
+    background: #0A0A0A;
+    padding: 4px;
+    box-shadow: 0 10px 24px -10px rgba(0,0,0,.6);
+  }
+  .screen .ui {
+    width: 100%; height: 100%; border-radius: 5px;
+    background: #F2F3F5;
+    padding: 6% 6% 4%;
+    display: flex; flex-direction: column; gap: 5%;
+  }
+  .screen .row { display: flex; gap: 5%; flex: 1; }
+  .screen .tile {
+    flex: 1; border-radius: 3px;
+    background: #D9DDE3;
+    display: grid; place-items: center;
+  }
+  .screen .tile svg { width: 62%; height: 62%; opacity: .75; }
+  .screen .tile.hot { background: #C9D6E4; }
+  .screen .beam {
+    height: 16%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #7FA8C9, #A9C4D8 50%, #7FA8C9);
+    opacity: .8;
+  }
+
+  /* 组合仪表 */
+  .cluster {
+    position: absolute; left: 17%; top: 33%;
+    width: 21%; aspect-ratio: 1.6 / 1;
+    border-radius: 8px;
+    background: linear-gradient(160deg, #14161B, #0A0B0E);
+    box-shadow: 0 8px 18px -10px rgba(0,0,0,.65);
+    display: grid; place-items: center;
+  }
+  .cluster svg { width: 58%; height: 58%; }
+
+  /* 方向盘 */
+  .wheel {
+    position: absolute; left: 2%; top: 30%;
+    width: 27%; aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 12px solid #F4F4F2;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.10),
+      inset 0 0 0 1px rgba(0,0,0,.06),
+      0 18px 30px -18px rgba(0,0,0,.5);
+  }
+  .wheel::before { /* 三辐 */
+    content: '';
+    position: absolute; inset: 14%;
+    background:
+      linear-gradient(90deg, transparent 46%, #E9E9E6 46% 54%, transparent 54%),
+      linear-gradient(0deg, transparent 46%, #E9E9E6 46% 54%, transparent 54%);
+    border-radius: 50%;
+    transform: rotate(0deg);
+    -webkit-mask-image: conic-gradient(from 40deg, #000 0 20deg, transparent 20deg 105deg, #000 105deg 135deg, transparent 135deg 210deg, #000 210deg 240deg, transparent 240deg 360deg);
+    mask-image: conic-gradient(from 40deg, #000 0 20deg, transparent 20deg 105deg, #000 105deg 135deg, transparent 135deg 210deg, #000 210deg 240deg, transparent 240deg 360deg);
+  }
+  .wheel .hub {
+    position: absolute; left: 50%; top: 50%;
+    width: 30%; height: 30%;
+    transform: translate(-50%, -50%);
+    border-radius: 44%;
+    background: #FAFAF8;
+    box-shadow: 0 0 0 4px #E4E4E0, 0 2px 6px rgba(0,0,0,.18);
+    display: grid; place-items: center;
+  }
+  .wheel .hub svg { width: 74%; height: 74%; opacity: .8; }
+  .wheel .spoke-h { position: absolute; left: 50%; top: 50%; width: 52%; height: 15%;
+    transform: translate(-50%, -50%); border-radius: 6px; background: #EDEDEA; }
+  .wheel .spoke-v { position: absolute; left: 50%; bottom: 22%; width: 14%; height: 30%;
+    transform: translateX(-50%); border-radius: 6px; background: #EDEDEA; }
+
+  /* A 柱 */
+  .pillar {
+    position: absolute; top: -6%; height: 46%; width: 16%;
+    background: linear-gradient(90deg, #FFFFFF, #E2E2DE);
+    opacity: .85;
+  }
+  .pillar.l { left: -3%; transform: rotate(11deg); border-radius: 0 0 60% 0; }
+  .pillar.r { right: -3%; transform: rotate(-11deg); border-radius: 0 0 0 60%; }
+
+  /* 出风（青色气流） */
+  .airflow { position: absolute; inset: 0; pointer-events: none; }
+  .airflow path {
+    fill: none; stroke: var(--blue); stroke-width: 2.6;
+    stroke-linecap: round; opacity: .10;
+    stroke-dasharray: 10 16;
+    transition: opacity .45s ease, stroke-dashoffset .45s;
+  }
+  .airflow.on path { opacity: .72; animation: flow 1.6s linear infinite; }
+  .airflow.on.heat path { stroke: var(--red); opacity: .55; }
+  @keyframes flow { to { stroke-dashoffset: -26; } }
+
+  /* 座舱加热/制冷色雾（很轻，别抢戏） */
+  .hero .tint {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(70% 55% at 50% 78%, rgba(44,110,143,.13), transparent 70%);
+    opacity: 1; transition: background .5s;
+  }
+  .hero .tint.heat {
+    background: radial-gradient(70% 55% at 50% 78%, rgba(196,38,46,.12), transparent 70%);
+  }
+
+  /* 画面四周渐隐，向白底融掉（参考图就是这个处理） */
+  .hero .fade {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, var(--shell) 0%, rgba(250,250,248,0) 16%),
+      linear-gradient(0deg, var(--shell) 0%, rgba(250,250,248,0) 22%),
+      linear-gradient(90deg, var(--shell) 0%, rgba(250,250,248,0) 9%),
+      linear-gradient(270deg, var(--shell) 0%, rgba(250,250,248,0) 9%);
+  }
+  /* 中央出风口下方的一道白雾 */
+  .hero .haze {
+    position: absolute; left: 28%; right: 28%; top: 58%; height: 30%;
+    background: radial-gradient(60% 60% at 50% 30%, rgba(255,255,255,.95), rgba(255,255,255,0) 70%);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+
+  /* ===================== 通用文字块 ===================== */
+  .lede { margin: 10px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--ink); }
+  .lede .soft, .soft { color: var(--ink-soft); }
+  .sec-h {
+    margin: 22px 0 11px;
+    font-size: 17px; font-weight: 500; letter-spacing: .3px;
+  }
+
+  /* ===================== 温度卡 ===================== */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .temp-card { padding: 16px 16px 18px; }
+
+  .temp-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--ink); gap: 8px;
+  }
+  .temp-head .left { display: flex; align-items: center; gap: 8px; }
+  .temp-head .note { color: var(--ink-soft); font-size: 12.5px; white-space: nowrap; }
+  .temp-head .dotp { color: var(--ink-fade); }
+
+  .temp-body {
+    display: grid; grid-template-columns: auto 1fr auto;
+    align-items: center; gap: 10px;
+    margin-top: 16px;
+  }
+  .round-btn {
+    width: 62px; height: 62px; border-radius: 50%;
+    border: none; background: #191919; color: #fff;
+    display: grid; place-items: center;
+    cursor: pointer; padding: 0;
+    box-shadow: 0 6px 14px -6px rgba(0,0,0,.55);
+    transition: transform .1s ease, background .15s;
+  }
+  .round-btn svg { width: 22px; height: 22px; }
+  .round-btn:focus { outline: none; }
+  .round-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .round-btn:active { transform: scale(.92); background: #000; }
+  .round-btn[disabled] { opacity: .25; cursor: not-allowed; }
+
+  .readout {
+    display: flex; align-items: flex-start; justify-content: center;
+    gap: 2px; padding-top: 6px;
+  }
+  .value {
+    font-size: clamp(44px, 15vw, 62px);
+    line-height: 1; font-weight: 500;
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 1.1px, transparent 1.6px);
+    -webkit-mask-size: 3.2px 3.2px;
+    -webkit-mask-repeat: repeat;
+    mask-image: radial-gradient(circle at 50% 50%, #000 1.1px, transparent 1.6px);
+    mask-size: 3.2px 3.2px;
+    mask-repeat: repeat;
+  }
+  .unit { font-size: 17px; color: var(--ink); padding-top: 2px; letter-spacing: -.5px; }
+
+  .scale-hint {
+    margin-top: 12px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11.5px; color: var(--ink-fade);
+    justify-content: center;
+  }
+
+  /* ===================== 模式按钮 ===================== */
+  .modes {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-top: 14px;
+  }
+  .mode {
+    appearance: none; cursor: pointer;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 16px 14px 14px;
+    min-height: 98px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    align-items: flex-start; gap: 18px;
+    color: var(--ink);
+    font-family: var(--mono); font-size: 14.5px;
+    transition: border-color .18s, background .18s, transform .1s, color .18s;
+  }
+  .mode svg { width: 26px; height: 26px; display: block; }
+  .mode:focus { outline: none; }
+  .mode:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .mode:active { transform: scale(.975); }
+  .mode.on {
+    border-color: var(--red);
+    box-shadow: 0 0 0 1px var(--red) inset, 0 0 22px -10px rgba(196,38,46,.6);
+  }
+  .mode.on svg { color: var(--red); }
+  .mode.on .lbl { color: var(--red); }
+  .mode.heating.on {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 1px var(--ink) inset;
+    background: linear-gradient(180deg, rgba(43,43,43,.05), transparent 70%);
+  }
+  .mode.heating.on svg, .mode.heating.on .lbl { color: var(--ink); }
+
+  /* ===================== 状态行 ===================== */
+  .status-line {
+    margin: 16px 2px 0;
+    font-size: 13px; line-height: 1.5;
+    color: var(--ink-soft);
+    min-height: 20px;
+  }
+  .status-line b { font-weight: 500; color: var(--ink); }
+  .status-line .r { color: var(--red); }
+
+  /* ===================== 离开空调 ===================== */
+  .departure {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 16px;
+    margin-top: 8px;
+  }
+  .departure .txt { font-size: 15px; }
+  .departure .sub {
+    margin-top: 6px; font-size: 11.5px; color: var(--ink-fade);
+    line-height: 1.75; letter-spacing: -.2px;
+  }
+
+  /* 开关 */
+  .switch {
+    flex: none; position: relative;
+    width: 56px; height: 32px; border-radius: 999px;
+    background: #D3D3CF; border: none; cursor: pointer; padding: 0;
+    transition: background .22s;
+  }
+  .switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    transition: transform .22s cubic-bezier(.3,1.4,.5,1);
+  }
+  .switch[aria-checked="true"] { background: var(--red); }
+  .switch[aria-checked="true"]::after { transform: translateX(24px); }
+
+  /* 计划时间行 */
+  .sched {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px; padding: 14px 16px;
+    font-size: 13.5px; color: var(--ink-soft);
+    transition: opacity .2s;
+  }
+  .sched .time { color: var(--ink); letter-spacing: 1px; font-size: 15px; }
+  .sched.off { opacity: .42; pointer-events: none; }
+
+  /* ===================== 页脚说明 ===================== */
+  .foot {
+    margin: 22px 2px 0;
+    font-size: 11px; line-height: 1.7;
+    color: var(--ink-fade);
+  }
+  .foot code { font-family: var(--mono); color: var(--ink-soft); }
+
+  /* 顶栏底部一条极细进度/位置指示，呼应参考图顶部那行小点点 */
+  .crumbs {
+    position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 5px;
+  }
+  .crumbs i {
+    width: 3px; height: 3px; border-radius: 50%;
+    background: var(--line-2); display: block;
+  }
+  .crumbs i.on { background: var(--ink-soft); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .airflow.on path { animation: none; }
+    .round-btn, .switch, .mode, .switch::after { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 状态栏（纯装饰，模拟 iOS） -->
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="sb-icons">
+      <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true">
+        <rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/>
+        <rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/>
+      </svg>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor" aria-hidden="true">
+        <path d="M7.5 10.4 5.2 7.9a3.4 3.4 0 0 1 4.6 0zM3.3 5.9 1.7 4.2a8.3 8.3 0 0 1 11.6 0l-1.6 1.7a6 6 0 0 0-8.4 0z"/>
+      </svg>
+      <svg width="24" height="11" viewBox="0 0 24 11" aria-hidden="true">
+        <rect x="0.5" y="0.5" width="20" height="10" rx="3" fill="none" stroke="currentColor" opacity=".45"/>
+        <rect x="2" y="2" width="15" height="7" rx="1.7" fill="currentColor"/>
+        <path d="M22.4 4v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".45"/>
+      </svg>
+    </span>
+  </div>
+
+  <!-- 顶栏 -->
+  <header>
+    <div class="left">
+      <button class="icon-btn" aria-label="明暗模式">
+        <span class="duo"></span>
+      </button>
+    </div>
+    <div class="title">Climate</div>
+    <div class="right">
+      <button class="icon-btn" id="btnPhone" aria-label="连接车辆" aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 10.5a14 14 0 0 1 18 0"/>
+          <path d="M6.5 14.5a9 9 0 0 1 11 0"/>
+          <path d="M10 18.4a4 4 0 0 1 4 0"/>
+          <circle cx="12" cy="21.2" r="0.6" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+    </div>
+    <div class="crumbs" aria-hidden="true">
+      <i class="on"></i><i></i><i></i><i></i><i></i>
+    </div>
+  </header>
+
+  <main>
+    <!-- 车型抬头 -->
+    <div class="masthead">
+      <div class="dotword" aria-label="ID 3">ID 3</div>
+      <div class="trim">2022 Pro</div>
+    </div>
+
+    <!-- 座舱 -->
+    <div class="hero">
+    <div class="hero-inner">
+      <div class="dash"></div>
+      <div class="pillar l"></div>
+      <div class="pillar r"></div>
+      <div class="dash-deck"></div>
+
+      <div class="cluster">
+        <svg viewBox="0 0 80 44" fill="none" aria-hidden="true">
+          <path d="M14 26c3-9 12-15 26-15s23 6 26 15c-9 4-17 6-26 6s-17-2-26-6z" fill="#3C7BB0" opacity=".9"/>
+          <path d="M14 26c3-9 12-15 26-15s23 6 26 15" stroke="#8FC0E4" stroke-width="1.2" opacity=".8"/>
+        </svg>
+      </div>
+
+      <div class="screen">
+        <div class="ui">
+          <div class="row">
+            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19"/></svg></div>
+            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="1.6" stroke-linecap="round"><path d="M4 18V6l8 6 8-6v12"/></svg></div>
+          </div>
+          <div class="row">
+            <div class="tile hot"><svg viewBox="0 0 24 24" fill="none" stroke="#3B5A73" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v18M3 12h18M6 6l12 12M18 6 6 18"/></svg></div>
+            <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 4v16"/></svg></div>
+            <div class="tile hot"><svg viewBox="0 0 24 24" fill="none" stroke="#3B5A73" stroke-width="1.6" stroke-linecap="round"><path d="M4 12h16M8 8l-4 4 4 4"/></svg></div>
+          </div>
+          <div class="beam"></div>
+        </div>
+      </div>
+
+      <div class="wheel">
+        <span class="spoke-v"></span>
+        <span class="spoke-h"></span>
+        <span class="hub">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2B2B2B" stroke-width="1.4" aria-hidden="true">
+            <circle cx="12" cy="12" r="9.5"/>
+            <path d="M12 2.5v7M9 12.5l-4.6 7M15 12.5l4.6 7" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </div>
+
+      <div class="vent"></div>
+
+      <svg class="airflow" id="airflow" viewBox="0 0 100 86" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M46 52 C 44 60, 40 66, 34 74"/>
+        <path d="M50 53 C 50 62, 50 68, 50 78"/>
+        <path d="M54 52 C 57 60, 61 66, 66 74"/>
+        <path d="M42 51 C 36 58, 28 62, 18 68"/>
+        <path d="M58 51 C 64 58, 72 62, 82 68"/>
+      </svg>
+      <div class="haze"></div>
+      <div class="tint" id="tint"></div>
+    </div>
+      <div class="fade"></div>
+    </div>
+
+    <!-- 说明 -->
+    <p class="lede">Cabin</p>
+    <p class="lede soft" style="margin-top:6px">Airflow preview · not sent to car</p>
+
+    <h2 class="sec-h">Cabin climate</h2>
+
+    <!-- 温度设定 -->
+    <div class="card temp-card">
+      <div class="temp-head">
+        <span class="left">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="2.2"/>
+            <path d="M12 4.4c1.6 0 2.4 1.2 2.4 2.6v1.3M12 19.6c-1.6 0-2.4-1.2-2.4-2.6v-1.3M4.4 12c0-1.6 1.2-2.4 2.6-2.4h1.3M19.6 12c0 1.6-1.2 2.4-2.6 2.4h-1.3"/>
+            <path d="M6.6 6.6c-1.1 1.1-.7 2.6 0 3.5l.9 1M17.4 17.4c1.1-1.1.7-2.6 0-3.5l-.9-1M17.4 6.6c1.1 1.1.7 2.6 0 3.5l-1 .9M6.6 17.4c-1.1 1.1-.7 2.6 0 3.5l.9-1"/>
+          </svg>
+          <span>Target</span>
+          <span class="dotp">·</span>
+          <span class="soft">preview</span>
+        </span>
+        <span class="note">0.5°C steps</span>
+      </div>
+
+      <div class="temp-body">
+        <button class="round-btn" id="btnMinus" aria-label="降低温度">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+          </svg>
+        </button>
+
+        <div class="readout" aria-live="polite">
+          <span class="value" id="tempValue">16.0</span>
+          <span class="unit">°C</span>
+        </div>
+
+        <button class="round-btn" id="btnPlus" aria-label="升高温度">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+            <path d="M5 12h14M12 5v14"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="scale-hint">
+        <span id="rangeHint">16.0 – 28.0 °C</span>
+      </div>
+    </div>
+
+    <!-- 模式 -->
+    <div class="modes" role="group" aria-label="空调模式">
+      <button class="mode" id="btnCool" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2.6v18.8M3.9 7.3l16.2 9.4M20.1 7.3 3.9 16.7"/>
+          <path d="M12 6.2 9.6 4.4M12 6.2l2.4-1.8M12 17.8l-2.4 1.8M12 17.8l2.4 1.8"/>
+          <path d="M8 9.7 4.7 9.4M8 9.7 7 6.6M16 14.3l3.3.3M16 14.3l1-3.1"/>
+          <path d="M8 14.3l-3.3.3M8 14.3 7 17.4M16 9.7l3.3-.3M16 9.7l1 3.1"/>
+        </svg>
+        <span class="lbl">Cool</span>
+      </button>
+
+      <button class="mode heating" id="btnHeat" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3.6"/>
+          <path d="M12 2.4v2.6M12 19v2.6M2.4 12h2.6M19 12h2.6M5.2 5.2l1.9 1.9M16.9 16.9l1.9 1.9M18.8 5.2l-1.9 1.9M7.1 16.9l-1.9 1.9"/>
+        </svg>
+        <span class="lbl">Heat</span>
+      </button>
+
+      <button class="mode" id="btnStop" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M12 3.2v8.4"/>
+          <path d="M6.9 6.6a7.6 7.6 0 1 0 10.2 0"/>
+        </svg>
+        <span class="lbl">Stop</span>
+      </button>
+    </div>
+
+    <p class="status-line" id="statusLine"></p>
+
+    <!-- 离开空调 -->
+    <h2 class="sec-h" style="margin-top:22px">Departure climate</h2>
+    <div class="card departure">
+      <div>
+        <div class="txt">Precondition on schedule</div>
+        <div class="sub">离开前按计划温度预热 / 预冷，避免上车即蒸桑拿。</div>
+      </div>
+      <button class="switch" id="deptSwitch" role="switch" aria-checked="false" aria-label="离开空调计划"></button>
+    </div>
+    <div class="card sched off" id="schedCard">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span>Weekdays（周一 – 周五）</span>
+        <span class="time">07:30</span>
+      </div>
+    </div>
+
+    <p class="foot">
+      Preview page · 本地模拟，不下发车辆<br>
+      参考 ID3 第三方车控 App 的“点阵贴纸”风格，仅作前端视觉稿。<br>
+      <code>design/cabin-climate.html</code>
+    </p>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var MIN = 16.0, MAX = 28.0, STEP = 0.5;
+  var state = { temp: 16.0, mode: 'cool' };   // cool | heat | stop
+
+  var el = {
+    value: document.getElementById('tempValue'),
+    minus: document.getElementById('btnMinus'),
+    plus:  document.getElementById('btnPlus'),
+    range: document.getElementById('rangeHint'),
+    cool:  document.getElementById('btnCool'),
+    heat:  document.getElementById('btnHeat'),
+    stop:  document.getElementById('btnStop'),
+    status: document.getElementById('statusLine'),
+    airflow: document.getElementById('airflow'),
+    tint: document.getElementById('tint'),
+    dept: document.getElementById('deptSwitch'),
+    sched: document.getElementById('schedCard')
+  };
+
+  /* 只保留一位小数，避免 0.1+0.2 类的浮点尾巴 */
+  function fmt(n) { return n.toFixed(1); }
+
+  function render() {
+    el.value.textContent = fmt(state.temp);
+
+    var stopped = state.mode === 'stop';
+    el.minus.disabled = stopped || state.temp <= MIN;
+    el.plus.disabled  = stopped || state.temp >= MAX;
+
+    el.cool.classList.toggle('on', state.mode === 'cool');
+    el.heat.classList.toggle('on', state.mode === 'heat');
+    el.stop.classList.toggle('on', stopped);
+    el.cool.setAttribute('aria-pressed', state.mode === 'cool');
+    el.heat.setAttribute('aria-pressed', state.mode === 'heat');
+    el.stop.setAttribute('aria-pressed', stopped);
+
+    el.airflow.classList.toggle('on', !stopped);
+    el.airflow.classList.toggle('heat', state.mode === 'heat');
+    el.tint.classList.toggle('heat', state.mode === 'heat');
+    el.tint.style.opacity = stopped ? '0' : '1';
+
+    if (stopped) {
+      el.status.innerHTML = '<b>Climate preview off.</b> Nothing is being sent to your car.';
+    } else if (state.mode === 'cool') {
+      el.status.innerHTML = '<span class="r">Cooling preview active.</span> Not sent to your car.';
+    } else {
+      el.status.innerHTML = '<span class="r">Heating preview active.</span> Not sent to your car.';
+    }
+  }
+
+  function bump(delta) {
+    if (state.mode === 'stop') return;
+    var next = Math.round((state.temp + delta) / STEP) * STEP;
+    state.temp = Math.min(MAX, Math.max(MIN, next));
+    render();
+  }
+
+  function setMode(mode) {
+    /* 再点一次激活中的模式 → 回到 stop，避免两灯同亮 */
+    state.mode = (state.mode === mode) ? 'stop' : mode;
+    render();
+  }
+
+  el.minus.addEventListener('click', function () { bump(-STEP); });
+  el.plus .addEventListener('click', function () { bump(+STEP); });
+  el.cool .addEventListener('click', function () { setMode('cool'); });
+  el.heat .addEventListener('click', function () { setMode('heat'); });
+  el.stop .addEventListener('click', function () { state.mode = 'stop'; render(); });
+
+  el.dept.addEventListener('click', function () {
+    var on = el.dept.getAttribute('aria-checked') === 'true';
+    el.dept.setAttribute('aria-checked', String(!on));
+    el.sched.classList.toggle('off', on);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-skin="paper">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#EDEDEB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FORAGER · 觅食者号</title>
+<script>
+/* 防闪白：在任何样式生效前先把上次选的皮肤贴到 <html> 上。
+   必须内联在最前面，否则会先画一帧 paper 再跳到 night。 */
+(function(){
+  try{
+    var k=localStorage.getItem('forager_skin');
+    if(k&&/^[a-z]+$/.test(k)) document.documentElement.setAttribute('data-skin',k);
+  }catch(e){}
+})();
+</script>
+<style>
+/* =====================================================================
+   FORAGER 控制面板 —— “点阵贴纸”风格
+   功能与 web/index.html（深蓝版）一致：同一套实体映射、同一套 SSE/REST 通道。
+   仅替换视觉层：暖白底 / 点阵大字 / 细描边白卡 / 红色语义强调 / 线稿图标。
+   零依赖、离线可用；移动优先，触控目标 ≥44px。
+   ===================================================================== */
+  /* ===== 字体：内嵌像素字（离线可用，不依赖 CDN） =====
+     Pixelify Sans —— 正文/数值，圆角单层像素，最接近参考图的字形
+     Silkscreen   —— 小号标签与点阵大字，方正硬朗
+     两者都做了 latin 子集，合计约 21KB(base64)，随页面 gzip 后增加很小 */
+  @font-face{
+    font-family:'PxBody';font-style:normal;font-weight:400;font-display:swap;
+    src:url(data:font/woff2;base64,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) format('woff2');
+  }
+  @font-face{
+    font-family:'PxCaps';font-style:normal;font-weight:400;font-display:swap;
+    src:url(data:font/woff2;base64,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) format('woff2');
+  }
+  @font-face{
+    font-family:'PxCaps';font-style:normal;font-weight:700;font-display:swap;
+    src:url(data:font/woff2;base64,d09GMgABAAAAAAyIAA4AAAAANFQAAAwyAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGlIbg3ocbAZgAIQ+EQgKx2y0XwuDNgABNgIkA4ZoBCAFhC4HhEwbGCijooq0M4q/TODkKqxjASJE8FpVI+BVZ9KNo2fYhX3sm4T+8hOnZd/TnPv+XRS4IKmhRzAPHsSkppiHipqmnRkN0ft7X2fPfd+tMNOOgGVsQKp4KR1ZPOIBOOJhQSHcKB3nJfgggA1tcgkR7ENN1lWntsE/Z0Abrs0SB+tp75LFoVqLbGJshJDHwy+B7SeZEhFS3JkdM+3/N/WTajzR397gdpbK5yyAAbQDKM/VzOx4JOvb8hbb25qPfmrX8/wip5SGAvNDA1tBraCcZWELU2Eo3fMBCwUBKNsybcDd0ss7dhksY4WoiqIohFzPjvc4zzEQRgAAQCRGhkgQGVNEEI3EykGK6JGLLuNcdQ2HEECOSFx0yeXsDyeAkkiH1pIzCyHHA2AMAxC2m0eg3q8awV8Qgu5cYtxJSZkjSgBleZaj6GFKEl/SkIYG00g8gMhRhkcLSiFMVaUXdaFeJFIX6kLWQTqmHggkJ+Yu3IW64G8YfuW+Yt5eIGu895Igte4CAZlRAWGti9jjh6PmTK1DqJ4iE0Z//8l3PY4AqiDuLYqhNAC1wIUVuNDBjt+xhBcmfH36c1V5+njXJ8sNbJ9jFe5LoMpcwkxWZYt0GQjrHoUaZlu0RNlNlOxmQ/zSeva5/pdvz7tG5f/W4QTkAD0OX80fxRvTkhLhjcaZYwBGIDXSHexnVO6rE6av/vimYwdJgL1XOwAZSdS9FVq/DZcdCmUApd940XpGNpYym9fwUiOA+/AbQADQv3IQIOIADMAB1DgEUOPLE4A7EU/OjJ9wgxlXwE7Xw0Ycz8lFtWgt2osa0VXUiRsdNcYAZkT+dJYmH78CXNtsJbYWbcPwT+4PSAEA+D/z78+/S+OPPGksAE9PlGti8WQmArgC4p0PQrtrpQcaDv+3jTXFZrMddME2Wyy2xCxHTTDPeHNMNMkpJ5w0zVZEQcmUwIpaCy3ZsGXHngNHHrx48+HLT5BgIUKFW26uFc5Z5CadeAmSpMiUJVuOQkWKtdVOBz30UqJUuQq16tRroLfUXsucMc5U+x12wBH77HDDTs3WO2u+Xe7a47ThRrjlvO1muGeY3jYYZaTRppNgODI8KTkTllTMWbDWSmttmBG50HDixtkxrgL5C6AVxlOZaBEixYoSI06iDKnSpCuQK0++ZO110VEn3XR2XFc1KlWp1qinJu66W2udlVZbYxVCfVQA4D4A9AXwExQ3AN3YZ/KHvIFi+tS+eD6AwpVe5ngJNAVNGE7iTDRiUITmWQPeDjNOh3sYNmgSQqaKCHx7TQG7T4JRMunRUzY7w7GEGJD0pCO8dCg6dvYwvk1g+XGyhFuaSeRPHLsnKnpdnsot3pARWM+9vGdmeeTrgbGfJHoe490crD4MdH/URNgjtsV9fs/+SiMH5+H48egOTXjmnHl7HGWuyKc+ebd7vZ+TXvqT0F03lASRa/c51Zhb+DHTWvDbqlo1BKEUSnYc+gfIPDmViOUKWx6jXawgKxYRRDkGvkX5Y6P0HWgR4wqNQUKKpH8QFEqUJp3foLqCJYSmz5gaMvusAHJu5VECnuWEZpAdIsJUwZMWo8jIZ+AzwqldwxCkwM5Tyc8Ij1GB2ERwKvD5HfStC71XJehVWeQkuoaUCeqvBYKoGJOimYotZxWFsQOFKwlhcIby2PVEadlmFaSBndO0VeePzpYAb8+Htd2UMqDmRK2H0pqS5eddQ6K2U2lSl2gYtdRjdm5QEXVKxF6HebkwopzJQYerHphZvS5i9Eq65KgBJM2lGTL9ViI/pKHdR172URcCeDwaE7WQHJdQg3sk1UOBJiBZAGnU8rZwQUCSjhnZXKeSaiVrU6D6Mce23i1FUAED6yhEYCZViOUl74wYqXGWWwWaJSFb3R1FSWx1YKxQQWemaVJOHEaxunGUCvcGq5YuKyJupmkquTBYDPtVdhUQT2QRqRFQhrh8IzuByWWorUHgXBEDciyZBq2ai7TO7pdn7e6ETukK+K3AfhOSddupek+OqkQbUBPj26+K6AVyPBrWq2yEG15lnltG2qgQYqkKWsHJNrqpFQo8lz2IjLAsubDjCtkWWNiCB7l1eIRoYjR5uYeDc8MlKiFgm+12Bd0cgcEPIx/pG3/SMKiEw0Xds3U5/UgsltcURjQYOiHmg+oGfqcEmHtRbcLs+synDy4yHhCrv8nsDx/3uQIqFue4vNjWY658iN7c0QGpybGrb2jOPWNQaZju0dgkIWhkHrGcutvSQ7PvVCk60OnlmFSDlhghLkg7bIsHqDSJUYddf7F/XodTTg1BqTLe7b2RwY5nPUaCEV/Br4Y36BQvd4A9eEOboIQESq0u67Qh5fJdosOAaPjukwU4bkmGEwQ2X0XIcJih0Atlz3esZE3oudgJCa1KJ9pTQXybZiWL53Qnr5KAwVTnvD6poxccsam1+qEZ9tUAiH0VSZg80SBrVphGqg0yc3CFnJjRBbXcXsM+xuxTPpWL5apGyhTIgR788cMryqRPi8UpkE+9HFaVxHiQcGmjlpKXdhtLzV49jiw5ETszI+asMs+InQsX2/nMQZYTe/fOd+FZtGkc91QHbw/o9EUb6DamtuvvwQufq+bjWM7Qoyz7Ivx+VSBHA6hO0lc9JbfYbmK+3KWmuY5R7J8gpuLNSzXZJ4bU9Q5WufjxXgbNTjqqHY8FbbAQsqQRgTxvH7IW8H9h3gAqiDKZK0aA9bhVu0BtaE7kzSCny1o89LIbMWQar47vwxOfeb+bzg5CZqfDljQOzd16tZMI22HZmmUcekFOVF259qY6itK0gDng7oljW7jJ/q0CyJkFR+5GTa6W6vb3dOSbT6qzBLE++LxzTfv2h25nXBa95oCZSOgWyRw5Z8sfhK0p19epK0VfdQpR0nyup5ELpO8ufzvRt9NFWORejd6f8k7PeaHyf3MybAUEkLoMrLu4+rpL9y28iiv59Uwg0G7dFeCXeEvx8rorr/gl7rDw6j13FC4rUaKj6Fj1KxL9RD8WWshc9juIOlEn6qo6nmqCbjFFTBFTqu00iR3EDmIHsYNYIVaIFWGD+5McmPd/HDrGxSSI+RV+tXlNyVnxmV22dBO2fhp7FcVP3iIAiAAADl8xCNiP9rYPq4S383t5NYDBsdctoH8i2OXmQcDtToXFjzIkMy1y5sV8Sg+//U4fRLQqttG9SX2OIVlcDbGbH8PCaviVyUAAAUj8x7rvuq6qyJ9yFfcWgH1zv1UA8Pjb4oGREf+8vUWkGAAg+AR0XLITj//bY14EGRr3mZ5uq4oextvMU9dnZ5D7YnBj0Aigq2+9n50mlMGA/mJP9K9Zn5XOiFqP8EmTUKZKQ9fpnkf7Bl3VaQd0nKBTBnhM8Qo6BkZ+X1fCTNkNONJQ7CM2zmSpkVCBiJBIwFPgE2u88cbI2L0LQARgUARfjRBJTf7nCHCfiGeLR4avCYYAcqU41CkAbE9LYCtRh21l5H5v5QQ5vZVnb+1WiUKFVpoNQ6yQDoBy+nHnek10/H6pJj01qlBPr4mvJhWq+arTqIyfHMkyFeTSqpIvV6JELR/x6lTrpViJxnJbl/15ogC+/PkLEEGkp1equ2Z6dWsDrN713fXG27CIBe0cykewXi/dgwfvmEh5BkWyZfhHECHVJF6sS1it4PrZ0S9TLjLV8nRFhXBQMhlhNrfr1qkMrmexi9Prym10TW9Dje+XqcB1m/V4K3qqU5OLOlZXVCtRaqesS+hHuQsemOEKjad1tu8DnJ1zRg+b9LTZVC5c9eLmHXclzjrvAg+evHiv8EmurP6A+n4p7Yqfjy5zwzRbbBXo07qQ9w5z0y3lbgunW1nBPvy4RBWqVKtUq8ZSSZLVSfFeqnpTXMOai26GzH6itz6a15FgDYbtG764nwEG6m+ZQbYp8HmFiRsX3muwoYYZor0OKzW6H+0PhxZZvJ5FrQX5L7NmwzaMOOJh8NOvSMBFCgsqduxtwFtBY7kTxjAjZSmGeWTYbod4Jkx10U20WCedstMuu+2xznqHHSGh5ERhrNEmGG+iEbp6a6RDZJFjlNkEX+0lcuRghu5WiosC8s+IfhYJpCJzTJZgkrvuue/xcHNthb9/fHgSak8EsoT85z1x/q6dyP/SurjP44PdGwP9wxR/k+loyb8HWii692zWB4WYRavQV1T3gpOgrq0NBQ==) format('woff2');
+  }
+:root{
+  /* =====================================================================
+     【换肤契约】所有视觉值都在这里，组件样式只消费 token、不写死颜色/圆角。
+     新增皮肤 = 在下方 [data-skin="xxx"] 里覆盖这组变量，无需改任何组件规则。
+     完整说明见 docs/design/panel-theming.md
+     ===================================================================== */
+
+  /* --- 1. 字体族 --- */
+  --font-body:'PxBody','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --font-num:'PxCaps','PingFang SC',sans-serif;   /* 数值/大写字 */
+  --font-mono:ui-monospace,"SFMono-Regular",Menlo,monospace;
+
+  /* --- 2. 表面与文字（按层级从底到顶） --- */
+  --c-page-bg:#EDEDEB;   /* 页面最外层（手机壳之外） */
+  --c-shell:#FAFAF8;     /* 顶栏/底栏底色 */
+  --c-card:#FFFFFF;      /* 卡片底色 */
+  /* 卡片顶部微渐变：照设计稿 .mode.heating.on
+     linear-gradient(180deg, rgba(43,43,43,.05), transparent 70%) */
+  --c-card-veil:linear-gradient(180deg,
+    color-mix(in srgb,var(--c-text) 5%,transparent) 0%,
+    transparent 70%);
+  --c-sunken:#EDEDEB;    /* 卡片内的凹槽块（stat / cell） */
+  --c-raised:#E4E4E1;    /* 选中态块 / 进度槽 */
+  --c-text:#2B2B2B;
+  --c-text-2:#6E6E6B;
+  --c-text-3:#9C9C98;
+  --c-line:#D7D7D3;
+  --c-line-2:#C4C4BF;
+
+  /* --- 3. 语义色（状态含义，不随皮肤改变含义） --- */
+  --c-accent:#C4262E;
+  /* 柔光色：设计稿写死 rgba(196,38,46,.6)，用 color-mix 60% 等价表达 */
+  --c-accent-soft:color-mix(in srgb,var(--c-accent) 60%,transparent);
+  --c-text-soft:color-mix(in srgb,var(--c-text) 60%,transparent);    /* 主强调：激活/选中/告警红 */
+  --c-info:#2C6E8F;      /* 信息蓝：制冷/联网 */
+  --c-ok:#2F7A4D;        /* 正常/充电 */
+  --c-warn:#A8730F;      /* 警告/偏高 */
+  --c-danger:#C4262E;    /* 异常（多数皮肤与 accent 同色） */
+  /* 语义色的浅底（用于 badge 背景），用 color-mix 从语义色派生 */
+  --c-ok-bg:color-mix(in srgb,var(--c-ok) 10%,transparent);
+  --c-warn-bg:color-mix(in srgb,var(--c-warn) 10%,transparent);
+  --c-danger-bg:color-mix(in srgb,var(--c-danger) 8%,transparent);
+
+  /* --- 4. 开关/控件 --- */
+  --c-switch-off:#C4C4BF;
+  --c-switch-on:#2B2B2B;
+  --c-knob:#FFFFFF;
+  --c-slider:#2B2B2B;
+  --c-mark-on:#C4262E;   /* 开关格下方小圆点（开启时） */
+  --c-scene-on:#2B2B2B;  /* 情景卡激活描边 */
+
+  /* --- 5. 形状 --- */
+  --r-card:18px;
+  --r-block:18px;
+  --r-chip:10px;
+  --r-pill:999px;
+  --bd-card:1px solid var(--c-line);
+  --bd-card-on:1px solid var(--c-text);
+  --gap-card:10px;
+  --pad-card:16px 16px 18px;
+  --pad-block:14px 14px;
+  --shadow-card:none;
+  --shadow-knob:0 1px 3px rgba(0,0,0,.28);
+  /* 激活态柔光：负扩散让光只贴在边缘外侧一圈，不糊成一片
+     （取自 design/cabin-climate.html 的 .mode.on） */
+  /* 严格照抄 design/cabin-climate.html .mode.on 的两个 draw：
+     inset 1px 描边 + 外侧 22px 负扩散柔光（可见光晕约 12px） */
+  --glow-accent:0 0 0 1px var(--c-accent) inset,0 0 22px -10px var(--c-accent-soft);
+  --glow-text:0 0 0 1px var(--c-text) inset,0 0 22px -10px var(--c-text-soft);
+  /* 格子/情景卡/皮肤项统一用同一套光（不再另调一档，否则和设计稿不一致） */
+  --glow-tile:0 0 22px -10px var(--c-accent-soft);
+  --glow-on:var(--glow-accent);
+
+  /* --- 6. 排版 --- */
+  --fs-sec:13.5px;      /* 区块标题 */
+  --fs-label:10.5px;    /* 小标签 */
+  --fs-body:12px;       /* 正文/格子标签 */
+  --fs-val:15px;        /* 数值 */
+  --fs-num:21px;        /* 环形仪表中间数字 */
+  --fs-clock:15px;
+  --fs-nav:11px;
+  --fs-log:11px;
+  --lh-tight:1.2;
+  --lh-body:1.6;
+
+  /* --- 7. 图标 --- */
+  --icon-size:26px;     /* 开关格图标 */
+  --icon-nav:22px;
+  --icon-stroke:1.4;    /* SVG 描边宽度（设计稿图标本体是 1.4） */
+  --icon-off-opacity:.72;
+
+  /* --- 8. 装饰 --- */
+  --deco-dotword-opacity:1;   /* 点阵大字 */
+  --deco-focus:var(--c-info); /* 键盘焦点环 */
+  --deco-sec-bar:var(--c-text); /* 区块标题左侧竖条 */
+
+}
+
+  /* =====================================================================
+     皮肤定义 —— 每款只覆盖 token，不动任何组件规则。
+     用 <html data-skin="xxx"> 切换；默认 paper（参考图那款）。
+     ===================================================================== */
+
+  /* ---------- 1) paper：参考图原味（暖白 + 点阵 + 红点缀） ---------- */
+  [data-skin="paper"]{}
+
+  /* ---------- 2) night：深色仪表盘，夜间不刺眼 ---------- */
+  [data-skin="night"]{
+    --c-page-bg:#0E1116; --c-shell:#12161C; --c-card:#171C23;
+    --c-sunken:#1E242C;  --c-raised:#232B35;
+    --c-text:#E8EAED;    --c-text-2:#9BA3AE; --c-text-3:#6B7480;
+    --c-line:#2A323C;    --c-line-2:#3A434F;
+    --c-accent:#FF6B6B;  --c-info:#5EB0E5; --c-ok:#5FD08A; --c-warn:#F0B94B; --c-danger:#FF5C5C;
+    --c-switch-off:#39414D; --c-switch-on:#5EB0E5; --c-knob:#E8EAED;
+    --c-slider:#5EB0E5; --c-mark-on:#FF6B6B; --c-scene-on:#E8EAED;
+    --shadow-card:0 1px 0 rgba(255,255,255,.03) inset;
+    --shadow-knob:0 1px 3px rgba(0,0,0,.6);
+    --deco-sec-bar:var(--c-text-2);
+    --deco-focus:var(--c-info);
+    /* 深色底上柔光更显眼，略加强 */
+    --glow-accent:0 0 18px -9px color-mix(in srgb,var(--c-accent) 55%,transparent);
+    --glow-text:0 0 18px -9px color-mix(in srgb,var(--c-info) 45%,transparent);
+  }
+
+  /* ---------- 3) terminal：等宽绿字，调试/深夜户外用 ---------- */
+  [data-skin="terminal"]{
+    --font-body:var(--font-mono); --font-num:var(--font-mono);
+    --c-page-bg:#08110B; --c-shell:#0A140D; --c-card:#0C1810;
+    --c-sunken:#0F1E14;  --c-raised:#12251A;
+    --c-text:#7CF29B;    --c-text-2:#4FAE68; --c-text-3:#35794A;
+    --c-line:#1D3D28;    --c-line-2:#2A5637;
+    --c-accent:#FFDF6B;  --c-info:#66D9EF; --c-ok:#7CF29B; --c-warn:#FFDF6B; --c-danger:#FF6B6B;
+    --c-switch-off:#22472F; --c-switch-on:#7CF29B; --c-knob:#08110B;
+    --c-slider:#7CF29B; --c-mark-on:#FFDF6B; --c-scene-on:#7CF29B;
+    --r-card:6px; --r-block:4px; --r-chip:4px;
+    --fs-sec:13px; --fs-body:11.5px;
+    --deco-dotword-opacity:.5;
+    --deco-sec-bar:var(--c-text-2);
+    --shadow-card:none;
+    --glow-accent:0 0 20px -10px color-mix(in srgb,var(--c-accent) 65%,transparent);
+    --glow-text:0 0 20px -10px color-mix(in srgb,var(--c-text) 45%,transparent);
+  }
+
+  /* ---------- 4) contrast：高对比，户外强光下可读 ---------- */
+  [data-skin="contrast"]{
+    --c-page-bg:#FFFFFF; --c-shell:#FFFFFF; --c-card:#FFFFFF;
+    --c-sunken:#F0F0F0;  --c-raised:#E2E2E2;
+    --c-text:#000000;    --c-text-2:#333333; --c-text-3:#525252;
+    --c-line:#000000;    --c-line-2:#000000;
+    --c-accent:#B30000;  --c-info:#0044CC; --c-ok:#006B2E; --c-warn:#8A5300; --c-danger:#B30000;
+    --c-switch-off:#767676; --c-switch-on:#000000; --c-knob:#FFFFFF;
+    --c-slider:#000000; --c-mark-on:#B30000; --c-scene-on:#000000;
+    --bd-card:2px solid var(--c-line);
+    --bd-card-on:2px solid var(--c-text);
+    --r-card:10px; --r-block:8px;
+    --fs-body:12.5px; --fs-val:16px; --fs-label:11px; --fs-sec:14px;
+    --icon-stroke:2.1;
+    --icon-off-opacity:.85;
+    --deco-dotword-opacity:1;
+    --deco-focus:var(--c-info);
+    /* 高对比要的是锐利，不要柔光 */
+    --glow-accent:none; --glow-text:none; --glow-tile:none;
+  }
+
+  /* ---------- 5) sand：暖沙大地色，白天车内不反光 ---------- */
+  [data-skin="sand"]{
+    --c-page-bg:#EAE0D2; --c-shell:#F2EADC; --c-card:#FBF6EC;
+    --c-sunken:#F0E7D8;  --c-raised:#E5D8C4;
+    --c-text:#3A3128;    --c-text-2:#7A6B58; --c-text-3:#A2937E;
+    --c-line:#DCCDB6;    --c-line-2:#C9B79C;
+    --c-accent:#B4562A;  --c-info:#4E7C8C; --c-ok:#587A3C; --c-warn:#B4762A; --c-danger:#B03A2E;
+    --c-switch-off:#C9B79C; --c-switch-on:#3A3128; --c-knob:#FBF6EC;
+    --c-slider:#3A3128; --c-mark-on:#B4562A; --c-scene-on:#3A3128;
+    --r-card:22px; --r-block:18px;
+    --shadow-card:0 1px 2px rgba(90,70,50,.06);
+    --deco-sec-bar:var(--c-text-2);
+    --deco-focus:var(--c-info);
+  }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;padding:0;background:var(--c-page-bg);color:var(--c-text);
+  font-family:var(--font-body);-webkit-font-smoothing:antialiased;user-select:none;height:100%;
+}
+body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+
+/* ===== 顶栏 ===== */
+header{
+  flex:none;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));
+  background:var(--c-shell);border-bottom:1px solid var(--c-line);
+}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{
+  font-family:var(--font-num);
+  width:32px;height:32px;border-radius:10px;border:1.5px solid var(--c-text);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:11px;letter-spacing:.5px;background:var(--c-card);
+}
+.bn{font-family:var(--font-num);font-weight:700;font-size:15px;letter-spacing:1px}
+.bs{font-size:var(--fs-label);color:var(--c-text-3);letter-spacing:.5px;margin-top:2px}
+.status{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--c-text-2)}
+.pill{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;
+  background:var(--c-card);border:1px solid var(--c-line);
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--c-ok)}
+.dot.warn{background:var(--c-warn)}
+.dot.off{background:var(--c-text-3)}
+.clock{font-family:var(--font-num);font-size:var(--fs-clock);font-weight:700;color:var(--c-text)}
+
+/* ===== 主体 ===== */
+main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(14px + env(safe-area-inset-bottom))}
+main::-webkit-scrollbar{width:0}
+.page{display:none}
+.page.active{display:block}
+section{margin-bottom:22px}
+
+/* 点阵标题：mask 打孔 */
+.dot-h{
+  /* ⚠ 局部变量不要用 --px：会遮蔽全局的字体 token --px(已废弃) */
+  --dot:3.2px;--dot-gap:2.2px;
+  display:inline-block;font-size:26px;font-weight:800;line-height:var(--lh-tight);
+  letter-spacing:5px;color:var(--c-text);padding-right:2px;opacity:var(--deco-dotword-opacity);
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,#000 calc(var(--dot)/2),transparent calc(var(--dot)/2 + .3px));
+  -webkit-mask-size:calc(var(--dot) + var(--dot-gap)) calc(var(--dot) + var(--dot-gap));
+  -webkit-mask-repeat:repeat;
+  mask-image:radial-gradient(circle at 50% 50%,#000 calc(var(--dot)/2),transparent calc(var(--dot)/2 + .3px));
+  mask-size:calc(var(--dot) + var(--dot-gap)) calc(var(--dot) + var(--dot-gap));
+  mask-repeat:repeat;
+}
+.sec-title{
+  display:flex;align-items:center;gap:8px;margin:0 0 10px 2px;
+  font-family:var(--font-body);font-size:var(--fs-sec);font-weight:500;letter-spacing:.5px;color:var(--c-text-2);
+}
+.sec-title::before{content:'';width:3px;height:14px;border-radius:2px;background:var(--deco-sec-bar)}
+.sec-note{font-size:10.5px;letter-spacing:.5px;color:var(--c-text-3);font-weight:400;text-transform:none}
+
+/* ===== 卡片 ===== */
+.card{background:var(--c-card);border:var(--bd-card);border-radius:var(--r-card);
+  padding:var(--pad-card);box-shadow:var(--shadow-card)}
+.card + .card{margin-top:var(--gap-card)}
+
+/* ===== 情景模式 ===== */
+.scenes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.scene-btn{
+  appearance:none;border:1px solid var(--c-line);background:var(--c-card);border-radius:var(--r-block);
+  padding:12px 6px 11px;display:flex;flex-direction:column;align-items:center;gap:7px;
+  color:var(--c-text-2);min-height:72px;position:relative;cursor:default;font-family:var(--font-body);
+}
+.scene-btn.readonly::after{
+  content:'按键';position:absolute;top:5px;right:6px;font-size:9px;line-height:1;
+  padding:2px 4px;border-radius:4px;color:var(--c-text-3);background:var(--c-raised);
+}
+.scene-btn .ic{display:flex;align-items:center;justify-content:center;width:var(--icon-size);height:var(--icon-size);color:var(--c-text-2);transition:color .15s}
+.scene-btn .ic svg{width:var(--icon-size);height:var(--icon-size);display:block}
+.scene-btn.active .ic{color:var(--c-text)}
+.scene-btn .lb{font-size:12px;font-weight:500}
+.scene-btn .st{font-size:10px;color:var(--c-text-3)}
+.scene-btn.active{border-color:var(--c-scene-on);
+  box-shadow:0 0 0 1px var(--c-scene-on) inset,var(--glow-tile);color:var(--c-text)}
+.scene-btn.active .st{color:var(--c-text)}
+
+/* ===== 开关格子 ===== */
+.grid{
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.grid > .tile{flex:1 1 calc(33.333% - 6px);min-width:calc(33.333% - 6px)}
+.grid.cols-2 > .tile{flex:1 1 calc(50% - 4px);min-width:calc(50% - 4px)}
+.tile{
+  appearance:none;background:var(--c-card);border:1px solid var(--c-line);border-radius:var(--r-block);
+  padding:12px 8px 11px;display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:var(--c-text-2);cursor:pointer;position:relative;min-height:82px;font-family:var(--font-body);
+  background-image:var(--c-card-veil);
+  transition:border-color .15s,box-shadow .15s,color .15s,background .15s;
+}
+.tile .ic{display:flex;align-items:center;justify-content:center;width:var(--icon-size);height:var(--icon-size);color:var(--c-text-2);opacity:var(--icon-off-opacity);transition:color .15s,opacity .15s}
+.tile .ic svg{width:var(--icon-size);height:var(--icon-size);display:block}
+.tile.on .ic{color:var(--c-accent);opacity:1}
+.tile .lb{font-size:var(--fs-body);text-align:center;line-height:1.25}
+.tile .mark{width:6px;height:6px;border-radius:50%;background:var(--c-line-2);transition:background .15s}
+.tile.on{
+  /* 照设计稿：底色**不换**，只让描边和图标承载"开"的状态；
+     柔光贴在描边外侧（负扩散），不是把整块染灰 */
+  border-color:var(--c-accent);background:var(--c-card);color:var(--c-text);
+  box-shadow:var(--glow-tile)}
+.tile.on .mark{background:var(--c-mark-on)}
+.tile:focus{outline:none}
+.tile:focus-visible{outline:2px solid var(--deco-focus);outline-offset:2px}
+.tile:active{transform:scale(.97)}
+/* 占位卡：无实体、不可点 */
+.tile.disabled{border-style:dashed;opacity:.55;cursor:default;background:transparent}
+.tile.disabled:active{transform:none}
+.tile .hint-txt{font-size:9px;line-height:1.2;color:var(--c-text-3);text-align:center}
+.hint{font-size:11px;color:var(--c-text-3);text-align:center;margin-top:8px;line-height:1.6}
+.hint strong{color:var(--c-text-2);font-weight:500}
+
+/* ===== 数值 / 统计 ===== */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1}
+.stat{background:var(--c-page-bg);border-radius:var(--r-block);padding:10px 12px}
+.stat .k{font-size:var(--fs-label);color:var(--c-text-3);letter-spacing:.5px}
+.stat .v{font-family:var(--font-num);font-size:var(--fs-val);font-weight:400;margin-top:4px;color:var(--c-text);letter-spacing:.3px}
+.stat .v.good{color:var(--c-ok)}
+.stat .v.warn{color:var(--c-warn)}
+.stat .v.bad{color:var(--c-accent)}
+.ellip{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ===== 电池环 ===== */
+.battery{display:flex;gap:14px;align-items:stretch}
+.gauge{position:relative;width:96px;height:96px;flex:none;align-self:center}
+.gauge svg{transform:rotate(-90deg);display:block}
+.gauge .bgc{stroke:var(--c-raised)}
+.gauge .p{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s,stroke .3s}
+.gauge .num{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:0;
+}
+.gauge .num b{font-family:var(--font-num);font-size:var(--fs-num);font-weight:700}
+.gauge .num span{font-size:9px;color:var(--c-text-3)}
+.solar-bar{margin-top:14px}
+.solar-bar .row{display:flex;justify-content:space-between;font-size:11px;color:var(--c-text-3);margin-bottom:6px}
+.track{height:6px;border-radius:3px;background:var(--c-raised);overflow:hidden}
+.fill{height:100%;border-radius:3px;background:var(--c-text);transition:width .6s}
+
+/* ===== 徽标 ===== */
+.fridge-h{display:inline-flex;align-items:center;gap:7px;font-size:13px}
+.fridge-h .ic{width:22px;height:22px;color:var(--c-text-2)}
+.fridge-h .ic svg{width:22px;height:22px;display:block}
+.badge{
+  display:inline-block;font-size:10px;line-height:1;padding:3px 6px;border-radius:5px;
+  background:var(--c-raised);color:var(--c-text-2);font-weight:500;vertical-align:middle;
+}
+.badge.ok{color:var(--c-ok);background:var(--c-ok-bg)}
+.badge.warn{color:var(--c-warn);background:var(--c-warn-bg)}
+.badge.bad{color:var(--c-danger);background:var(--c-danger-bg)}
+.badge.off{color:var(--c-text-3);background:var(--c-page-bg)}
+.badge.on{color:var(--c-ok);background:var(--c-ok-bg)}
+
+/* ===== 离线条 ===== */
+.bms-offline{
+  border:1px dashed var(--c-line-2);border-radius:var(--r-block);padding:12px;
+  font-size:11.5px;color:var(--c-text-3);line-height:1.6;text-align:center;
+}
+.hidden{display:none !important}
+.bms-body{margin-top:12px}
+.bms-row{
+  display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--c-text-3);
+  padding:8px 2px;border-top:1px solid var(--c-line);
+}
+.bms-row + .bms-row{margin-top:0}
+.bms-row b{color:var(--c-text);font-weight:500}
+.bms-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px}
+.bms-age{font-size:10.5px;color:var(--c-text-3)}
+.bms-age.stale{color:var(--c-warn)}
+.bms-age.off{color:var(--c-accent)}
+
+/* 16 节单体 4×4 */
+.bms-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.cell{
+  background:var(--c-page-bg);border-radius:8px;padding:7px 4px;text-align:center;
+  border:1px solid transparent;transition:border-color .2s,background .2s;
+}
+.cell .n{font-size:9px;color:var(--c-text-3)}
+.cell .v{font-size:12px;font-weight:500;margin-top:2px;font-variant-numeric:tabular-nums}
+.cell.hi{border-color:var(--c-info)}
+.cell.lo{border-color:var(--c-warn)}
+.cell.miss .v{color:var(--c-text-3)}
+
+/* ===== 充电趋势 ===== */
+.trend-head{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--c-text-3)}
+.trend-head .val{font-size:14px;color:var(--c-text)}
+.trend-wrap{position:relative;margin-top:10px;height:130px}
+.trend-wrap svg{width:100%;height:100%;display:block;overflow:visible}
+.grid-l{stroke:var(--c-line);stroke-width:.5;stroke-dasharray:2 3}
+.trend-area{fill:url(#trendGrad)}
+.trend-line{fill:none;stroke:var(--c-text);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.trend-y{
+  position:absolute;right:-2px;top:0;bottom:0;display:flex;flex-direction:column;
+  justify-content:space-between;font-size:9px;color:var(--c-text-3);pointer-events:none;
+}
+.trend-empty{
+  position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  font-size:11px;color:var(--c-text-3);text-align:center;padding:0 20px;
+}
+.trend-empty.show{display:flex}
+.trend-x{display:flex;justify-content:space-between;font-size:9.5px;color:var(--c-text-3);margin-top:6px}
+
+/* ===== 设置行 ===== */
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;gap:12px;border-bottom:1px solid var(--c-line)}
+.set-row:last-child{border-bottom:none}
+.set-row .lbl{font-size:13px}
+.set-row .lbl small{display:block;font-size:10.5px;color:var(--c-text-3);margin-top:2px}
+.set-row .val{font-family:var(--font-num);font-size:12px;color:var(--c-text-2)}
+
+/* ===== 开关 ===== */
+.switch{
+  flex:none;position:relative;width:52px;height:30px;border-radius:var(--r-pill);
+  background:var(--c-switch-off);border:none;cursor:pointer;padding:0;transition:background .22s;
+}
+.switch::after{
+  content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  background:var(--c-knob);box-shadow:var(--shadow-knob);transition:transform .22s cubic-bezier(.3,1.4,.5,1);
+}
+.switch[aria-checked="true"]{background:var(--c-switch-on)}
+.switch[aria-checked="true"]::after{transform:translateX(22px)}
+.switch:focus{outline:none}
+.switch:focus-visible{outline:2px solid var(--deco-focus);outline-offset:2px}
+
+/* ===== 滑块 ===== */
+.range-row{display:flex;align-items:center;gap:12px;padding:12px 2px}
+.range-row .lbl{flex:1;font-size:13px}
+.range-row .lbl small{display:block;font-size:10.5px;color:var(--c-text-3);margin-top:2px}
+.range-row input[type=range]{flex:2;accent-color:var(--c-slider);height:28px}
+.range-row .rval{min-width:48px;text-align:right;font-family:var(--font-num);font-size:14px;color:var(--c-text)}
+
+/* ===== 按钮 ===== */
+.chip{
+  appearance:none;border:1px solid var(--c-line);background:var(--c-card);color:var(--c-text-2);
+  border-radius:var(--r-chip);padding:6px 12px;font-size:11.5px;cursor:pointer;min-height:36px;
+  font-family:var(--font-body);transition:border-color .15s,background .15s,color .15s;
+}
+.chip:active{background:var(--c-raised)}
+.chip.active{border-color:var(--c-text);color:var(--c-text);box-shadow:0 0 0 1px var(--c-text) inset}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-grid .chip{min-height:44px;text-align:left}
+
+/* ===== 日志 ===== */
+.skin-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.skin-btn{
+  appearance:none;cursor:pointer;font-family:var(--font-body);text-align:left;
+  background:var(--c-sunken);border:1px solid var(--c-line);border-radius:var(--r-block);
+  padding:10px;display:flex;align-items:center;gap:10px;color:var(--c-text-2);
+  transition:border-color .15s,box-shadow .15s,color .15s;
+}
+.skin-btn:active{transform:scale(.98)}
+.skin-btn[aria-pressed="true"]{
+  border-color:var(--c-text);box-shadow:0 0 0 1px var(--c-text) inset,var(--glow-tile);color:var(--c-text);
+}
+/* 皮肤缩略图：三个色块直接预览该皮肤的 token */
+.skin-swatch{display:flex;flex:none;width:38px;height:26px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,0,0,.12)}
+.skin-swatch i{flex:1;display:block}
+.skin-btn .nm{font-size:12px;line-height:1.25}
+.log-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.log-toolbar .spacer{flex:1}
+.log-view{
+  background:var(--c-page-bg);border:1px solid var(--c-line);border-radius:var(--r-block);
+  padding:10px 12px;height:calc(100dvh - 300px);min-height:180px;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;font-size:var(--fs-log);line-height:var(--lh-body);
+  color:var(--c-text-2);white-space:pre-wrap;word-break:break-all;
+  /* 日志区是唯一保留等宽的：时间戳/十六进制对齐比风格重要 */
+  font-family:var(--font-mono);
+}
+.log-view .lvl-W{color:var(--c-warn)}
+.log-view .lvl-E{color:var(--c-accent)}
+.log-view .lvl-D{color:var(--c-text-3)}
+.log-view .lvl-I{color:var(--c-ok)}
+.conn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c-text-3);margin-right:4px;vertical-align:middle}
+.conn-dot.ok{background:var(--c-ok)}
+
+/* ===== 底部导航 ===== */
+nav{
+  flex:none;display:flex;justify-content:space-around;align-items:stretch;
+  background:var(--c-shell);border-top:1px solid var(--c-line);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+nav button{
+  appearance:none;background:none;border:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  min-width:60px;padding:6px 8px;border-radius:12px;color:var(--c-text-3);
+  font-size:var(--fs-nav);position:relative;min-height:48px;font-family:var(--font-body);
+  transition:color .15s,background .15s;
+}
+nav button .ic{display:flex;align-items:center;justify-content:center;width:var(--icon-nav);height:var(--icon-nav);color:var(--c-text-3);transition:color .15s}
+nav button .ic svg{width:var(--icon-nav);height:var(--icon-nav);display:block}
+nav button.active{color:var(--c-text);background:var(--c-raised)}
+nav button.active .ic{color:var(--c-text)}
+nav button.active::after{
+  content:'';position:absolute;bottom:-6px;width:20px;height:2.5px;
+  border-radius:2px;background:var(--c-accent);
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{transition:none !important;animation:none !important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">FG</div>
+    <div>
+      <div class="bn">FORAGER</div>
+      <div class="bs">觅食者号 · 485 网关</div>
+    </div>
+  </div>
+  <div class="status">
+    <span class="pill"><span class="dot" id="wifiDot"></span><span id="wifiTxt">WiFi</span></span>
+    <span class="clock" id="clock">--:--</span>
+  </div>
+</header>
+
+<main>
+  <!-- ============ 首页 ============ -->
+  <div class="page active" id="page-home">
+    <section>
+      <h3 class="sec-title">情景模式</h3>
+      <div class="scenes">
+        <button class="scene-btn active readonly" data-scene="light" id="scene-light" aria-readonly="true">
+          <span class="ic"></span><span class="lb">灯光</span><span class="st">明亮</span>
+        </button>
+        <button class="scene-btn readonly" data-scene="camp" id="scene-camp" aria-readonly="true">
+          <span class="ic"></span><span class="lb">离车/驻车</span><span class="st">正常</span>
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">快捷开关</h3>
+      <div class="grid" id="quick-grid"></div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">能源</h3>
+      <div class="card">
+        <div class="battery">
+          <div class="gauge">
+            <svg width="96" height="96" viewBox="0 0 96 96">
+              <circle class="bgc" cx="48" cy="48" r="40" fill="none" stroke-width="8"></circle>
+              <circle class="p" id="battArc" cx="48" cy="48" r="40"
+                      stroke-dasharray="251.3" stroke-dashoffset="251.3" style="stroke:var(--c-ok)"></circle>
+            </svg>
+            <div class="num"><b id="battPct">--</b><span>%</span></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><div class="k">电池电压</div><div class="v" id="batV">--V</div></div>
+            <div class="stat"><div class="k">充电电流</div><div class="v good" id="chgA">--A</div></div>
+            <div class="stat"><div class="k">发电功率</div><div class="v warn" id="solarW">--W</div></div>
+            <div class="stat"><div class="k">状态</div><div class="v good ellip" id="chgState" title="--">--</div></div>
+            <div class="stat"><div class="k">剩余续航</div><div class="v" id="cbTime">--</div></div>
+            <div class="stat"><div class="k">剩余容量</div><div class="v" id="cbCap">--Ah</div></div>
+          </div>
+        </div>
+        <div class="solar-bar">
+          <div class="row"><span>今日发电</span><span id="dayK">-- kWh</span></div>
+          <div class="track"><div class="fill" id="solarFill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ 开关页 ============ -->
+  <div class="page" id="page-switches">
+    <section>
+      <h3 class="sec-title">照明</h3>
+      <div class="grid" id="light-grid"></div>
+    </section>
+    <section>
+      <h3 class="sec-title">通风</h3>
+      <div class="grid" id="vent-grid"></div>
+    </section>
+    <section>
+      <h3 class="sec-title">水路</h3>
+      <div class="grid" id="water-grid"></div>
+    </section>
+    <section>
+      <h3 class="sec-title">负载设备</h3>
+      <div class="grid" id="device-grid"></div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">冰虎冰箱 45L <span class="sec-note fridge-age bms-age" id="fridgeAge">BLE 未上线</span></h3>
+      <div class="card">
+        <div class="bms-head">
+          <span class="fridge-h"><span class="ic"></span>冰箱供电</span>
+          <span class="badge ok">常电直连</span>
+        </div>
+        <div class="bms-offline" id="fridgeOffline">冰箱 BLE 未上线 · 等待 BLE 代理数据（温度/电压暂不可见）</div>
+        <div class="bms-body hidden" id="fridgeBody">
+          <div class="stat-grid">
+            <div class="stat"><div class="k">箱内温度</div><div class="v" id="frBoxTemp">--°C</div></div>
+            <div class="stat"><div class="k">设定温度</div><div class="v" id="frSetTemp">--°C</div></div>
+            <div class="stat"><div class="k">电池电压</div><div class="v" id="frVolt">--V</div></div>
+            <div class="stat"><div class="k">运行模式</div><div class="v" id="frMode">--</div></div>
+          </div>
+          <div class="bms-row"><span>压缩机 <span class="badge off" id="frComp">--</span></span><span>故障码 <b id="frFault">--</b></span></div>
+          <div class="bms-row"><span>有效帧 <b id="frFrames">--</b></span><span>信号 <b id="frRssi">--</b></span></div>
+        </div>
+      </div>
+      <p class="hint">
+        冰箱<strong>常电直连</strong>（不经 485 继电器）：避免 45L 启动峰值冲击模块触点；
+        BLE 只做<strong>温度监控 + 精细调温</strong>，掉线时本卡变灰不影响冰箱运行。
+      </p>
+    </section>
+
+    <section>
+      <h3 class="sec-title">能源系统 <span class="sec-note">待接入</span></h3>
+      <div class="grid" id="energy-grid"></div>
+      <p class="hint">逆变器 / MPPT / 行车发电功率大，模块 DO 只能切<strong>接触器线圈</strong>，
+        控制侧方案与额定电流尚未定档，目前仍走物理开关。</p>
+    </section>
+  </div>
+
+  <!-- ============ 电池页 ============ -->
+  <div class="page" id="page-power">
+    <section>
+      <h3 class="sec-title">光伏系统</h3>
+      <div class="card">
+        <div class="bms-head">
+          <span>太阳能充电</span>
+          <span class="val good" id="pvStateVal" style="color:var(--green);font-size:13px">--</span>
+        </div>
+        <div class="stat-grid" style="margin-top:12px">
+          <div class="stat"><div class="k">PV 电压</div><div class="v" id="pvV">--V</div></div>
+          <div class="stat"><div class="k">电池电压</div><div class="v" id="pvBatV">--V</div></div>
+          <div class="stat"><div class="k">充电电流</div><div class="v good" id="pvA">--A</div></div>
+          <div class="stat"><div class="k">发电功率</div><div class="v warn" id="pvW">--W</div></div>
+          <div class="stat"><div class="k">控制器温度</div><div class="v" id="pvTemp">--°C</div></div>
+          <div class="stat"><div class="k">电池温度</div><div class="v" id="pvBatTemp">--°C</div></div>
+          <div class="stat"><div class="k">今日发电</div><div class="v" id="pvDay">--Wh</div></div>
+          <div class="stat"><div class="k">累计发电</div><div class="v" id="pvTotal">--Wh</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">光伏控制 <span class="sec-note">可直接操作</span></h3>
+      <div class="card">
+        <div class="set-row">
+          <span class="lbl">充电输出<small>MPPT 到电池的输出回路</small></span>
+          <button class="switch on" id="swSolarCharge" role="switch" aria-checked="false" aria-label="充电输出"></button>
+        </div>
+        <div class="set-row">
+          <span class="lbl">允许充电<small>远程允许/禁止充电</small></span>
+          <button class="switch" id="swSolarEnable" role="switch" aria-checked="true" aria-label="允许充电"></button>
+        </div>
+        <div class="range-row">
+          <span class="lbl">充电限流<small>0 ~ 40 A</small></span>
+          <input type="range" id="numSolarLimit" min="0" max="40" step="0.5" value="30">
+          <span class="rval" id="solarLimitVal">30A</span>
+        </div>
+        <div class="btn-grid" style="margin-top:12px">
+          <button class="chip" data-maint="remote">设为远程控制</button>
+          <button class="chip" data-maint="clock">时钟同步</button>
+          <button class="chip" data-maint="readcfg">读设置参数</button>
+          <button class="chip" data-maint="buzzer">蜂鸣器消音</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">库仑计 (TF03K)</h3>
+      <div class="card">
+        <div class="battery">
+          <div class="gauge">
+            <svg width="96" height="96" viewBox="0 0 96 96">
+              <circle class="bgc" cx="48" cy="48" r="40" fill="none" stroke-width="8"></circle>
+              <circle class="p" id="cbArc" cx="48" cy="48" r="40"
+                      stroke-dasharray="251.3" stroke-dashoffset="251.3" style="stroke:var(--c-ok)"></circle>
+            </svg>
+            <div class="num"><b id="cbSoc">--</b><span>%</span></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><div class="k">电池电压</div><div class="v" id="cbVolt">--V</div></div>
+            <div class="stat"><div class="k">电流</div><div class="v" id="cbCurr">--A</div></div>
+            <div class="stat"><div class="k">功率</div><div class="v" id="cbPow">--W</div></div>
+            <div class="stat"><div class="k">剩余容量</div><div class="v" id="cbCap2">--Ah</div></div>
+            <div class="stat"><div class="k">剩余时间</div><div class="v" id="cbTime2">--</div></div>
+            <div class="stat"><div class="k">帧统计</div><div class="v" id="cbFrames">--</div></div>
+          </div>
+        </div>
+        <div class="bms-offline" id="cbDiag" style="display:none;margin-top:12px">
+          <span>库仑计未上线</span> <span id="cbDiagTxt"></span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">电池健康 (JK BMS) <span class="sec-note bms-age" id="bmsAge">未上线</span></h3>
+      <div class="card">
+        <div class="bms-offline" id="bmsOffline">JK BMS 未上线 · 等待 BLE 代理数据</div>
+        <div class="bms-body hidden" id="bmsBody">
+          <div class="stat-grid">
+            <div class="stat"><div class="k">电量 SOC</div><div class="v" id="bmsSoc">--%</div></div>
+            <div class="stat"><div class="k">总电压</div><div class="v" id="bmsVolt">--V</div></div>
+            <div class="stat"><div class="k">电流</div><div class="v" id="bmsCurr">--A</div></div>
+            <div class="stat"><div class="k">功率</div><div class="v" id="bmsPower">--W</div></div>
+            <div class="stat"><div class="k">剩余 / 总容量</div><div class="v" id="bmsCap">--Ah</div></div>
+            <div class="stat"><div class="k">循环次数</div><div class="v" id="bmsCycles">--</div></div>
+          </div>
+          <div class="bms-row">
+            <span>最大压差 <b id="bmsDelta">--V</b> <span class="badge off" id="bmsDeltaTag">--</span></span>
+            <span>均衡电流 <b id="bmsBalCurr">--A</b></span>
+          </div>
+          <div class="bms-row">
+            <span>运行状态 <b id="bmsState">--</b></span>
+            <span>电池温度 <b id="bmsTemp">--°C</b></span>
+          </div>
+          <div class="bms-row">
+            <span>充电 MOS <span class="badge off" id="bmsChgMos">--</span></span>
+            <span>放电 MOS <span class="badge off" id="bmsDchgMos">--</span></span>
+          </div>
+          <div class="bms-row">
+            <span>告警 <b id="bmsAlarm">--</b></span>
+            <span>有效帧 <b id="bmsFrames">--</b></span>
+          </div>
+          <div class="bms-grid4" id="bmsCells"></div>
+          <div class="bms-row" style="border-top:none">
+            <span id="bmsHigh">最高 --</span>
+            <span id="bmsLow">最低 --</span>
+          </div>
+        </div>
+      </div>
+      <p class="hint">JK (极空) BMS 只能走 <strong>BLE</strong>，独立代理 ESP32 收数，与库仑计并列对照、互不覆盖；压差是电池一致性核心指标。</p>
+    </section>
+
+    <section>
+      <h3 class="sec-title">充电趋势 <span class="sec-note" id="trendNote">24h</span></h3>
+      <div class="card">
+        <div class="trend-head">
+          <span>发电功率</span>
+          <span class="val"><b id="trendNow">--</b> W</span>
+        </div>
+        <div class="trend-wrap">
+          <svg id="trendSvg" viewBox="0 0 300 110" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="currentColor" stop-opacity="0.16"></stop>
+                <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <line class="grid-l" x1="0" y1="27.5" x2="300" y2="27.5"></line>
+            <line class="grid-l" x1="0" y1="55" x2="300" y2="55"></line>
+            <line class="grid-l" x1="0" y1="82.5" x2="300" y2="82.5"></line>
+            <path id="trendArea" class="trend-area" d=""></path>
+            <path id="trendLine" class="trend-line" d=""></path>
+          </svg>
+          <div class="trend-y">
+            <span id="trendMax">--</span><span id="trendMid">--</span><span>0</span>
+          </div>
+          <div class="trend-empty" id="trendEmpty">暂无数据（每 5 分钟采样，重启后清空）</div>
+        </div>
+        <div class="trend-x"><span id="trendOldest">--</span><span>现在</span></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ 调试页 ============ -->
+  <div class="page" id="page-debug">
+    <section>
+      <h3 class="sec-title">实时日志</h3>
+      <div class="card">
+        <div class="log-toolbar">
+          <span><span class="conn-dot" id="connDot"></span><span id="connTxt" style="font-size:11.5px;color:var(--fade)">连接中…</span></span>
+          <span class="spacer"></span>
+          <button class="chip" id="btnPause">暂停</button>
+          <button class="chip" id="btnClear">清空</button>
+        </div>
+        <div class="log-view" id="logView">等待日志…</div>
+      </div>
+      <p class="hint">日志来自 ESP32 实时推送（SSE /events）；包括 485 按键、轮询计数、MPPT 告警等</p>
+    </section>
+  </div>
+
+  <!-- ============ 设置页 ============ -->
+  <div class="page" id="page-settings">
+    <section>
+      <h3 class="sec-title">系统与维护</h3>
+      <div class="card">
+        <div class="set-row"><span class="lbl">WiFi SSID</span><span class="val" id="sysSsid">--</span></div>
+        <div class="set-row"><span class="lbl">IP 地址</span><span class="val" id="sysIp">--</span></div>
+        <div class="set-row"><span class="lbl">WiFi 信号</span><span class="val" id="sysSignal">--</span></div>
+        <div class="set-row">
+          <span class="lbl">重启设备<small>重新启动 ESP32 网关</small></span>
+          <button class="chip" id="btnRestart">重启</button>
+        </div>
+        <div class="set-row">
+          <span class="lbl">固件 OTA<small>跳转到原生 web_server 页面</small></span>
+          <button class="chip" id="btnOta">打开</button>
+        </div>
+      </div>
+    </section>
+    <section>
+      <h3 class="sec-title">外观 / 皮肤 <span class="sec-note" id="skinNote">paper</span></h3>
+      <div class="card">
+        <div class="skin-grid" id="skinGrid"></div>
+      </div>
+      <p class="hint">皮肤只改变配色 / 字体 / 圆角，功能与数据完全一致。选择保存在本机浏览器。</p>
+    </section>
+    <section>
+      <h3 class="sec-title">面板偏好</h3>
+      <div class="card">
+        <div class="set-row">
+          <span class="lbl">实时日志自动滚动</span>
+          <button class="switch" id="prefAutoScroll" role="switch" aria-checked="true" aria-label="日志自动滚动"></button>
+        </div>
+      </div>
+      <p class="hint">偏好保存在本机浏览器（localStorage），不影响 ESP32</p>
+    </section>
+  </div>
+</main>
+
+<nav>
+  <button data-page="home" class="active"><span class="ic" data-icon="navHome"></span>首页</button>
+  <button data-page="switches"><span class="ic" data-icon="navSw"></span>开关</button>
+  <button data-page="power"><span class="ic" data-icon="navBat"></span>电池</button>
+  <button data-page="debug"><span class="ic" data-icon="navLog"></span>调试</button>
+  <button data-page="settings"><span class="ic" data-icon="navGear"></span>设置</button>
+</nav>
+
+<script>
+/* =====================================================================
+   数据层 —— 与 index.html 完全相同（SSE /events + REST POST）
+   命令：POST /<domain>/<name>/<action>，web_server 用实体 name 匹配
+   ===================================================================== */
+
+/* ---------- 扁平线稿图标（内联 SVG，无外部依赖）----------
+   stroke 走 currentColor，靠 CSS 的 color 切换开/关与激活色；
+   统一 1.6 描边、圆角端点，与参考图的扁平图标同一套规则。 */
+const SVG = (body, extra) =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" ` +
+  `stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra||''}>${body}</svg>`;
+
+const ICONS = {
+  /* 灯具 */
+  mainLight: SVG('<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6h5.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>'),
+  ambient:   SVG('<path d="M3 15h18"/><path d="M6 15v-4M12 15V8M18 15v-4"/><circle cx="6" cy="9" r="1.2"/><circle cx="12" cy="5.5" r="1.2"/><circle cx="18" cy="9" r="1.2"/>'),
+  bedDome:   SVG('<path d="M3 17h18M5 17v-4a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4"/><path d="M9 10V8M15 10V8"/>'),
+  spot:      SVG('<path d="M9 2.5h6v4.5H9z"/><path d="M9 7l-2 8.5h10L15 7"/><path d="M7.5 15.5h9"/><path d="M12 19v2.5M8.5 18.5l-1 2M15.5 18.5l1 2"/>'),
+  outdoor:   SVG('<path d="M8 3h8l3 6H5l3-6z"/><path d="M5 9h14"/><path d="M12 9v10"/><path d="M8 21h8"/><path d="M10 11.5l-1 5M14 11.5l1 5"/>'),
+  reverse:   SVG('<path d="M4 18V9l4-3h8l4 3v9"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="16.5" cy="18" r="1.6"/><path d="M12 4v4"/>'),
+  /* 水路 / 通风 */
+  /* 雪花：6 主轴 + 12 斜枝（严格照抄 design 稿的 4 段 path） */
+  snow:      SVG('<path d="M12 2.6v18.8M3.9 7.3l16.2 9.4M20.1 7.3 3.9 16.7"/><path d="M12 6.2 9.6 4.4M12 6.2l2.4-1.8M12 17.8l-2.4 1.8M12 17.8l2.4 1.8"/><path d="M8 9.7 4.7 9.4M8 9.7 7 6.6M16 14.3l3.3.3M16 14.3l1-3.1"/><path d="M8 14.3l-3.3.3M8 14.3 7 17.4M16 9.7l3.3-.3M16 9.7l1 3.1"/>'),
+  pump:      SVG('<path d="M4 20h16"/><path d="M7 20V9a5 5 0 0 1 10 0v11"/><path d="M12 9v5"/><circle cx="12" cy="6" r="1.3"/>'),
+  valve:     SVG('<circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/>'),
+  fanRear:   SVG('<circle cx="12" cy="12" r="1.8"/><path d="M12 10.2c-.6-3-.3-6.2 1.8-6.8 2-.6 3 2.2 1.4 5.3"/><path d="M13.8 12c3-.6 6.2-.3 6.8 1.8.6 2-2.2 3-5.3 1.4"/><path d="M12 13.8c.6 3 .3 6.2-1.8 6.8-2 .6-3-2.2-1.4-5.3"/><path d="M10.2 12c-3 .6-6.2.3-6.8-1.8-.6-2 2.2-3 5.3-1.4"/>'),
+  fanPass:   SVG('<path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7"/>'),
+  /* 负载 / 能源 */
+  fridge:    SVG('<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M6 10h12"/><path d="M9.5 5.5v2M9.5 12.5v2.5"/>'),
+  dsp:       SVG('<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'),
+  inverter:  SVG('<rect x="2.5" y="7" width="19" height="10" rx="2"/><path d="M6 14V10h3v4h3v-4h3v4h3v-4"/>'),
+  /* 太阳：设计稿 .mode Heat 的同一套 path */
+  sun:       SVG('<circle cx="12" cy="12" r="3.6"/><path d="M12 2.4v2.6M12 19v2.6M2.4 12h2.6M19 12h2.6M5.2 5.2l1.9 1.9M16.9 16.9l1.9 1.9M18.8 5.2l-1.9 1.9M7.1 16.9l-1.9 1.9"/>'),
+  /* power 图标（Stop/电源），键名避开 state.power，防混淆 */
+  powerIco:  SVG('<path d="M12 3.2v8.4"/><path d="M6.9 6.6a7.6 7.6 0 1 0 10.2 0"/>'),
+  mppt:      SVG('<circle cx="12" cy="12" r="3.6"/><path d="M12 2.4v2.6M12 19v2.6M2.4 12h2.6M19 12h2.6M5.2 5.2l1.9 1.9M16.9 16.9l1.9 1.9M18.8 5.2l-1.9 1.9M7.1 16.9l-1.9 1.9"/>'),
+  dcdc:      SVG('<rect x="2.5" y="7" width="15" height="10" rx="2"/><path d="M20.5 10.5v3"/><path d="M9 10v4M7 12h4"/>'),
+  bolt:      SVG('<path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12l1-8.5z"/>'),
+  /* 情景 */
+  sceneLight: SVG('<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6h5.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>'),
+  sceneCamp:  SVG('<path d="M2 18h20"/><path d="M6 18V9l6-4 6 4v9"/><path d="M10 18v-5h4v5"/>'),
+  /* 底部导航 */
+  navHome: SVG('<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/>'),
+  navSw:   SVG('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/>'),
+  navBat:  SVG('<rect x="2.5" y="7" width="15" height="10" rx="2"/><path d="M20.5 10.5v3"/><path d="M6 12h7"/>'),
+  navLog:  SVG('<rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>'),
+  navGear: SVG('<circle cx="12" cy="12" r="3"/><path d="M12 2.8l1.2 2.6 2.8-.6.6 2.8 2.6 1.2-1.4 2.5 1.4 2.5-2.6 1.2-.6 2.8-2.8-.6L12 21.2l-1.2-2.6-2.8.6-.6-2.8L4.8 15l1.4-2.5L4.8 10l2.6-1.2.6-2.8 2.8.6z"/>'),
+};
+const QUICK = ['mainLight','ambient','spot','outdoor','pump','fanRear','dsp','inverter'];
+const GROUPS = {
+  light: ['mainLight','ambient','bedDome','spot','outdoor','reverse'],
+  vent:  ['fanRear','fanPass'],
+  water: ['pump','valve'],
+  device:['dsp'],
+};
+const ENERGY_SLOTS = [
+  { key:'inverter', ic:'inverter', lb:'逆变器',   hint:'48V→220V · 待购' },
+  { key:'mppt',     ic:'mppt',     lb:'MPPT',     hint:'485 0x10 · 协议档待定' },
+  { key:'dcdc',     ic:'dcdc',     lb:'行车发电', hint:'DC-DC · 无 485 控制' },
+];
+const NAMES = {
+  mainLight:'主灯', ambient:'氛围灯带', bedDome:'后横床顶灯', spot:'前射灯', outdoor:'户外灯',
+  pump:'上水泵', valve:'水阀', fanRear:'后窗排扇', fanPass:'副驾排扇',
+  fridge:'冰箱', dsp:'DSP', reverse:'车尾灯',
+};
+
+/* —— 实体映射：name 必须与各 yaml 的 name: 完全一致 —— */
+const ENTITIES = {
+  mainLight:{domain:'switch',name:'[中8.Y1] 主灯'},
+  ambient:  {domain:'switch',name:'[中8.Y2] 氛围灯带'},
+  bedDome:  {domain:'switch',name:'[中8.Y3] 后横床顶灯'},
+  reverse:  {domain:'switch',name:'[中8.Y7] 车尾灯'},
+  spot:     {domain:'switch',name:'[驾驶室A.Y1] 前射灯'},
+  outdoor:  {domain:'switch',name:'[驾驶室A.Y3] 户外灯'},
+  dsp:      {domain:'switch',name:'[驾驶室A.Y2] DSP'},
+  fanPass:  {domain:'switch',name:'[驾驶室A.Y4] 副驾排气扇'},
+  pump:     {domain:'switch',name:'[中4.Y1] 上水泵'},
+  valve:    {domain:'switch',name:'[中4.Y2] 电控水阀'},
+  fanRear:  {domain:'switch',name:'[中4.Y3] 后窗排气扇'},
+};
+
+const SENSORS = {
+  pvV:{name:'SolarPV PV电压'}, batV:{name:'SolarBat 电池电压'},
+  chgA:{name:'SolarChg 充电电流'}, solarW:{name:'SolarPower 发电功率'},
+  dayWh:{name:'SolarDay 日发电量'}, totalWh:{name:'SolarTotal 总发电量'},
+  pvTemp:{name:'SolarTemp 控制器温度'}, pvBatTemp:{name:'SolarBatTemp 电池温度'},
+};
+const TEXT_SENSORS = {
+  chgState:{name:'SolarState 充电状态'}, alert:{name:'SolarAlert 告警'},
+};
+const COULOMB_SENSORS = {
+  cbSoc:{name:'CoulombSOC 电量百分比'}, cbVolt:{name:'CoulombVolt 电池电压'},
+  cbCap:{name:'CoulombCap 剩余容量'}, cbCurr:{name:'CoulombCurr 电流'},
+  cbTime:{name:'CoulombTime 剩余时间'}, cbPow:{name:'CoulombPow 功率'},
+  cbOk:{name:'CoulombDiag 有效帧数'}, cbBad:{name:'CoulombBad 校验错帧数'},
+};
+const BMS_SENSORS = {
+  soc:{name:'BmsSoc 电量'}, volt:{name:'BmsVolt 总电压'}, curr:{name:'BmsCurr 电流'},
+  power:{name:'BmsPower 功率'}, cap:{name:'BmsCap 剩余容量'}, totalCap:{name:'BmsTotalCap 总容量'},
+  cycles:{name:'BmsCycles 循环次数'}, frames:{name:'BmsFrames 有效帧数'},
+  delta:{name:'BmsDelta 最大压差'}, balCurr:{name:'BmsBalCurr 均衡电流'},
+  temp:{name:'BmsTemp 电池温度'},
+};
+const BMS_CELL_COUNT = 16;
+const BMS_CELLS = Array.from({length:BMS_CELL_COUNT},(_,i)=>({name:`BmsCell${i+1} 单体电压${i+1}`}));
+const BMS_BINARY = { chgMos:{name:'BmsChgMos 充电MOS'}, dchgMos:{name:'BmsDchgMos 放电MOS'} };
+const BMS_TEXT   = { state:{name:'BmsState 运行状态'}, alarm:{name:'BmsAlarm 告警'} };
+
+const FRIDGE_SENSORS = {
+  boxTemp:{name:'FridgeBox 箱内温度'}, setTemp:{name:'FridgeSet 设定温度'},
+  volt:{name:'FridgeVolt 电池电压'}, frames:{name:'FridgeFrames 有效帧数'},
+  rssi:{name:'FridgeRssi 信号强度'},
+};
+const FRIDGE_BINARY = { comp:{name:'FridgeComp 压缩机'} };
+const FRIDGE_TEXT   = { mode:{name:'FridgeMode 运行模式'}, fault:{name:'FridgeFault 故障码'} };
+
+const TREND_SENSOR = { name:'SolarTrend 充电趋势' };
+const MPPT_SWITCHES = { solarCharge:{name:'SolarCharge 充电输出'}, solarEnable:{name:'SolarEnable 允许充电'} };
+const MPPT_NUMBERS  = { solarLimit:{name:'SolarLimit 充电限流', min:0, max:40, unit:'A'} };
+const MPPT_BUTTONS  = {
+  remote:{name:'SolarA 设为远程控制'}, clock:{name:'SolarB 时钟同步'},
+  readcfg:{name:'SolarC 读设置参数'}, buzzer:{name:'SolarD 蜂鸣器消音'},
+};
+const SYS_TEXT = { ssid:{name:'SysWifi SSID'}, ip:{name:'SysWifi IP地址'} };
+const SYS_SENSORS = { signal:{name:'SysWifi 信号'} };
+const SCENE_SENSORS = { light:{name:'SceneLight 灯光模式'}, camp:{name:'SceneCamp 离车模式'} };
+const SCENE_META = {
+  light:{ name:'灯光', labels:['关闭','明亮','柔和'] },
+  camp: { name:'离车/驻车', labels:['正常','离车','驻车'] },
+};
+
+const state = {
+  sceneLight:0, sceneCamp:0, sceneFan:0,
+  switches:{ mainLight:false, ambient:false, bedDome:false, spot:false, outdoor:false,
+             pump:false, valve:false, fanRear:false, fanPass:false, dsp:false, reverse:false },
+  power:{ batteryPercent:0, batV:0, chgA:0, solarW:0, pvV:0, pvBatV:0, pvTemp:0, pvBatTemp:0,
+          dayWh:0, totalWh:0, state:'--', alert:'',
+          cbSoc:null, cbVolt:0, cbCap:0, cbCurr:0, cbTime:0, cbPow:0, cbOk:0, cbBad:0 },
+  bms:{ online:false, at:0, soc:null, volt:null, curr:null, power:null, cap:null, totalCap:null,
+        cycles:null, frames:null, delta:null, balCurr:null, temp:null,
+        cells:new Array(BMS_CELL_COUNT).fill(null), chgMos:null, dchgMos:null, state:'', alarm:'' },
+  fridge:{ online:false, at:0, boxTemp:null, setTemp:null, volt:null, frames:null, rssi:null,
+           comp:null, mode:'', fault:'' },
+  sys:{ solarCharge:false, solarEnable:true, solarLimit:30, ssid:'--', ip:'--', signal:'--' },
+};
+
+const ARC = 251.3;
+function voltToPct(v){ if(!v||v===0) return 0; return Math.max(0,Math.min(100,Math.round((v-44)/(54-44)*100))); }
+/* 电量分级取语义色：>50% 正常 / 20~50% 警告 / <20% 危险。
+   从 CSS 变量读值，皮肤改了语义色这里自动跟着变。 */
+function cssVar(n,fb){
+  try{
+    const v=getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    return v||fb;
+  }catch(e){ return fb; }
+}
+function battColor(p){
+  return p>50?cssVar('--c-ok','#2F7A4D'):p>20?cssVar('--c-warn','#A8730F'):cssVar('--c-danger','#C4262E');
+}
+const $ = id => document.getElementById(id);
+function num(v,d,u){ return (v==null||!isFinite(v))?'--'+(u||''):Number(v).toFixed(d)+(u||''); }
+
+/* ---------- 开关网格 ---------- */
+const SLOT_BY_KEY = {};
+ENERGY_SLOTS.forEach(s => { SLOT_BY_KEY[s.key] = s; });
+
+function slotTile(s){
+  const d=document.createElement('div');
+  d.className='tile disabled'; d.dataset.key=s.key;
+  d.setAttribute('aria-disabled','true');
+  d.title=s.lb+'：'+s.hint;
+  d.innerHTML=`<span class="ic">${ICONS[s.ic]||ICONS.bolt}</span><span class="lb">${s.lb}</span>`+
+              `<span class="hint-txt">${s.hint}</span>`;
+  return d;
+}
+function renderGrid(el, keys){
+  el.innerHTML='';
+  el.classList.toggle('cols-2', keys.length===4);
+  keys.forEach(k=>{
+    if(!ENTITIES[k] && SLOT_BY_KEY[k]){ el.appendChild(slotTile(SLOT_BY_KEY[k])); return; }
+    const on=state.switches[k];
+    const b=document.createElement('button');
+    b.className='tile'+(on?' on':'');
+    b.dataset.key=k;
+    b.setAttribute('aria-pressed',String(!!on));
+    b.innerHTML=`<span class="ic">${ICONS[k]||ICONS.bolt}</span>`+
+                `<span class="lb">${NAMES[k]||k}</span><span class="mark"></span>`;
+    b.addEventListener('click',()=>toggleSwitch(k,b));
+    el.appendChild(b);
+  });
+}
+function renderAllSwitches(){
+  renderGrid($('quick-grid'),QUICK);
+  renderGrid($('light-grid'),GROUPS.light);
+  renderGrid($('vent-grid'),GROUPS.vent);
+  renderGrid($('water-grid'),GROUPS.water);
+  renderGrid($('device-grid'),GROUPS.device);
+  renderEnergySlots();
+}
+function renderEnergySlots(){
+  const el=$('energy-grid'); if(!el) return;
+  el.innerHTML='';
+  ENERGY_SLOTS.forEach(s=>el.appendChild(slotTile(s)));
+}
+function syncTile(k,on){
+  document.querySelectorAll(`.tile[data-key="${k}"]`).forEach(t=>{
+    t.classList.toggle('on',on);
+    t.setAttribute('aria-pressed',String(!!on));
+  });
+}
+async function toggleSwitch(k,btn){
+  const e=ENTITIES[k]; if(!e) return;
+  const enc=encodeURIComponent(e.name);
+  try{ await fetch(`/${e.domain}/${enc}/toggle`,{method:'POST'}); }
+  catch(err){ console.warn('toggle failed',k,err); }
+  const on=!state.switches[k];
+  state.switches[k]=on;
+  syncTile(k,on);
+}
+
+/* ---------- 情景模式（只读，档位由物理按键驱动） ---------- */
+function renderScenes(){
+  const map={light:state.sceneLight,camp:state.sceneCamp};
+  Object.keys(map).forEach(k=>{
+    const el=$('scene-'+k); if(!el) return;
+    const n=Math.round(map[k]||0);
+    const st=el.querySelector('.st');
+    st.textContent=(SCENE_META[k].labels[n]||'--');
+    el.classList.toggle('active', n>0);
+  });
+}
+
+/* ---------- 能源（首页） ---------- */
+function renderPower(){
+  const p=state.power;
+  const pct=p.batteryPercent;
+  $('battPct').textContent=pct;
+  const arc=$('battArc');
+  arc.setAttribute('stroke-dashoffset',ARC*(1-pct/100));
+  arc.setAttribute('stroke',battColor(pct));
+  $('batV').textContent=num(p.batV,1,'V');
+  $('chgA').textContent=num(p.chgA,1,'A');
+  $('solarW').textContent=num(p.solarW,0,'W');
+  $('chgState').textContent=p.state||'--';
+  $('chgState').title=p.state||'--';
+  $('dayK').textContent=num((p.dayWh||0)/1000,2,' kWh');
+  const maxDay=2000;
+  $('solarFill').style.width=Math.max(0,Math.min(100,((p.dayWh||0)/maxDay)*100))+'%';
+  renderCoulomb();
+  renderPv();
+  $('wifiDot').className='dot'+($('connDot')&&$('connDot').classList.contains('ok')?'':' off');
+}
+function fmtRemain(sec){
+  if(!isFinite(sec)||sec<=0) return '--';
+  const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);
+  const p=n=>String(n).padStart(2,'0');
+  return `${p(h)}:${p(m)}:${p(s)}`;
+}
+function renderCoulomb(){
+  const p=state.power;
+  const online=p.cbSoc!==null;
+  const soc=online?p.cbSoc:0;
+  $('cbTime').textContent=online?fmtRemain(p.cbTime):'--';
+  $('cbCap').textContent=online?(p.cbCap||0).toFixed(1)+'Ah':'--Ah';
+  const arc=$('cbArc');
+  if(arc){
+    arc.setAttribute('stroke-dashoffset',ARC*(1-soc/100));
+    arc.setAttribute('stroke',battColor(soc));
+  }
+  $('cbSoc').textContent=online?Number(soc).toFixed(1):'--';
+  const set=(id,v,d,u)=>{ const el=$(id); if(el) el.textContent=online?(v||0).toFixed(d)+u:'--'+u; };
+  set('cbVolt',p.cbVolt,2,'V');
+  set('cbPow',p.cbPow,1,'W');
+  set('cbCap2',p.cbCap,1,'Ah');
+  const cur=$('cbCurr');
+  if(cur){
+    cur.textContent=online?(p.cbCurr||0).toFixed(2)+'A':'--A';
+    cur.className='v '+(!online?'':(p.cbCurr>=0?'good':'warn'));
+  }
+  $('cbTime2').textContent=online?fmtRemain(p.cbTime):'--';
+  $('cbFrames').textContent=online?`${p.cbOk|0}/${p.cbBad|0}`:'--';
+  const diag=$('cbDiag');
+  if(diag){
+    diag.style.display=online?'none':'block';
+    const t=$('cbDiagTxt');
+    if(t) t.textContent=`OK=${p.cbOk|0} BAD=${p.cbBad|0}`;
+  }
+}
+function renderPv(){
+  const p=state.power;
+  $('pvV').textContent=num(p.pvV,1,'V');
+  $('pvBatV').textContent=num(p.batV,1,'V');
+  $('pvA').textContent=num(p.chgA,1,'A');
+  $('pvW').textContent=num(p.solarW,0,'W');
+  $('pvTemp').textContent=num(p.pvTemp,1,'°C');
+  $('pvBatTemp').textContent=num(p.pvBatTemp,1,'°C');
+  $('pvDay').textContent=num(p.dayWh,0,'Wh');
+  $('pvTotal').textContent=num(p.totalWh,0,'Wh');
+  const v=$('pvStateVal');
+  v.textContent=p.state||'--';
+  v.style.color=p.state&&p.state.includes('充电')?'var(--c-ok)':'var(--c-text-2)';
+}
+
+/* ---------- BMS ---------- */
+function initBmsGrid(){
+  const g=$('bmsCells'); if(!g) return;
+  g.innerHTML='';
+  for(let i=0;i<BMS_CELL_COUNT;i++){
+    const d=document.createElement('div');
+    d.className='cell';
+    d.dataset.i=i;
+    d.innerHTML=`<div class="n">${String(i+1).padStart(2,'0')}</div><div class="v">--</div>`;
+    g.appendChild(d);
+  }
+}
+function renderBms(){
+  const b=state.bms;
+  const body=$('bmsBody'), off=$('bmsOffline');
+  if(!b.online){
+    body.classList.add('hidden'); off.classList.remove('hidden');
+    updateBmsAge(); return;
+  }
+  body.classList.remove('hidden'); off.classList.add('hidden');
+  $('bmsSoc').textContent=b.soc==null?'--%':Number(b.soc).toFixed(0)+'%';
+  $('bmsVolt').textContent=num(b.volt,2,'V');
+  $('bmsCurr').textContent=num(b.curr,2,'A');
+  $('bmsPower').textContent=num(b.power,1,'W');
+  $('bmsCap').textContent=(b.cap==null?'--':Number(b.cap).toFixed(1))+'/'+
+                          (b.totalCap==null?'--':Number(b.totalCap).toFixed(0))+'Ah';
+  $('bmsCycles').textContent=b.cycles==null?'--':Number(b.cycles).toFixed(0)+' 次';
+  $('bmsDelta').textContent=num(b.delta,3,'V');
+  $('bmsBalCurr').textContent=num(b.balCurr,2,'A');
+  $('bmsState').textContent=b.state||'--';
+  $('bmsTemp').textContent=num(b.temp,1,'°C');
+  $('bmsAlarm').textContent=b.alarm||'--';
+  $('bmsFrames').textContent=b.frames==null?'--':String(b.frames);
+  setBadge('bmsChgMos',b.chgMos); setBadge('bmsDchgMos',b.dchgMos);
+
+  /* 压差分级：<0.02 绿 / 0.02~0.05 黄 / >0.05 红 */
+  const d=b.delta;
+  const tag=$('bmsDeltaTag');
+  if(tag){
+    let t='--',c='off';
+    if(d!=null){ if(d<0.02){t='良好';c='ok';} else if(d<=0.05){t='偏高';c='warn';} else {t='异常';c='bad';} }
+    if(tag.textContent!==t) tag.textContent=t;
+    tag.className='badge '+c;
+  }
+
+  /* 单体网格：列优先 01→04 竖排，高/低各高亮**一格**。
+     ⚠ 16 节电压常有多节完全相同（如 0.005V 压差），若按值比较会把所有并列格
+       一起上色。这里只标索引：最高取第一个、最低取最后一个，读起来才唯一。 */
+  const cells=b.cells.filter(v=>v!=null);
+  const hi=cells.length?Math.max(...cells):null;
+  const lo=cells.length?Math.min(...cells):null;
+  const hiI=cells.length?b.cells.indexOf(hi):-1;
+  const loI=cells.length?b.cells.lastIndexOf(lo):-1;
+  $('bmsCells').querySelectorAll('.cell').forEach(el=>{
+    const i=+el.dataset.i, v=b.cells[i];
+    const vs=el.querySelector('.v');
+    el.classList.toggle('miss',v==null);
+    el.classList.toggle('hi',i===hiI&&hi!==lo);
+    el.classList.toggle('lo',i===loI&&hi!==lo);
+    vs.textContent=v==null?'--':v.toFixed(3);
+  });
+  $('bmsHigh').textContent=hi==null?'最高 --':`最高 #${String(hiI+1).padStart(2,'0')} ${hi.toFixed(3)}V`;
+  $('bmsLow').textContent=lo==null?'最低 --':`最低 #${String(loI+1).padStart(2,'0')} ${lo.toFixed(3)}V`;
+  updateBmsAge();
+}
+function setBadge(id,on){
+  const el=$(id); if(!el) return;
+  el.textContent=on===null||on===undefined?'--':(on?'ON':'OFF');
+  el.className='badge '+(on?'on':'off');
+}
+function updateBmsAge(){
+  const el=$('bmsAge'); if(!el) return;
+  const b=state.bms;
+  if(!b.online){ el.textContent='未上线'; el.className='sec-note bms-age off'; return; }
+  el.className='sec-note bms-age';
+  el.textContent=dataAge(b.at);
+}
+function dataAge(at){
+  if(!at) return '--';
+  const s=Math.max(0,Math.round((Date.now()-at)/1000));
+  el0=s;
+  if(s<60) return s+'s 前';
+  const m=Math.floor(s/60);
+  if(m<60) return m+'m 前';
+  return Math.floor(m/60)+'h 前';
+}
+let el0;
+
+/* ---------- 冰箱 ---------- */
+function renderFridge(){
+  const f=state.fridge;
+  const body=$('fridgeBody'), off=$('fridgeOffline');
+  if(!f.online){
+    body.classList.add('hidden'); off.classList.remove('hidden');
+    updateFridgeAge(); return;
+  }
+  body.classList.remove('hidden'); off.classList.add('hidden');
+  $('frBoxTemp').textContent=num(f.boxTemp,1,'°C');
+  $('frSetTemp').textContent=num(f.setTemp,1,'°C');
+  $('frVolt').textContent=num(f.volt,2,'V');
+  $('frMode').textContent=f.mode||'--';
+  $('frFault').textContent=f.fault||'--';
+  $('frFrames').textContent=f.frames==null?'--':String(f.frames);
+  $('frRssi').textContent=f.rssi==null?'-- dBm':Number(f.rssi).toFixed(0)+' dBm';
+  setBadge('frComp',f.comp);
+  /* 箱温偏高 → 红 */
+  const bt=$('frBoxTemp');
+  bt.className='v'+(f.boxTemp!=null&&f.boxTemp>8?' bad':'');
+  updateFridgeAge();
+}
+function updateFridgeAge(){
+  const el=$('fridgeAge'); if(!el) return;
+  const f=state.fridge;
+  if(!f.online){ el.textContent='BLE 未上线'; el.className='sec-note bms-age off'; return; }
+  el.className='sec-note bms-age';
+  el.textContent=dataAge(f.at);
+}
+
+/* ---------- 充电趋势 ---------- */
+let trendData=null;
+function decodeBase64(b64){
+  try{ const bin=atob(b64); return bin; }catch(e){ return ''; }
+}
+function parseTrend(raw){
+  if(!raw||typeof raw!=='string') return null;
+  const parts=raw.split(':');
+  if(parts.length<4||parts[0]!=='v1') return null;
+  const count=parseInt(parts[1],10);
+  if(!isFinite(count)||count<=0) return [];
+  const bin=decodeBase64(parts.slice(3).join(':'));
+  const out=[];
+  const n=Math.min(count,Math.floor(bin.length/2));
+  for(let i=0;i<n;i++){
+    const lo=bin.charCodeAt(i*2)&0xFF, hi=bin.charCodeAt(i*2+1)&0xFF;
+    out.push(lo|(hi<<8));
+  }
+  return out;
+}
+function drawTrend(){
+  const line=$('trendLine'), area=$('trendArea'), empty=$('trendEmpty'), note=$('trendNote');
+  if(!line||!area) return;
+  const d=trendData;
+  if(!d||d.length<2){
+    line.setAttribute('d',''); area.setAttribute('d','');
+    if(empty) empty.classList.add('show');
+    $('trendNow').textContent='--';
+    return;
+  }
+  if(empty) empty.classList.remove('show');
+  const W=300,H=110,padX=2,padY=4;
+  const iw=W-padX*2, ih=H-padY*2;
+  const max=Math.max(1,...d);
+  const niceMax=max<=100?100:max<=300?300:max<=600?600:max<=1000?1000:Math.ceil(max/500)*500;
+  const pts=d.map((v,i)=>{
+    const x=padX+(i/(d.length-1))*iw;
+    const y=padY+ih-(v/niceMax)*ih;
+    return x.toFixed(2)+','+y.toFixed(2);
+  });
+  line.setAttribute('d','M'+pts.join(' L'));
+  area.setAttribute('d','M'+padX+','+(H-padY)+' L'+pts.join(' L')+' L'+(W-padX)+','+(H-padY)+' Z');
+  $('trendMax').textContent=niceMax+'W';
+  $('trendMid').textContent=Math.round(niceMax/2)+'W';
+  $('trendNow').textContent=Math.round(d[d.length-1]);
+  const mins=(d.length-1)*5;
+  const oh=Math.floor(mins/60), om=mins%60;
+  $('trendOldest').textContent=oh>0?('-'+oh+'h'+(om?om+'m':'')):('-'+mins+'m');
+  if(note) note.textContent=oh>0?(oh+'h'+(om?om+'m':'')+' 数据'):(mins+'m 数据');
+}
+
+/* ---------- MPPT / 系统 ---------- */
+function renderMPPT(){
+  setSwitch('swSolarCharge',state.sys.solarCharge);
+  setSwitch('swSolarEnable',state.sys.solarEnable);
+  const sl=$('numSolarLimit');
+  if(sl) sl.value=state.sys.solarLimit;
+  const v=$('solarLimitVal');
+  if(v) v.textContent=state.sys.solarLimit+'A';
+}
+function setSwitch(id,on){
+  const el=$(id); if(!el) return;
+  el.setAttribute('aria-checked',String(!!on));
+}
+function renderSys(){
+  $('sysSsid').textContent=state.sys.ssid;
+  $('sysIp').textContent=state.sys.ip;
+  $('sysSignal').textContent=(typeof state.sys.signal==='number')?state.sys.signal+' dBm':state.sys.signal;
+}
+
+/* ---------- 页面切换 ---------- */
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    $('page-'+btn.dataset.page).classList.add('active');
+    document.querySelector('main').scrollTop=0;
+  });
+});
+
+/* ---------- 时钟 / 数据龄 ---------- */
+function tickClock(){ $('clock').textContent=new Date().toTimeString().slice(0,5); }
+setInterval(tickClock,1000);
+setInterval(updateBmsAge,1000);
+setInterval(updateFridgeAge,1000);
+
+/* ---------- SSE ---------- */
+const NAME_TO_SWITCH={},NAME_TO_SENSOR={},NAME_TO_MPPT_SW={},NAME_TO_MPPT_NUM={},
+      NAME_TO_SYS_TEXT={},NAME_TO_SYS_SENSOR={},NAME_TO_COULOMB={},NAME_TO_BMS_SENSOR={},
+      NAME_TO_BMS_BIN={},NAME_TO_BMS_TEXT={},NAME_TO_BMS_CELL={},NAME_TO_FRIDGE_SENSOR={},
+      NAME_TO_FRIDGE_BIN={},NAME_TO_FRIDGE_TEXT={};
+for(const[k,e]of Object.entries(ENTITIES)) NAME_TO_SWITCH[e.name]=k;
+for(const[k,s]of Object.entries(SENSORS)) NAME_TO_SENSOR[s.name]=k;
+for(const[k,s]of Object.entries(TEXT_SENSORS)) NAME_TO_SENSOR[s.name]=k;
+for(const[k,s]of Object.entries(SCENE_SENSORS)) NAME_TO_SENSOR[s.name]='scene:'+k;
+for(const[k,s]of Object.entries(MPPT_SWITCHES)) NAME_TO_MPPT_SW[s.name]=k;
+for(const[k,s]of Object.entries(MPPT_NUMBERS)) NAME_TO_MPPT_NUM[s.name]=k;
+for(const[k,s]of Object.entries(SYS_TEXT)) NAME_TO_SYS_TEXT[s.name]=k;
+for(const[k,s]of Object.entries(SYS_SENSORS)) NAME_TO_SYS_SENSOR[s.name]=k;
+for(const[k,s]of Object.entries(COULOMB_SENSORS)) NAME_TO_COULOMB[s.name]=k;
+for(const[k,s]of Object.entries(BMS_SENSORS)) NAME_TO_BMS_SENSOR[s.name]=k;
+for(const[k,s]of Object.entries(BMS_BINARY)) NAME_TO_BMS_BIN[s.name]=k;
+for(const[k,s]of Object.entries(BMS_TEXT)) NAME_TO_BMS_TEXT[s.name]=k;
+BMS_CELLS.forEach((s,i)=>{NAME_TO_BMS_CELL[s.name]=i;});
+for(const[k,s]of Object.entries(FRIDGE_SENSORS)) NAME_TO_FRIDGE_SENSOR[s.name]=k;
+for(const[k,s]of Object.entries(FRIDGE_BINARY)) NAME_TO_FRIDGE_BIN[s.name]=k;
+for(const[k,s]of Object.entries(FRIDGE_TEXT)) NAME_TO_FRIDGE_TEXT[s.name]=k;
+const NAME_TREND=TREND_SENSOR.name;
+
+function entityName(json){
+  if(json.name) return json.name;
+  if(json.name_id){
+    const i=json.name_id.indexOf('/');
+    return i>=0?json.name_id.slice(i+1):json.name_id;
+  }
+  return null;
+}
+
+function applyEntityState(json){
+  const name=entityName(json);
+  if(!name) return;
+
+  if(name in NAME_TO_SWITCH){
+    const k=NAME_TO_SWITCH[name];
+    const on=(json.state==='ON'||json.value===true);
+    if(state.switches[k]!==on){ state.switches[k]=on; syncTile(k,on); }
+    return;
+  }
+  if(name in NAME_TO_MPPT_SW){
+    const k=NAME_TO_MPPT_SW[name];
+    const on=(json.state==='ON'||json.value===true);
+    if(state.sys[k]!==on){ state.sys[k]=on; renderMPPT(); }
+    return;
+  }
+  if(name in NAME_TO_MPPT_NUM){
+    const k=NAME_TO_MPPT_NUM[name];
+    const v=Number(json.value);
+    if(state.sys[k]!==v){ state.sys[k]=v; renderMPPT(); }
+    return;
+  }
+  if(name in NAME_TO_SYS_TEXT){
+    state.sys[NAME_TO_SYS_TEXT[name]]=json.value||json.state||'--';
+    renderSys(); return;
+  }
+  if(name in NAME_TO_SYS_SENSOR){
+    state.sys[NAME_TO_SYS_SENSOR[name]]=json.value;
+    renderSys(); return;
+  }
+  if(name===NAME_TREND){
+    const d=parseTrend(json.value||json.state||'');
+    if(d&&d.length){ trendData=d; drawTrend(); }
+    return;
+  }
+  if(name in NAME_TO_COULOMB){
+    const k=NAME_TO_COULOMB[name];
+    state.power[k]=Number(json.value);
+    if(k==='cbSoc') state.power.batteryPercent=Math.max(0,Math.min(100,Math.round(Number(json.value))));
+    renderPower(); return;
+  }
+  const cellIdx=NAME_TO_BMS_CELL[name];
+  if(cellIdx!==undefined){
+    const v=Number(json.value);
+    state.bms.online=true; state.bms.at=Date.now();
+    const nv=isFinite(v)?v:null;
+    if(state.bms.cells[cellIdx]!==nv){ state.bms.cells[cellIdx]=nv; renderBms(); }
+    else updateBmsAge();
+    return;
+  }
+  if(name in NAME_TO_BMS_SENSOR){
+    const k=NAME_TO_BMS_SENSOR[name];
+    const v=Number(json.value);
+    state.bms[k]=isFinite(v)?v:null;
+    state.bms.online=true; state.bms.at=Date.now();
+    renderBms(); return;
+  }
+  if(name in NAME_TO_BMS_BIN){
+    state.bms[NAME_TO_BMS_BIN[name]]=(json.state==='ON'||json.value===true);
+    state.bms.online=true; state.bms.at=Date.now();
+    renderBms(); return;
+  }
+  if(name in NAME_TO_BMS_TEXT){
+    state.bms[NAME_TO_BMS_TEXT[name]]=json.value||json.state||'';
+    state.bms.online=true; state.bms.at=Date.now();
+    renderBms(); return;
+  }
+  if(name in NAME_TO_FRIDGE_SENSOR){
+    const k=NAME_TO_FRIDGE_SENSOR[name];
+    const v=Number(json.value);
+    state.fridge[k]=isFinite(v)?v:null;
+    state.fridge.online=true; state.fridge.at=Date.now();
+    renderFridge(); return;
+  }
+  if(name in NAME_TO_FRIDGE_BIN){
+    state.fridge[NAME_TO_FRIDGE_BIN[name]]=(json.state==='ON'||json.value===true);
+    state.fridge.online=true; state.fridge.at=Date.now();
+    renderFridge(); return;
+  }
+  if(name in NAME_TO_FRIDGE_TEXT){
+    state.fridge[NAME_TO_FRIDGE_TEXT[name]]=json.value||json.state||'';
+    state.fridge.online=true; state.fridge.at=Date.now();
+    renderFridge(); return;
+  }
+  const ssen=NAME_TO_SENSOR[name];
+  if(ssen!==undefined){
+    if(ssen.startsWith('scene:')){
+      const key=ssen.slice(6);
+      state['scene'+key.charAt(0).toUpperCase()+key.slice(1)]=Math.round(Number(json.value));
+      renderScenes();
+    }else if(ssen==='chgState'||ssen==='alert'){
+      state.power[ssen==='chgState'?'state':'alert']=json.value||json.state||'';
+      renderPv();
+    }else{
+      state.power[ssen]=Number(json.value);
+      if(state.power.cbSoc===null) state.power.batteryPercent=voltToPct(state.power.batV);
+      renderPower();
+    }
+  }
+}
+
+/* ---------- 日志 ---------- */
+const MAX_LOG_LINES=300;
+let logPaused=false, logAutoScroll=true;
+const logView=$('logView'), btnPause=$('btnPause'), btnClear=$('btnClear');
+
+function logLevelClass(text){
+  const m=text.match(/^(?:\[[\d:.]+\])?\[([EIWVD])\]/);
+  return m?'lvl-'+m[1]:'';
+}
+function appendLog(text){
+  if(logPaused) return;
+  if(typeof text==='string'&&text.length>1&&text[0]==='"'&&text[text.length-1]==='"'){
+    try{ text=JSON.parse(text); }catch(e){ text=text.slice(1,-1); }
+  }
+  const line=document.createElement('div');
+  line.className=logLevelClass(text);
+  line.textContent=text;
+  /* 首条真实日志到来时清掉「等待日志…」占位（否则它会一直挂在第一行） */
+  if(!logView.dataset.live){ logView.innerHTML=''; logView.dataset.live='1'; }
+  logView.appendChild(line);
+  while(logView.childElementCount>MAX_LOG_LINES) logView.removeChild(logView.firstChild);
+  if(logAutoScroll) logView.scrollTop=logView.scrollHeight;
+}
+btnPause.addEventListener('click',()=>{
+  logPaused=!logPaused;
+  btnPause.textContent=logPaused?'继续':'暂停';
+  btnPause.classList.toggle('active',logPaused);
+});
+btnClear.addEventListener('click',()=>{ logView.innerHTML=''; logView.dataset.live='1'; });
+logView.addEventListener('scroll',()=>{
+  logAutoScroll=logView.scrollHeight-logView.scrollTop-logView.clientHeight<30;
+});
+
+/* ---------- SSE 连接 ---------- */
+function connectSSE(){
+  const es=new EventSource('/events');
+  es.onopen=()=>{
+    $('connDot').classList.add('ok');
+    $('connTxt').textContent='已连接';
+    $('wifiDot').className='dot';
+  };
+  es.addEventListener('log',ev=>appendLog(ev.data));
+  es.addEventListener('state',ev=>{ try{ applyEntityState(JSON.parse(ev.data)); }catch(e){} });
+  es.addEventListener('state_detail_all',ev=>{ try{ applyEntityState(JSON.parse(ev.data)); }catch(e){} });
+  es.onerror=()=>{
+    $('connDot').classList.remove('ok');
+    $('connTxt').textContent='已断开(重连中)';
+    $('wifiDot').className='dot off';
+  };
+  return es;
+}
+
+/* ---------- 设置页命令 ---------- */
+async function postCmd(path){
+  try{ await fetch(path,{method:'POST'}); }
+  catch(e){ console.warn('cmd failed',path,e); }
+}
+function encName(map,key){ return encodeURIComponent(map[key].name); }
+
+$('swSolarCharge').addEventListener('click',()=>{
+  const on=!state.sys.solarCharge;
+  postCmd('/switch/'+encName(MPPT_SWITCHES,'solarCharge')+(on?'/turn_on':'/turn_off'));
+  state.sys.solarCharge=on; renderMPPT();
+});
+$('swSolarEnable').addEventListener('click',()=>{
+  const on=!state.sys.solarEnable;
+  postCmd('/switch/'+encName(MPPT_SWITCHES,'solarEnable')+(on?'/turn_on':'/turn_off'));
+  state.sys.solarEnable=on; renderMPPT();
+});
+$('numSolarLimit').addEventListener('input',function(){
+  $('solarLimitVal').textContent=this.value+'A';
+});
+$('numSolarLimit').addEventListener('change',function(){
+  postCmd('/number/'+encName(MPPT_NUMBERS,'solarLimit')+'/set?value='+this.value);
+  state.sys.solarLimit=Number(this.value);
+});
+document.querySelectorAll('[data-maint]').forEach(b=>{
+  b.addEventListener('click',()=>postCmd('/button/'+encName(MPPT_BUTTONS,b.dataset.maint)+'/press'));
+});
+$('btnRestart').addEventListener('click',()=>{
+  if(confirm('确定重启 ESP32 网关?')) postCmd('/button/SysRestart%20重启设备/press');
+});
+$('btnOta').addEventListener('click',()=>{ location.href='/'; });
+
+function loadPref(){
+  try{ logAutoScroll=localStorage.getItem('forager_autoscroll')!=='0'; }
+  catch(e){ logAutoScroll=true; }
+  setSwitch('prefAutoScroll',logAutoScroll);
+  if($('prefAutoScroll')) $('prefAutoScroll').setAttribute('aria-checked',String(logAutoScroll));
+}
+$('prefAutoScroll').addEventListener('click',function(){
+  logAutoScroll=!logAutoScroll;
+  this.setAttribute('aria-checked',String(logAutoScroll));
+  try{ localStorage.setItem('forager_autoscroll',logAutoScroll?'1':'0'); }catch(e){}
+});
+
+/* ---------- 皮肤切换 ----------
+   皮肤 = 一组 CSS token 覆盖，定义在 <style> 的 [data-skin="..."] 里。
+   这里只负责：列出可用皮肤 → 渲染选择器 → 写 data-skin + localStorage。 */
+const SKINS = [
+  { id:'paper',    name:'Paper',   note:'暖白点阵' },
+  { id:'night',    name:'Night',   note:'深色夜间' },
+  { id:'terminal', name:'Terminal',note:'绿字等宽' },
+  { id:'contrast', name:'Contrast',note:'高对比' },
+  { id:'sand',     name:'Sand',    note:'暖沙大地' },
+];
+const SKIN_STORE='forager_skin';
+/* 缩略图取每款皮肤的代表色：底 / 卡片 / 强调 */
+const SKIN_SWATCH = {
+  paper:   ['#EDEDEB','#FFFFFF','#C4262E'],
+  night:   ['#0E1116','#171C23','#FF6B6B'],
+  terminal:['#08110B','#0C1810','#FFDF6B'],
+  contrast:['#FFFFFF','#F0F0F0','#B30000'],
+  sand:    ['#EAE0D2','#FBF6EC','#B4562A'],
+};
+
+function currentSkin(){
+  return document.documentElement.getAttribute('data-skin')||'paper';
+}
+function applySkin(id){
+  document.documentElement.setAttribute('data-skin',id);
+  try{ localStorage.setItem(SKIN_STORE,id); }catch(e){}
+  /* 手机浏览器地址栏/状态栏颜色跟着皮肤走 */
+  const meta=document.querySelector('meta[name=theme-color]');
+  const bg=cssVar('--c-page-bg','#EDEDEB');
+  if(meta) meta.setAttribute('content',bg);
+  /* 图标描边宽度由皮肤决定，写回每个 svg */
+  const sw=cssVar('--icon-stroke','1.4');
+  document.querySelectorAll('svg[viewBox="0 0 24 24"]').forEach(svg=>{
+    if(svg.classList.contains('airflow')) return;
+    svg.setAttribute('stroke-width',sw);
+  });
+  renderSkinPicker();
+}
+function renderSkinPicker(){
+  const grid=$('skinGrid'); if(!grid) return;
+  const cur=currentSkin();
+  grid.innerHTML='';
+  SKINS.forEach(sk=>{
+    const b=document.createElement('button');
+    b.className='skin-btn';
+    b.setAttribute('aria-pressed',String(sk.id===cur));
+    const sw=SKIN_SWATCH[sk.id]||['#ccc','#eee','#333'];
+    b.innerHTML=`<span class="skin-swatch">${sw.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`+
+                `<span class="nm">${sk.name}<br><span class="dim" style="font-size:10px;color:var(--c-text-3)">${sk.note}</span></span>`;
+    b.addEventListener('click',()=>applySkin(sk.id));
+    grid.appendChild(b);
+  });
+  const note=$('skinNote');
+  if(note){ const t=SKINS.find(x=>x.id===cur); note.textContent=t?t.name:cur; }
+}
+
+/* ---------- 静态图标注入（情景按钮 / 底部导航 / 冰箱标题） ---------- */
+$('scene-light').querySelector('.ic').innerHTML=ICONS.sceneLight;
+$('scene-camp').querySelector('.ic').innerHTML=ICONS.sceneCamp;
+document.querySelector('.fridge-h .ic').innerHTML=ICONS.fridge;
+document.querySelectorAll('nav .ic[data-icon]').forEach(el=>{ el.innerHTML=ICONS[el.dataset.icon]||''; });
+
+/* ---------- 初始化 ---------- */
+renderAllSwitches();
+renderScenes();
+renderPower();
+renderMPPT();
+renderSys();
+initBmsGrid();
+renderBms();
+renderFridge();
+drawTrend();
+loadPref();
+applySkin(currentSkin());   // 把 skin 的附属效果（theme-color / 图标描边 / 选择器）刷一遍
+tickClock();
+/* 开机自述**直接写文本**，不走 appendLog：
+   否则它会被当成"首条真实日志"把 live 标记置上，真正的首条日志到来时
+   占位行就清不掉了（深蓝版 index.html 有同样的小毛病）。 */
+logView.textContent='FORAGER 调试台 · 等待 ESP32 日志…';
+connectSSE();
+</script>
+</body>
+</html>

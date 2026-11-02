@@ -35,6 +35,8 @@ from urllib.parse import unquote, urlparse
 
 WEB_DIR = Path(__file__).resolve().parent
 INDEX = WEB_DIR / "index.html"
+# 点阵贴纸风格的同功能面板（候选替换稿）；--page dot 时 serve 到 /dashboard
+PANEL_DOT = WEB_DIR / "panel-dot.html"
 
 # ── 实体名必须与各 yaml 的 name: 完全一致（同 index.html 的 ENTITIES 等映射） ──
 SWITCH_NAMES = {
@@ -246,10 +248,13 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    # --page dot 时把 /dashboard 指向点阵稿；否则仍指深蓝版
+    active_index = INDEX
+
     def do_GET(self):
         path = urlparse(self.path).path
         if path in ("/", "/dashboard"):
-            self._send(200, INDEX.read_bytes())
+            self._send(200, Handler.active_index.read_bytes())
         elif path == "/events":
             self.stream_events()
         else:
@@ -372,7 +377,14 @@ def main():
     ap.add_argument("--fridge-hot", action="store_true", help="模拟冰箱温度偏高 + 故障码（验证告警配色）")
     ap.add_argument("--no-trend", action="store_true", help="不注入充电趋势，验证空态")
     ap.add_argument("--scene", type=int, default=0, help="场景页初始档位 0/1/2")
+    ap.add_argument("--page", choices=["dark", "dot"], default="dark",
+                    help="选择要预览的面板：dark=深蓝版 index.html（默认），dot=点阵稿 panel-dot.html")
     args = ap.parse_args()
+
+    if args.page == "dot":
+        if not PANEL_DOT.exists():
+            raise SystemExit(f"缺少 {PANEL_DOT}")
+        Handler.active_index = PANEL_DOT
 
     if args.no_coulomb:
         for k in [k for k in state["sensors"] if k.startswith("Coulomb")]:
