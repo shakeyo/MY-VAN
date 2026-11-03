@@ -206,19 +206,53 @@
     --glow-accent:none; --glow-text:none; --glow-tile:none;
   }
 
-  /* ---------- 5) sand：暖沙大地色，白天车内不反光 ---------- */
+  /* ---------- 5) sand：淡黄车漆（呼应车身漆面）----------
+     关键：卡片用**纯白**、页面用淡黄，把层次拉开；
+     旧版 page/card 都偏米黄、明度差只有 8%，整屏糊成一片。
+     文字用暖中性灰而非深褐，避免"土气"。 */
   [data-skin="sand"]{
-    --c-page-bg:#EAE0D2; --c-shell:#F2EADC; --c-card:#FBF6EC;
-    --c-sunken:#F0E7D8;  --c-raised:#E5D8C4;
-    --c-text:#3A3128;    --c-text-2:#7A6B58; --c-text-3:#A2937E;
-    --c-line:#DCCDB6;    --c-line-2:#C9B79C;
-    --c-accent:#B4562A;  --c-info:#4E7C8C; --c-ok:#587A3C; --c-warn:#B4762A; --c-danger:#B03A2E;
-    --c-switch-off:#C9B79C; --c-switch-on:#3A3128; --c-knob:#FBF6EC;
-    --c-slider:#3A3128; --c-mark-on:#B4562A; --c-scene-on:#3A3128;
-    --r-card:22px; --r-block:18px;
-    --shadow-card:0 1px 2px rgba(90,70,50,.06);
+    --c-page-bg:#F4EEDF; --c-shell:#FBF7EE; --c-card:#FFFFFF;
+    --c-sunken:#F5EFE2;  --c-raised:#EAE1CE;
+    --c-text:#2B2820;    --c-text-2:#6E6656; --c-text-3:#A29883;
+    --c-line:#E2D9C6;    --c-line-2:#CFC3A9;
+    /* 强调色：车漆暖黄压深一档，保证白底上可读 */
+    --c-accent:#B07C1A;  --c-info:#3E6F86; --c-ok:#4F7A45; --c-warn:#B07C1A; --c-danger:#B3402F;
+    --c-switch-off:#CFC3A9; --c-switch-on:#2B2820; --c-knob:#FFFFFF;
+    --c-slider:#2B2820; --c-mark-on:#B07C1A; --c-scene-on:#2B2820;
+    --r-card:20px; --r-block:16px;
+    --shadow-card:0 1px 2px rgba(120,100,60,.05);
     --deco-sec-bar:var(--c-text-2);
     --deco-focus:var(--c-info);
+  }
+
+  /* ---------- 6) neon：未来感 · 深空 + 青电光 ----------
+     设计取向：不是"深色主题"而是"仪表盘 HUD"——
+     卡片比背景略亮、描边带一点青、激活态用青色发光而不用红色。
+     语义色仍保留 ok/warn/danger 的绿/琥珀/红，只把 accent 换成电光青。 */
+  [data-skin="neon"]{
+    --c-page-bg:#070B11; --c-shell:#0A0F16; --c-card:#111823;
+    --c-sunken:#0C121B;  --c-raised:#1A2432;
+    --c-text:#DCEAF7;    --c-text-2:#7D93AB; --c-text-3:#4E6279;
+    --c-line:#1D2A3A;    --c-line-2:#2A3D52;
+    /* 电光青做主强调；成功/警告/危险保持语义可辨 */
+    --c-accent:#22D3EE;  --c-info:#38BDF8; --c-ok:#34D399; --c-warn:#FBBF24; --c-danger:#FB7185;
+    --c-switch-off:#243347; --c-switch-on:#22D3EE; --c-knob:#04121A;
+    --c-slider:#22D3EE; --c-mark-on:#22D3EE; --c-scene-on:#22D3EE;
+    /* 未来感来自"发光的描边"，所以描边比别的皮肤亮一档 */
+    --c-card-bd:#1E3044;
+    --bd-card:1px solid var(--c-line);
+    --r-card:14px; --r-block:10px; --r-chip:8px;
+    --shadow-card:0 0 0 1px rgba(34,211,238,.04),0 6px 20px -12px rgba(0,0,0,.8);
+    --shadow-knob:0 0 8px rgba(34,211,238,.55);
+    /* 激活柔光更明显：HUD 的"通电"感 */
+    --glow-accent:0 0 16px -4px color-mix(in srgb,var(--c-accent) 75%,transparent);
+    --glow-text:0 0 14px -5px color-mix(in srgb,var(--c-accent) 55%,transparent);
+    --glow-tile:0 0 18px -8px color-mix(in srgb,var(--c-accent) 70%,transparent);
+    --icon-off-opacity:.8;
+    --deco-sec-bar:var(--c-accent);
+    --deco-focus:var(--c-accent);
+    --deco-dotword-opacity:.85;
+    --fs-sec:13px;
   }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
@@ -1597,7 +1631,8 @@ const SKINS = [
   { id:'night',    name:'Night',   note:'深色夜间' },
   { id:'terminal', name:'Terminal',note:'绿字等宽' },
   { id:'contrast', name:'Contrast',note:'高对比' },
-  { id:'sand',     name:'Sand',    note:'暖沙大地' },
+  { id:'sand',     name:'Sand',    note:'淡黄车漆' },
+  { id:'neon',     name:'Neon',    note:'未来感' },
 ];
 const SKIN_STORE='forager_skin';
 /* 缩略图取每款皮肤的代表色：底 / 卡片 / 强调 */
@@ -1606,7 +1641,8 @@ const SKIN_SWATCH = {
   night:   ['#0E1116','#171C23','#FF6B6B'],
   terminal:['#08110B','#0C1810','#FFDF6B'],
   contrast:['#FFFFFF','#F0F0F0','#B30000'],
-  sand:    ['#EAE0D2','#FBF6EC','#B4562A'],
+  sand:    ['#F4EEDF','#FFFFFF','#B07C1A'],
+  neon:    ['#070B11','#111823','#22D3EE'],
 };
 
 function currentSkin(){
