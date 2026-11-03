@@ -58,11 +58,6 @@
   --c-page-bg:#EDEDEB;   /* 页面最外层（手机壳之外） */
   --c-shell:#FAFAF8;     /* 顶栏/底栏底色 */
   --c-card:#FFFFFF;      /* 卡片底色 */
-  /* 卡片顶部微渐变：照设计稿 .mode.heating.on
-     linear-gradient(180deg, rgba(43,43,43,.05), transparent 70%) */
-  --c-card-veil:linear-gradient(180deg,
-    color-mix(in srgb,var(--c-text) 5%,transparent) 0%,
-    transparent 70%);
   --c-sunken:#EDEDEB;    /* 卡片内的凹槽块（stat / cell） */
   --c-raised:#E4E4E1;    /* 选中态块 / 进度槽 */
   --c-text:#2B2B2B;
@@ -113,6 +108,11 @@
   --glow-text:0 0 0 1px var(--c-text) inset,0 0 22px -10px var(--c-text-soft);
   /* 格子/情景卡/皮肤项统一用同一套光（不再另调一档，否则和设计稿不一致） */
   --glow-tile:0 0 22px -10px var(--c-accent-soft);
+  /* 制热态专用微渐变（照设计稿 .mode.heating.on）。
+     ⚠ 只有"制热开启"才用它：普通卡片/按钮**不要**默认盖渐变，
+        否则浅底上会发灰、深色皮肤上会发亮，两边都难看。 */
+  --veil-heat:linear-gradient(180deg,color-mix(in srgb,var(--c-text) 5%,transparent),transparent 70%);
+  --veil-default:none;
   --glow-on:var(--glow-accent);
 
   /* --- 6. 排版 --- */
@@ -314,7 +314,6 @@ section{margin-bottom:22px}
   appearance:none;background:var(--c-card);border:1px solid var(--c-line);border-radius:var(--r-block);
   padding:12px 8px 11px;display:flex;flex-direction:column;align-items:center;gap:6px;
   color:var(--c-text-2);cursor:pointer;position:relative;min-height:82px;font-family:var(--font-body);
-  background-image:var(--c-card-veil);
   transition:border-color .15s,box-shadow .15s,color .15s,background .15s;
 }
 .tile .ic{display:flex;align-items:center;justify-content:center;width:var(--icon-size);height:var(--icon-size);color:var(--c-text-2);opacity:var(--icon-off-opacity);transition:color .15s,opacity .15s}
@@ -328,6 +327,8 @@ section{margin-bottom:22px}
   border-color:var(--c-accent);background:var(--c-card);color:var(--c-text);
   box-shadow:var(--glow-tile)}
 .tile.on .mark{background:var(--c-mark-on)}
+/* 制热类格子（若将来接入空调制热）才用这层渐变 */
+.tile.heat.on{background-image:var(--veil-heat)}
 .tile:focus{outline:none}
 .tile:focus-visible{outline:2px solid var(--deco-focus);outline-offset:2px}
 .tile:active{transform:scale(.97)}
