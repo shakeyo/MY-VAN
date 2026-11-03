@@ -490,6 +490,8 @@ section{margin-bottom:22px}
   /* —— 设置页两列并排 —— */
   #page-settings section{display:inline-block;vertical-align:top;width:calc(50% - 8px)}
   #page-settings section:nth-child(odd){margin-right:14px}
+  /* 日志是宽内容，必须独占整行 */
+  #page-settings section:has(#logPanel){display:block;width:auto;margin-right:0}
   .set-row{padding:12px 4px}
 
   /* —— 底部导航横向收紧 —— */
@@ -654,10 +656,29 @@ section{margin-bottom:22px}
 .skin-swatch i{flex:1;display:block}
 .skin-btn .nm{font-size:12px;line-height:1.25}
 .log-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+/* ===== 可折叠区块（目前用于日志）===== */
+.fold-head{
+  appearance:none;background:none;border:none;padding:0;margin:0;cursor:pointer;
+  display:flex;align-items:center;gap:8px;width:100%;font:inherit;color:inherit;
+  font-family:var(--font-body);text-align:left;min-height:32px;
+}
+.fold-head > span:first-child{font-size:var(--fs-sec);font-weight:600;letter-spacing:.4px;color:var(--c-text-2)}
+.fold-head .sec-note{margin-left:2px}
+.fold-chev{
+  margin-left:auto;width:8px;height:8px;flex:none;
+  border-right:1.8px solid var(--c-text-3);border-bottom:1.8px solid var(--c-text-3);
+  transform:rotate(45deg) translateY(-2px);transition:transform .2s;
+}
+.fold-head[aria-expanded="true"] .fold-chev{transform:rotate(-135deg) translateY(-2px)}
+.fold-head:focus{outline:none}
+.fold-head:focus-visible{outline:2px solid var(--deco-focus);outline-offset:3px;border-radius:6px}
+.log-panel[hidden]{display:none}
+.log-panel{margin-top:10px}
 .log-toolbar .spacer{flex:1}
 .log-view{
   background:var(--c-page-bg);border:1px solid var(--c-line);border-radius:var(--r-block);
-  padding:10px 12px;height:calc(100dvh - 300px);min-height:180px;overflow-y:auto;
+  /* 已并入设置页：不再按整屏算高，给一个固定块高度即可 */
+  padding:10px 12px;height:clamp(160px,26vh,260px);overflow-y:auto;
   -webkit-overflow-scrolling:touch;font-size:var(--fs-log);line-height:var(--lh-body);
   color:var(--c-text-2);white-space:pre-wrap;word-break:break-all;
   /* 日志区是唯一保留等宽的：时间戳/十六进制对齐比风格重要 */
@@ -972,23 +993,6 @@ nav button.active::after{
     </section>
   </div>
 
-  <!-- ============ 调试页 ============ -->
-  <div class="page" id="page-debug">
-    <section>
-      <h3 class="sec-title">实时日志</h3>
-      <div class="card">
-        <div class="log-toolbar">
-          <span><span class="conn-dot" id="connDot"></span><span id="connTxt" style="font-size:11.5px;color:var(--fade)">连接中…</span></span>
-          <span class="spacer"></span>
-          <button class="chip" id="btnPause">暂停</button>
-          <button class="chip" id="btnClear">清空</button>
-        </div>
-        <div class="log-view" id="logView">等待日志…</div>
-      </div>
-      <p class="hint">日志来自 ESP32 实时推送（SSE /events）；包括 485 按键、轮询计数、MPPT 告警等</p>
-    </section>
-  </div>
-
   <!-- ============ 设置页 ============ -->
   <div class="page" id="page-settings">
     <section>
@@ -1015,14 +1019,27 @@ nav button.active::after{
       <p class="hint">皮肤只改变配色 / 字体 / 圆角，功能与数据完全一致。选择保存在本机浏览器。</p>
     </section>
     <section>
-      <h3 class="sec-title">面板偏好</h3>
-      <div class="card">
-        <div class="set-row">
-          <span class="lbl">实时日志自动滚动</span>
+      <h3 class="sec-title">
+        <button class="fold-head" id="logToggle" aria-expanded="false" aria-controls="logPanel">
+          <span>实时日志</span>
+          <span class="sec-note" id="logNote">已断开</span>
+          <span class="fold-chev" aria-hidden="true"></span>
+        </button>
+      </h3>
+      <div class="card log-panel" id="logPanel" hidden>
+        <div class="log-toolbar">
+          <span><span class="conn-dot" id="connDot"></span><span id="connTxt" style="font-size:12px;color:var(--c-text-3)">连接中…</span></span>
+          <span class="spacer"></span>
+          <button class="chip" id="btnPause">暂停</button>
+          <button class="chip" id="btnClear">清空</button>
+        </div>
+        <div class="log-view" id="logView"></div>
+        <div class="set-row" style="border-bottom:none;padding:12px 2px 0">
+          <span class="lbl">打开时自动滚动到底<small>偏好存在本机浏览器，不影响 ESP32</small></span>
           <button class="switch" id="prefAutoScroll" role="switch" aria-checked="true" aria-label="日志自动滚动"></button>
         </div>
       </div>
-      <p class="hint">偏好保存在本机浏览器（localStorage），不影响 ESP32</p>
+      <p class="hint">日志来自 ESP32 实时推送（SSE /events）；包括 485 按键、轮询计数、MPPT 告警等</p>
     </section>
   </div>
 </main>
@@ -1031,7 +1048,6 @@ nav button.active::after{
   <button data-page="home" class="active"><span class="ic" data-icon="navHome"></span>首页</button>
   <button data-page="switches"><span class="ic" data-icon="navSw"></span>开关</button>
   <button data-page="power"><span class="ic" data-icon="navBat"></span>电池</button>
-  <button data-page="debug"><span class="ic" data-icon="navLog"></span>调试</button>
   <button data-page="settings"><span class="ic" data-icon="navGear"></span>设置</button>
 </nav>
 
@@ -1715,6 +1731,7 @@ function connectSSE(){
   es.onopen=()=>{
     $('connDot').classList.add('ok');
     $('connTxt').textContent='已连接';
+    if($('logNote')) $('logNote').textContent='已连接';
     $('wifiDot').className='dot';
   };
   es.addEventListener('log',ev=>appendLog(ev.data));
@@ -1723,6 +1740,7 @@ function connectSSE(){
   es.onerror=()=>{
     $('connDot').classList.remove('ok');
     $('connTxt').textContent='已断开(重连中)';
+    if($('logNote')) $('logNote').textContent='已断开';
     $('wifiDot').className='dot off';
   };
   return es;
@@ -1770,7 +1788,31 @@ $('prefAutoScroll').addEventListener('click',function(){
   logAutoScroll=!logAutoScroll;
   this.setAttribute('aria-checked',String(logAutoScroll));
   try{ localStorage.setItem('forager_autoscroll',logAutoScroll?'1':'0'); }catch(e){}
+  if(logAutoScroll&&!$('logPanel').hidden) logView.scrollTop=logView.scrollHeight;
 });
+
+/* ---------- 实时日志折叠 ----------
+   日志默认收起：它是排障用的低频功能，常驻会挤占首页纵向空间。
+   展开状态记住（localStorage），下次进设置页保持上次的选择。 */
+const LOG_FOLD='forager_log_open';
+function setLogOpen(open,persist){
+  const pnl=$('logPanel'), btn=$('logToggle');
+  if(!pnl||!btn) return;
+  pnl.hidden=!open;
+  btn.setAttribute('aria-expanded',String(open));
+  /* 只有用户主动点才写偏好；初始化恢复时不写，避免把默认值固化成用户选择 */
+  if(persist){ try{ localStorage.setItem(LOG_FOLD,open?'1':'0'); }catch(e){} }
+  /* 展开时贴到底部，方便看最新日志 */
+  if(open) requestAnimationFrame(()=>{ logView.scrollTop=logView.scrollHeight; });
+}
+$('logToggle').addEventListener('click',()=>{
+  setLogOpen($('logPanel').hidden,true);   // 用户操作 → 记住
+});
+function loadLogFold(){
+  let open=false;
+  try{ open=localStorage.getItem(LOG_FOLD)==='1'; }catch(e){}
+  setLogOpen(open,false);   // 恢复 → 不写
+}
 
 /* ---------- 皮肤切换 ----------
    皮肤 = 一组 CSS token 覆盖，定义在 <style> 的 [data-skin="..."] 里。
@@ -1847,6 +1889,7 @@ renderBms();
 renderFridge();
 drawTrend();
 loadPref();
+loadLogFold();
 applySkin(currentSkin());   // 把 skin 的附属效果（theme-color / 图标描边 / 选择器）刷一遍
 tickClock();
 /* 开机自述**直接写文本**，不走 appendLog：
