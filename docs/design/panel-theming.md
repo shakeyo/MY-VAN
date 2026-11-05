@@ -639,6 +639,55 @@ neon 3.4–10.7；逐像素帧差只有 paper 1.12 / neon 0.85 / night 0.79 —�
 > 顺带一个收益：首页删掉大卡后，界面的"活感"可以靠状态条数字滚动提供，
 > 背景就不必再"动得明显"——这恰好也缓解了背景一动就像色块的老问题。
 
+### 5.4 neon 皮肤的"科技感"不是靠装饰，是靠三处系统化差异
+
+用户反馈两点：`按钮的透明度太高了` + `字体或者图标是不是也要适配一下这个科技主题`。
+结论：科技感要落在**贯穿全皮肤的规则**上，而不是加几块发光。
+
+##### ① 交互面单独一档不透明度（`--surf-alpha-btn`）
+
+卡片可以透（让背景动效透上来），但**按钮不能**：按钮承载文字，透上来会把字糊掉。
+
+```css
+--surf-alpha:100%;                       /* 卡片：皮肤决定 50% */
+--surf-alpha-btn:var(--surf-alpha);      /* 交互面：默认跟随 */
+/* neon */ --surf-alpha-btn:92%;
+```
+
+应用到 `.tile` / `.scene-btn` / `.skin-btn`。neon 调完的实测对比度：
+按钮底 rgb(35,46,59) 上 t2 **5.64**、t3 **4.71**（透明度 50% 时是 6.95 / 5.80，
+但那时网格线会从按键里透出来，得不偿失）。
+
+⚠ 踩坑：只加了 `var(--surf-alpha-btn)` 用法、忘了在 `:root` 给默认值 →
+`color-mix()` 整条声明失效 → 格子背景变全透明。**新 token 必须先在 `:root` 定义默认值**，
+这是第二次踩同一个坑（上一次是 `--bg-fx-ease` 缺失导致动画变 none）。
+
+##### ② 图标：细笔画 + 直角端点
+
+全站图标由同一个 `svg()` 函数生成（`stroke-width="1.4"`、圆端点）。neon 用 CSS 覆盖：
+
+```css
+[data-skin="neon"] .ic svg{stroke-width:1.15;stroke-linecap:square;stroke-linejoin:miter}
+```
+
+同一套路径，1.4/圆端点 = 手绘感（纸面皮肤），1.15/直角 = 工程图/HUD 感（neon）。
+**不要**为某个皮肤重画图标——那会变成两套资产要同步维护。
+
+##### ③ 字：等宽 + 字距
+
+neon 本来只有"数字"是等宽（`--font-num`），标签是比例字体，混在一起不像同一套系统：
+
+```css
+[data-skin="neon"] .k, .u, .sec-note, .hint, .bms-age, .stat .k, .chip, nav button{
+  font-family:var(--font-num); letter-spacing:.7px; font-variant-numeric:tabular-nums}
+```
+
+标签切到等宽后字宽变化 → 必须重跑溢出回归（本轮 6 尺寸 × 4 皮肤 × 4 页面全绿）。
+
+##### ④ 按钮更方：`--r-block` 10px → 6px，`--r-chip` 8px → 4px
+
+直角是 HUD 的默认语言；纸面皮肤保留大圆角。
+
 ## 6. 换肤时的附属动作
 
 `applySkin(id)` 除了切 `data-skin`，还会同步：

@@ -90,13 +90,14 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
           /* 第二层：扫描线之类 */
 
 
-  /* 纵向光带的墨量：浅色皮肤用深墨、深色皮肤用浅墨，都是 4–5% 的低墨量 */
-
   /* 表面不透明度：卡片/格子有多透。100% = 完全不透（光斑只能在缝隙里看到）。 */
   --surf-alpha:100%;
   /* 凹槽表面（stat / skin-btn）：压在卡片之上，要单独给透明度，
      否则不透明凹槽会把整张卡片盖死，光透不上来。 */
   --surf-alpha-2:100%;
+  /* 交互面（格子/情景按钮/皮肤卡）单独一档不透明度：它们承载文字，
+     被背景透上来会糊。默认继承 --surf-alpha，由皮肤覆盖。 */
+  --surf-alpha-btn:var(--surf-alpha);
   /* 动效强度：1=明显  0.6=柔和（时长除以它 → 更慢）。
      "关"由 html[data-motion="off"] 直接掐掉动画，不走这里。 */
   --motion-speed:1;
@@ -328,7 +329,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --c-slider:#22D3EE; --c-mark-on:#22D3EE; --c-scene-on:#22D3EE;
     /* 未来感来自"发光的描边"，所以描边比别的皮肤亮一档 */
     --bd-card:1px solid var(--c-line);
-    --r-card:14px; --r-block:10px; --r-chip:8px;
+    --r-card:14px; --r-block:6px; --r-chip:4px;  /* 比纸面皮肤更方：HUD 的直角感 */
     --shadow-card:0 0 0 1px rgba(34,211,238,.04),0 6px 20px -12px rgba(0,0,0,.8);
     --shadow-knob:0 0 8px rgba(34,211,238,.55);
     /* 激活柔光更明显：HUD 的"通电"感 */
@@ -361,6 +362,8 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-glow-name:glowPan; --bg-glow-dur:16s;
     --bg-glow2:none; --bg-glow2-name:none;
     --surf-alpha:50%; --surf-alpha-2:42%;
+    /* 按钮承载文字：近乎不透明，否则网格线会从按键里透出来把字糊掉 */
+    --surf-alpha-btn:92%;
     /* 未来感：等宽数字 + 拉开字距，像 HUD 读数 */
     --font-num:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
     --font-num-weight:500;
@@ -537,7 +540,7 @@ section{margin-bottom:var(--sp-6)}
 .scenes{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-3)}
 .scene-btn{
   appearance:none;border:1px solid var(--c-line);
-  background:color-mix(in srgb,var(--c-card) var(--surf-alpha),transparent);border-radius:var(--r-block);
+  background:color-mix(in srgb,var(--c-card) var(--surf-alpha-btn),transparent);border-radius:var(--r-block);
   padding:var(--sp-3) var(--sp-2);display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);
   color:var(--c-text-2);min-height:76px;position:relative;cursor:default;font-family:var(--font-body);
   transition:border-color .15s,box-shadow .15s,color .15s,background .15s;
@@ -563,7 +566,7 @@ section{margin-bottom:var(--sp-6)}
 .grid.cols-2 > .tile{flex:1 1 calc(50% - 4px);min-width:calc(50% - 4px)}
 .tile{
   appearance:none;border:1px solid var(--c-line);border-radius:var(--r-block);
-  background:color-mix(in srgb,var(--c-card) var(--surf-alpha),transparent);
+  background:color-mix(in srgb,var(--c-card) var(--surf-alpha-btn),transparent);
   padding:var(--sp-3) var(--sp-2);display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);
   color:var(--c-text-2);cursor:pointer;position:relative;min-height:88px;font-family:var(--font-body);
   transition:border-color .15s,box-shadow .15s,color .15s,background .15s,transform .12s ease-out;
@@ -820,7 +823,7 @@ section{margin-bottom:var(--sp-6)}
 .skin-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .skin-btn{
   appearance:none;cursor:pointer;font-family:var(--font-body);text-align:left;
-  background:color-mix(in srgb,var(--c-sunken) var(--surf-alpha-2),transparent);
+  background:color-mix(in srgb,var(--c-sunken) var(--surf-alpha-btn),transparent);
   border:1px solid var(--c-line);border-radius:var(--r-block);
   padding:var(--sp-3);display:flex;align-items:center;gap:var(--sp-2);color:var(--c-text-2);
   transition:border-color .15s,box-shadow .15s,color .15s;
@@ -988,6 +991,39 @@ html[data-motion="soft"]{--motion-speed:.6}
 [data-skin="contrast"] .bg-fx::before,
 [data-skin="contrast"] .bg-fx::after,
 [data-skin="contrast"] .bg-fx .l-near{animation:none !important;display:none}
+
+/* ===== neon 专属：科技主题的字与图标 =====
+   图标：全部改用细笔画 + 直角端点（stroke-linecap:square），
+   这是 HUD/工程图的语言；纸面皮肤仍用 1.4 + 圆端点，保持手绘感。
+   字：读数与单位本来就等宽，这里把标签/说明也切到等宽 + 拉开字距，
+   否则"等宽数字 + 比例中文"混在一起会显得不是同一套系统。 */
+[data-skin="neon"] .ic svg,
+[data-skin="neon"] nav button .ic svg,
+[data-skin="neon"] .fridge-h .ic svg{
+  stroke-width:1.15;stroke-linecap:square;stroke-linejoin:miter;
+}
+[data-skin="neon"] .chip,
+[data-skin="neon"] .k,
+[data-skin="neon"] .u,
+[data-skin="neon"] .sec-note,
+[data-skin="neon"] .hint,
+[data-skin="neon"] .bms-age,
+[data-skin="neon"] .tile .hint-txt,
+[data-skin="neon"] .stat .k,
+[data-skin="neon"] .set-row .lbl small,
+[data-skin="neon"] .trend-y,
+[data-skin="neon"] .trend-x,
+[data-skin="neon"] nav button{
+  font-family:var(--font-num);letter-spacing:.7px;font-variant-numeric:tabular-nums;
+}
+[data-skin="neon"] .tile .lb,
+[data-skin="neon"] .scene-btn .lb{
+  font-family:var(--font-body);letter-spacing:1px;font-weight:400;
+}
+[data-skin="neon"] .tile.on .ic,
+[data-skin="neon"] nav button.active .ic{
+  filter:drop-shadow(0 0 5px color-mix(in srgb,var(--c-accent) 55%,transparent));
+}
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}
