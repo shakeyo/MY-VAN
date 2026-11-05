@@ -36,6 +36,9 @@ switch:
       - script.execute:
           id: rs485_write
           frame: [0x03, 0x05, 0x00, 0x00, 0x00, 0x00, 0xCC, 0x28]
+    on_state:
+      # 入口键1「上水泵」LED 走 16DO.Y1（决10，中门柜本地，不跨柜）
+      - script.execute: led_door_pump
   # ---- Y2：电控水阀（12V 常闭球阀，通电开/断电关）----
   - platform: template
     name: "[中4.Y2] 电控水阀"

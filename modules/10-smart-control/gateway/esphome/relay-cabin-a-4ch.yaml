@@ -59,6 +59,9 @@ switch:
       - script.execute:
           id: rs485_write
           frame: [0x05, 0x05, 0x00, 0x02, 0x00, 0x00, 0x6D, 0x8E]
+    on_state:
+      # 入口键2「户外灯」LED 走中门柜 16DO.Y2（决10，跨柜由固件同步）
+      - script.execute: led_door_outdoor
   # ---- Y4：副驾窗排气扇（直切，小功率；无物理键，手机面板/大屏控制 + 排气扇场景）----
   - platform: template
     name: "[驾驶室A.Y4] 副驾排气扇"

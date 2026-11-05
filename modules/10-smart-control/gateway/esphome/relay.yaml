@@ -25,8 +25,9 @@ packages:
   relay_cabin_a: !include relay-cabin-a-4ch.yaml    # 0x05 4DI+4DO 5A  驾驶室功率键
   relay_cabin_b: !include relay-cabin-b-4ch.yaml    # 0x06 4DI+4DO 5A  驾驶室场景键
   relay_led_8ch: !include relay-led-8ch.yaml        # 0x07 8DO 5A      场景双色 LED
+  # ═══ 中门柜（0x05）—— 入口面板 LED 驱动（决10 重新启用）═══
+  relay_mid_16do: !include relay-mid-16do.yaml      # 0x05 16DO 5A  入口 4 键 LED（Y1-Y4）
   # 已退役 / 未使用：
-  # relay_mid_16do: !include relay-mid-16do.yaml    # 库存备用
   # （relay-forehead-8ch.yaml 旧文件已作废，勿再 include）
 
 # =============================================================

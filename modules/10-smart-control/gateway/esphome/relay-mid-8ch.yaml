@@ -71,6 +71,8 @@ switch:
     on_state:
       # 倒车灯 LED 在驾驶室柜，由 8DO(0x07) Y5 同步（固件跟随真实状态，见 决8）
       - script.execute: led_reverse_sync
+      # 入口键3「车尾灯」LED 走 16DO.Y3（决10，中门柜本地）
+      - script.execute: led_door_reverse
   # ---- Y3/Y4/Y5/Y8：预留（线圈 0x0002 / 0x0003 / 0x0004 / 0x0007）----
 
 # 按键由 base.yaml 的 read_upload 按模块地址分发 publish_state（X1~X8 位图）
@@ -84,23 +86,32 @@ switch:
 #   ⚠ 位图位号不可改：模块丝印 X1..X8 固定对应 bit0..bit7（见 base.yaml read_upload）。
 #   入口键2「户外灯」已移驾驶室（决3），本模块不再有该键。
 binary_sensor:
+  # ═══════════════════════════════════════════════════════════════
+  # 入口面板 4 键（2026-11-04 决10 定稿）
+  #   X1 上水泵 / X2 户外灯 / X3 车尾灯（双控）/ X4 预留（预埋）
+  #   LED 全部走中门柜 16DO(0x05) Y1-Y4，见 relay-mid-16do.yaml
+  # ═══════════════════════════════════════════════════════════════
   - platform: template
-    name: "[中8.DI1] 入口-排水"
-    id: bs_door_drain
-    on_press:
-      - script.execute: act_drain
-  - platform: template
-    name: "[中8.DI2] 入口-上水泵"
+    name: "[中8.DI1] 入口-上水泵"
     id: bs_door_pump
-    # ⚠ 2026-10 面板重排：上水泵键由 X3 移到 X2（原 X2 户外灯键移驾驶室，见 决1/决3）
     on_press:
       - script.execute: act_pump_in
-
-# 已取消（决1/决2，2026-10-30 固件层面下线）：
-#   bs_door_outdoor  [中8.DI2] 入口-户外灯  → 户外灯键移驾驶室（额头.DI5，见 relay-forehead-8ch.yaml）
-#   bs_bed_light     [中8.DI5] 主控-主灯    → 中门主控 6 键取消
-#   bs_bed_ambient   [中8.DI6] 主控-氛围灯
-#   bs_bed_fan       [中8.DI7] 主控-排气扇
-#   bs_bed_pump      [中8.DI8] 主控-上水泵
-#   注意：随 bs_bed_light 一起作废的还有「主控键1 长按 2s 灯光全关」——该交互依赖已取消的实体。
+  - platform: template
+    name: "[中8.DI2] 入口-户外灯"
+    id: bs_door_outdoor
+    # 户外灯负载在 额头.R2（额头柜），跨模块执行；LED 走 16DO.Y2
+    on_press:
+      - script.execute: act_outdoor
+  - platform: template
+    name: "[中8.DI3] 入口-车尾灯"
+    id: bs_door_reverse
+    # 双控：与 驾驶室A.DI2 同切 中8.Y7（同一实体 sw_reverse，状态天然同步）
+    on_press:
+      - script.execute: act_reverse
+  # X4 = 预留（14P 位6 淡绿已预埋，将来装按钮直接接）
+  #
+  # ── 已下线 ──
+  #   bs_door_drain  [中8.DI1] 入口-排水  → 排水键取消（决10：入口改上水泵/户外灯/车尾灯/预留）
+  #   bs_bed_light/ambient/fan/pump [X5-X8] → 中门主控 6 键取消（决2）
+  #   注意：随 bs_bed_light 一起作废的还有「主控键1 长按 2s 灯光全关」——该交互依赖已取消的实体。
 #   X5-X8 空出来后可留给未来分散独立按钮（见 switch-assignment.md §五）。

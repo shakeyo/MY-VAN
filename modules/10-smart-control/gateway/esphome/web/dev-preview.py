@@ -366,9 +366,22 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, b"unknown entity", "text/plain")
 
 
+class PreviewServer(ThreadingHTTPServer):
+    daemon_threads = True   # 手机离开页面时 SSE 长连接直接丢弃，不阻塞 Ctrl-C
+
+    def handle_error(self, request, client_address):
+        # 手机切换 App / 锁屏会掐断 SSE 连接，属正常现象：静音，不刷栈
+        import sys
+        if isinstance(sys.exc_info()[1], (ConnectionResetError, BrokenPipeError, TimeoutError)):
+            return
+        super().handle_error(request, client_address)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8321)
+    ap.add_argument("--host", default="127.0.0.1",
+                    help="监听地址：127.0.0.1=仅本机，0.0.0.0=局域网/Tailscale 可访问")
     ap.add_argument("--no-coulomb", action="store_true", help="模拟库仑计未上线")
     ap.add_argument("--no-bms", action="store_true", help="模拟 JK BMS 未上线（BLE 代理未接入）")
     ap.add_argument("--bms-bad", action="store_true", help="模拟单体压差异常 + 告警（验证红色分级）")
@@ -438,8 +451,18 @@ def main():
     log("[di] addr=0x02 key=X4")
     log("[stat] poll=off upload-only")
 
-    srv = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    srv = PreviewServer((args.host, args.port), Handler)
     print(f"面板预览: http://127.0.0.1:{args.port}/dashboard")
+    if args.host not in ("127.0.0.1", "localhost"):
+        import socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("100.100.100.100", 80))   # Tailscale CGNAT 探针，不发包
+            ts_ip = s.getsockname()[0]
+            s.close()
+        except OSError:
+            ts_ip = None
+        print(f"手机访问: http://{ts_ip or '<本机IP>'}:{args.port}/dashboard")
     if args.no_coulomb:
         print("  (库仑计未上线模式)")
     if args.no_bms:

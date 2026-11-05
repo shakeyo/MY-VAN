@@ -282,7 +282,7 @@ script:
             // 【面板重排 2026-10-30 · 决8 + 站号重编】位号严格按模块丝印：
             //   0x05 驾驶室A(4DI) : X1 射灯 / X2 倒车灯 / X3 DSP / X4 户外灯
             //   0x06 驾驶室B(4DI) : X1 灯光模式 / X2 离车驻车（X3-X4 预留）
-            //   0x02 中8(8DI)     : X1 排水 / X2 上水泵（X3-X8 空）
+            //   0x02 中8(8DI)     : X1 上水泵 / X2 户外灯 / X3 车尾灯 / X4 预留（决10）
             //   0x03 中4(4DI)     : 全空
             switch (buf[i]) {
               case 0x05:  // 驾驶室A
@@ -295,11 +295,14 @@ script:
                 id(bs_cabin_dsp).publish_state(r & 0x04);
                 id(bs_cabin_outdoor).publish_state(r & 0x08);
                 break;
-              case 0x02:  // 中8（入口面板：排水 / 上水泵）
-                if (rep & 0x01) id(bs_door_drain).publish_state(false);
-                if (rep & 0x02) id(bs_door_pump).publish_state(false);
-                id(bs_door_drain).publish_state(r & 0x01);
-                id(bs_door_pump).publish_state(r & 0x02);
+              case 0x02:  // 中8（入口面板 4 键：上水泵 / 户外灯 / 车尾灯 / 预留，决10）
+                if (rep & 0x01) id(bs_door_pump).publish_state(false);
+                if (rep & 0x02) id(bs_door_outdoor).publish_state(false);
+                if (rep & 0x04) id(bs_door_reverse).publish_state(false);
+                id(bs_door_pump).publish_state(r & 0x01);
+                id(bs_door_outdoor).publish_state(r & 0x02);
+                id(bs_door_reverse).publish_state(r & 0x04);
+                // bit3 (X4 预留)：14P 位6 已预埋，暂不发布
                 break;
               case 0x03:  // 中4：无按键（4 路 DI 全空，留给未来分散按钮）
                 break;

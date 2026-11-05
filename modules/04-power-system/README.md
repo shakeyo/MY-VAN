@@ -21,7 +21,7 @@
 | 0 准备 | 采购齐 + **家里预制负载线束**（裁线/压端子/焊并/贴标签） | 每根线两端有标签，端子排/保险盒就位 |
 | 1 电池与总保护 | 电池安装 + 源头熔断 150A + 主断 125A（电池侧） | 绝缘无碰壳、铜鼻扭矩达标、主断可分断 |
 | 2 中门配电箱 | 按箱内步骤 1-10 接线（负汇流 → 48V 主干 → DCDC → 12V 分配 → 继电器 → 控制 → 信号 → 出线 → 整理标识） | §十二安全检查清单全过 + 未通电逐路测短路 |
-| 3 面板与线缆 | 按钮接线、焊并点、JST 信号线压接（DI主干14P / 入口复合14P / 主控复合14P，全车统一14P）、入面板插座 | 逐芯通断测试通过，LED 极性确认 |
+| 3 面板与线缆 | 按钮接线、焊并点、JST 信号线压接（**入口复合线 14P，决10 终版**，位6/12 预埋）、入面板插座 | 逐芯通断测试通过，LED 极性确认 |
 | 4 485 总线 + ESP32 | 菊花链并线、两端 120Ω、强弱电分离 | 总线 A/B 无短接，模块地址正确 |
 | 5 分阶段通电 | 48V 总进线 → DCDC 输出 → 控制模块 → 灯 → 风扇 → 冰箱 → **水泵最后** | 逐段电压正常，水泵试车（二极管方向已核） |
 
@@ -33,10 +33,10 @@
 | 中门箱内布局（正视图） | [box-layout.svg](./diagrams/box-layout.svg) | 阶段 2：箱内器件定位 |
 | 48V 水泵主回路 + 控制回路 | [pump-48v.svg](./diagrams/pump-48v.svg) | 阶段 2/5：核心安全回路 |
 | 单按键 3 回路（含"三个 COM"辨析） | [button-wiring.svg](./diagrams/button-wiring.svg) | 阶段 3：面板接线前 |
-| 中门柜汇总方案面板线缆定义 | [switch-assignment.md §七](switch-assignment.md#七、面板线缆定义中门柜汇总方案) | 阶段 3：压 JST 插头、按色找芯 |
-| 中8 模块接线图（含 Y8 离车驻车LED） | [mid8-module-wiring.svg](./diagrams/mid8-module-wiring.svg) | 阶段 3：配电箱负载接线 |
-| 中4 模块接线图（含 Y4 灯光模式LED） | [mid4-module-wiring.svg](./diagrams/mid4-module-wiring.svg) | 阶段 3：低功率负载接线 |
-| ~~16DO 模块接线图~~ | [16do-module-wiring.svg](./diagrams/16do-module-wiring.svg) | 16DO **已退役备用**（决4），仅作复活参考 |
+| 中门柜汇总方案面板线缆定义（**入口 14P 终版**） | [switch-assignment.md §七](switch-assignment.md#七、面板线缆定义中门柜汇总方案) | 阶段 3：压 JST 插头、按色找芯 |
+| 中8 模块接线图 | [mid8-module-wiring.svg](./diagrams/mid8-module-wiring.svg) | 阶段 3：配电箱负载接线 |
+| 中4 模块接线图 | [mid4-module-wiring.svg](./diagrams/mid4-module-wiring.svg) | 阶段 3：低功率负载接线 |
+| **16DO 模块接线图（入口 4 键 LED）** | [16do-module-wiring.svg](./diagrams/16do-module-wiring.svg) | 16DO 按 **决10** 重新启用，驱动入口 Y1-Y4 |
 | 中门走线分层（DI 主干 / 面板复合线分离） | [mid-door-wiring.svg](./diagrams/mid-door-wiring.svg) | 阶段 3：中门柜走线 |
 | 端子排布局（功率区 + 控制区） | [terminal-block.svg](./diagrams/terminal-block.svg) | 阶段 2/3：对位接线 |
 | 485 总线拓扑 | [485-bus.svg](./diagrams/485-bus.svg) | 阶段 4：总线布线 |
