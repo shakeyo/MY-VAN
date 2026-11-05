@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- 关键：iOS 会对"小字+窄屏"自动放大字号（text autosizing），顶栏这种一行挤满
+     内容的布局会被放大后挤到互相覆盖。显式关掉自动缩放。 -->
+<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>
 <meta name="theme-color" content="#EDEDEB">
 <link rel="icon" href="data:,">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -88,7 +91,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   --bg-fx2-name:none;
   --bg-fx2-dur:8s;
   /* 纵向光带的墨量：浅色皮肤用深墨、深色皮肤用浅墨，都是 4–5% 的低墨量 */
-  --veil-ink:color-mix(in srgb,var(--c-text) 4.5%,transparent);
+  --veil-ink:color-mix(in srgb,var(--c-text) 10%,transparent);
   /* 表面不透明度：卡片/格子有多透。100% = 完全不透（光斑只能在缝隙里看到）。 */
   --surf-alpha:100%;
   /* 凹槽表面（stat / skin-btn）：压在卡片之上，要单独给透明度，
@@ -247,7 +250,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     /* 不铺网格（那是 neon 的语言），只留一层极淡顶部冷光，缓慢呼吸 */
     --bg-texture:radial-gradient(120% 62% at 50% -12%,
       color-mix(in srgb,var(--c-info) 9%,transparent), transparent 62%);
-    --veil-ink:color-mix(in srgb,var(--c-text) 5.5%,transparent);
+    --veil-ink:color-mix(in srgb,var(--c-text) 10%,transparent);
     --bg-fx-name:breathe; --bg-fx-dur:12s; --bg-fx-ease:ease-in-out;
     /* 冷色极光：夜间最合适的动效——暗底上极淡的光在缓慢移位 */
     /* 暗色皮肤：用浅色墨点（--c-text 本身是浅的），墨量同样很低。
@@ -322,7 +325,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
       linear-gradient(90deg, color-mix(in srgb,var(--c-accent) 7%,transparent) 1px, transparent 1px);
     --bg-texture-size:auto, 30px 30px, 30px 30px;
     /* 网格 26px 周期 → 漂移一整格无缝；再加一条扫描线周期性扫过 */
-    --veil-ink:color-mix(in srgb,var(--c-accent) 5%,transparent);
+    --veil-ink:color-mix(in srgb,var(--c-accent) 9%,transparent);
     --bg-fx-name:none;
     --bg-fx2:linear-gradient(180deg,
       transparent 47%, color-mix(in srgb,var(--c-accent) 13%,transparent) 50%, transparent 53%);
@@ -343,12 +346,19 @@ html,body{
 body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 
 /* ===== 顶栏 ===== */
+/* 顶栏用 grid 而不是 flex + space-between：
+   flex 下 .hdr-energy 的 min-width:0 会让它缩到比内容还窄，子元素溢出后
+   直接压在时钟/WiFi 上（手机上字体渲染略宽就会发生）。
+   grid 的 auto/minmax(0,1fr)/auto 三列 + overflow:hidden 从结构上不可能重叠。 */
 header{
-  flex:none;position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
+  flex:none;position:relative;z-index:2;
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;
+  column-gap:var(--sp-3);overflow:hidden;
   padding:var(--sp-2) var(--sp-4);padding-top:calc(var(--sp-2) + env(safe-area-inset-top));
   background:var(--c-shell);border-bottom:1px solid var(--c-line);
 }
-.brand{display:flex;align-items:center;gap:var(--sp-2)}
+.brand{display:flex;align-items:center;gap:var(--sp-2);flex:none}
+.bt{white-space:nowrap}
 .logo{
   font-family:var(--font-num);
   width:32px;height:32px;border-radius:var(--r-chip);border:1.5px solid var(--c-text);
@@ -356,7 +366,8 @@ header{
   font-weight:800;font-size:var(--fs-label);letter-spacing:.5px;background:var(--c-card);
 }
 .bn{font-family:var(--font-num);font-weight:700;font-size:var(--fs-sec);letter-spacing:1px}
-.status{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+.status{display:flex;align-items:center;gap:var(--sp-2);flex:none;white-space:nowrap;
+  font-size:var(--fs-sm);color:var(--c-text-2)}
 .pill{
   display:inline-flex;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-2);border-radius:var(--r-pill);
   background:var(--c-card);border:1px solid var(--c-line);
@@ -385,14 +396,21 @@ header{
      ③ 只有极低墨量（4–5%），是"光线慢慢扫过纸面/屏幕"，不是一个图形。
    `alternate` 让它下行到底再原路返回，没有循环跳变。 */
 .bg-veil{
-  position:fixed;left:-10%;right:-10%;top:0;height:46vh;z-index:0;pointer-events:none;
+  position:fixed;left:-10%;right:-10%;top:0;height:40vh;z-index:0;pointer-events:none;
   background:linear-gradient(180deg,transparent 0%,var(--veil-ink) 50%,transparent 100%);
-  animation:veilSweep calc(38s / var(--motion-speed)) ease-in-out infinite alternate;
+  animation:veilSweep calc(24s / var(--motion-speed)) linear infinite;
   will-change:transform;
 }
+/* 第二条带：同一条渐变、相位差半周期（负 delay），所以屏幕上永远至少有一条在走，
+   不会出现"带走出屏幕 → 画面静止十几秒"的情况。 */
+.bg-veil::after{
+  content:'';position:absolute;inset:0;background:inherit;
+  animation:veilSweep calc(24s / var(--motion-speed)) linear infinite;
+  animation-delay:calc(-12s / var(--motion-speed));
+}
 @keyframes veilSweep{
-  from{transform:translate3d(0,-50vh,0)}
-  to{transform:translate3d(0,108vh,0)}
+  from{transform:translate3d(0,-40vh,0)}
+  to{transform:translate3d(0,104vh,0)}
 }
 
 /* ===== 顶栏能源簇 =====
@@ -400,7 +418,9 @@ header{
    这块原本是一条独立的 28px 状态条，后来按提议并进顶栏 —— 省 28px 纵向空间，
    也解决"只有三项、中间一片空"的问题：顶栏本来就该放常驻信息。 */
 .hdr-energy{display:flex;align-items:center;gap:var(--sp-2);min-width:0;
+  overflow:hidden;white-space:nowrap;justify-content:flex-start;
   font-size:var(--fs-label);color:var(--c-text-3)}
+.hdr-energy>*{flex:none}
 .he-soc{display:flex;align-items:center;gap:1px}
 .he-soc b,.sb-cur b,.sb-time b,.sb-w b{font-family:var(--font-num);font-weight:700;
   font-size:var(--fs-body);letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
@@ -420,8 +440,15 @@ header{
 
 /* 极窄屏（≤359px，如 iPhone SE 一代）：顶栏必须放得下。
    依次舍弃：品牌文字 → 剩余时间（都不影响核心信息：电量与电流仍在） */
-@media (max-width:359px){
+/* 顶栏取舍（宽度不够时按这个顺序让位，保证永不相压）：
+   ① ≤430px：舍品牌文字（FG 方块仍标识品牌）→ 换来"剩余时间"能显示
+   ② ≤359px：再舍剩余时间 → 只留电量与净电流
+   品牌文字在宽屏才有意义，所以先牺牲它是合理的。 */
+@media (max-width:430px){
   .bn{display:none}
+  .hdr-energy{gap:var(--sp-2)}
+}
+@media (max-width:359px){
   .sb-time{display:none}
   .hdr-energy{gap:var(--sp-1)}
 }
@@ -887,7 +914,8 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
    "柔和"：时长 ÷0.6（变慢），"明显"：÷1。 */
 html[data-motion="off"] .bg-fx,
 html[data-motion="off"] .bg-fx::after,
-html[data-motion="off"] .bg-veil{animation:none !important}
+html[data-motion="off"] .bg-veil,
+html[data-motion="off"] .bg-veil::after{animation:none !important}
 html[data-motion="soft"]{--motion-speed:.6}
 
 /* 切页入场：轻微上浮 + 淡入，给"点了有反应"的反馈 */
@@ -917,7 +945,9 @@ html[data-motion="soft"]{--motion-speed:.6}
 
 [data-skin="contrast"] .bg-fx,
 [data-skin="contrast"] .bg-fx::after,
-[data-skin="contrast"] .bg-veil{animation:none !important}
+[data-skin="contrast"] .bg-veil,
+[data-skin="contrast"] .bg-veil::after{animation:none !important}
+[data-skin="contrast"] .bg-veil{display:none}
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}

@@ -361,11 +361,15 @@ Safari 的合成器会把它们按条带重绘，于是横向位移被读成**�
 
 ```css
 .bg-veil{
-  position:fixed;left:-10%;right:-10%;top:0;height:46vh;
+  position:fixed;left:-10%;right:-10%;top:0;height:40vh;
   background:linear-gradient(180deg,transparent,var(--veil-ink) 50%,transparent);
-  animation:veilSweep calc(38s / var(--motion-speed)) ease-in-out infinite alternate;
+  animation:veilSweep calc(24s / var(--motion-speed)) linear infinite;
 }
-@keyframes veilSweep{from{transform:translate3d(0,-50vh,0)} to{transform:translate3d(0,108vh,0)}}
+/* 第二条带：同渐变、相位差半周期 → 屏幕上永远至少有一条在走 */
+.bg-veil::after{content:'';position:absolute;inset:0;background:inherit;
+  animation:veilSweep calc(24s / var(--motion-speed)) linear infinite;
+  animation-delay:calc(-12s / var(--motion-speed));}
+@keyframes veilSweep{from{transform:translate3d(0,-40vh,0)} to{transform:translate3d(0,104vh,0)}}
 ```
 
 它能同时满足前面所有禁令，原因是它的"形状"里没有横向边界：
@@ -377,10 +381,18 @@ Safari 的合成器会把它们按条带重绘，于是横向位移被读成**�
 | 不要闪 | 不是细网点，没有摩尔纹；纯渐变层，合成器只做位移 |
 | 不要横向带 | 只有 `translateY`，X 恒为 0 |
 
-`alternate` 让光带下行到底后原路返回，所以没有循环跳变。
-实测摆动幅度（10 帧 × 1.9s，区域均值）：paper 6.3 级、neon 5.3 级、night 9.1 级。
+循环用 `infinite`（不是 alternate）：-40vh 与 104vh 都在屏幕外，跳回起点时不可见，
+所以不需要原路返回，方向也保持一致（一直向下扫）。
 
-各皮肤的墨量：`paper` 深墨 4.5%、`night` 浅墨 5.5%、`neon` 主色 5%；
+**墨量必须够大才看得出来。** 第一版只有 4.5%（摆动 6 级），用户反馈「看不出来，
+非常不明显」；加倍到 10% 后摆动 12–31 级，才达到"一眼能看出在动"。
+这是一条硬经验：**渐变型动效的可见阈值约 10 级区域均值摆动**，
+再低就只剩"感觉画面在呼吸"的错觉。
+
+实测摆动幅度（10 帧 × 2s，区域均值）：paper 12.5–26.3 级、night 14.6–30.9 级、
+neon 8.4–15.6 级。
+
+各皮肤的墨量：`paper` 深墨 10%、`night` 浅墨 10%、`neon` 主色 9%；
 `contrast` 皮肤整个关闭（`[data-skin="contrast"] .bg-veil{animation:none}`）。
 
 ##### 那"动感"还剩什么
@@ -548,7 +560,28 @@ Safari 的合成器会把它们按条带重绘，于是横向位移被读成**�
 
 > 能源摘要最初是顶栏下面一条独立的 28px 状态条，用户提议「要不要直接放到顶栏上去」。
 > 合并后顶栏 64+28=92px → **49px**，省 43px；也顺带解决了"只有三项、中间一片空"。
-> 极窄屏（≤359px）按此顺序舍弃：品牌文字 → 剩余时间（电量与电流始终保留）。
+
+##### ⚠ 陷阱：顶栏一行挤满内容，手机上会互相覆盖
+
+合并后第一版用 `flex + space-between`，并给 `.hdr-energy` 加了 `min-width:0`。
+在桌面 Chrome 里量着刚好放得下，但在真机上文字相压。两个原因：
+
+1. **`min-width:0` 让中间那块可以缩到比内容还窄**，子元素溢出后直接压在时钟上。
+   → 顶栏改用 `grid-template-columns:auto minmax(0,1fr) auto` + `overflow:hidden`，
+   结构上不可能相压。
+2. **iOS 会做 text autosizing**：小字 + 窄屏时自动放大字号，一行布局立刻挤爆。
+   → `html{-webkit-text-size-adjust:100%;text-size-adjust:100%}` 显式关掉。
+
+宽度不够时的让位顺序（用媒体查询实现，已验证 320–1024 全部无重叠）：
+
+| 宽度 | 顶栏内容 |
+|---|---|
+| ≥700px | FG + 品牌字 · 电量 · 电流 · 续航 · 发电 · 电压 · WiFi · 时钟 |
+| 431–699px | FG + 品牌字 · 电量 · 电流 · 续航 · WiFi · 时钟 |
+| 360–430px | **FG** · 电量 · 电流 · 续航 · WiFi · 时钟（舍品牌字，保住续航） |
+| ≤359px | FG · 电量 · 电流 · WiFi · 时钟（再舍续航） |
+
+> 顺序的原则：品牌字是装饰（FG 方块已能识别），续航是信息，所以先舍装饰。
 
 要点：
 
