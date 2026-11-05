@@ -362,8 +362,9 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-glow-name:glowPan; --bg-glow-dur:16s;
     --bg-glow2:none; --bg-glow2-name:none;
     --surf-alpha:50%; --surf-alpha-2:42%;
-    /* 按钮承载文字：近乎不透明，否则网格线会从按键里透出来把字糊掉 */
-    --surf-alpha-btn:92%;
+    /* 按钮不透明度：50% 会被网格线透上来糊住字，92% 又看着像死板的实心块。
+       74% 是实测的最佳点：字清楚（t2 6.18 / t3 5.15），同时仍能感到背后有东西。 */
+    --surf-alpha-btn:74%;
     /* 未来感：等宽数字 + 拉开字距，像 HUD 读数 */
     --font-num:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
     --font-num-weight:500;
