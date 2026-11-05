@@ -214,18 +214,17 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --cjk:'PxCJK',var(--cjk-sys);
     /* 点阵中文字形按 12px 设计：正文对齐 12px 才锐利 */
     --fs-body:12px; --fs-sm:12px;
-    /* 纸纹：**不是规则网点**。
-       规则点阵有两个死结：点小了看不见（远看只是一层灰雾），
-       点大了就变成满屏密集小孔 —— 那是密集恐惧的典型触发图形。
-       所以换成不规则的低对比"纸浆斑"：没有网格、没有周期感，
-       读起来是纸张自身的纹理，而不是印上去的点。 */
-    --bg-texture:
-      radial-gradient(circle at 30% 34%, color-mix(in srgb,var(--c-text) 7%,transparent), transparent 40%),
-      radial-gradient(circle at 74% 62%, color-mix(in srgb,var(--c-warn) 6%,transparent), transparent 36%),
-      radial-gradient(circle at 52% 14%, color-mix(in srgb,var(--c-text) 5%,transparent), transparent 28%),
-      radial-gradient(circle at 16% 78%, color-mix(in srgb,var(--c-text) 4.5%,transparent), transparent 30%);
-    --bg-texture-size:300px 300px;
-    /* 纸纹几乎不动（动的是云层）；保留极慢漂移只为避免完全静止的"死皮" */
+    /* 纸纹 = **细颗粒噪声**，不是图案。
+       踩过两个坑，都是"瓷砖感"的来源：
+       ① 规则网点：点小了像灰雾，点大了满屏密集小孔（密集恐惧）；
+       ② 不规则大斑纹 + 默认 background-repeat：每 300px 一模一样地重复一次，
+          屏幕上就是一块块贴上去的瓷砖。
+       现在用 SVG feTurbulence 生成真正的随机颗粒（stitchTiles 保证无缝），
+       黑色、alpha 上限 .075（均值约 .037），叠在暖白上整体只压暗约 8 级 —— 近看是纸的纤维感，
+       远看是平的。噪声没有可识别特征，所以即使重复也**不会**被眼睛读成图案。 */
+    --bg-texture:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27180%27%20height%3D%27180%27%3E%3Cfilter%20id%3D%27g%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.9%27%20numOctaves%3D%272%27%20stitchTiles%3D%27stitch%27%2F%3E%3CfeColorMatrix%20type%3D%27matrix%27%20values%3D%270%200%200%200%200%200%200%200%200%200%200%200%200%200%200%20.075%200%200%200%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27180%27%20height%3D%27180%27%20filter%3D%27url%28%23g%29%27%2F%3E%3C%2Fsvg%3E");
+    --bg-texture-size:180px 180px;
+    /* 位移取整 1 个贴片（180px），循环处不会跳 */
     --bg-fx-name:dotDrift; --bg-fx-dur:44s;
     /* 中景云堤：三团横向拉长的暖色云（阴影面），位置都在盒内 30–70%
        （= 视口 0–100%），透明停点收到 58–66% 让云有较清楚的边界。 */
@@ -236,9 +235,9 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-glow-dur:20s; --glow-bob-dur:9s; --cloud-rot:-7deg;
     /* 近景云：偏白的高光云 + 一点暖调，边界更清楚、更小更快 → 纵深靠它 */
     --bg-glow2:
-      radial-gradient(22% 14% at 56% 42%, color-mix(in srgb,#FFFFFF 62%,transparent), transparent 56%),
-      radial-gradient(18% 12% at 38% 58%, color-mix(in srgb,#FFFFFF 50%,transparent), transparent 54%),
-      radial-gradient(20% 13% at 68% 62%, color-mix(in srgb,var(--c-warn) 10%,transparent), transparent 56%);
+      radial-gradient(26% 17% at 56% 42%, color-mix(in srgb,#FFFFFF 62%,transparent), transparent 64%),
+      radial-gradient(22% 15% at 38% 58%, color-mix(in srgb,#FFFFFF 50%,transparent), transparent 62%),
+      radial-gradient(24% 16% at 68% 62%, color-mix(in srgb,var(--c-warn) 10%,transparent), transparent 64%);
     --bg-glow2-dur:12s; --glow2-bob-dur:7s;
     --surf-alpha:62%; --surf-alpha-2:48%;
   }
@@ -900,7 +899,7 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
 /* ===== 动效 =====
    全部是纯 CSS 合成层动画（只动 transform / opacity），不触发重排；
    prefers-reduced-motion 下由末尾的全局规则统一关闭。 */
-@keyframes dotDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(42px,42px,0)}}
+@keyframes dotDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(180px,90px,0)}}
 /* 30px 网格 → 位移取 2 格 60px，循环无缝 */
 @keyframes gridDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(60px,60px,0)}}
 /* 位移幅度只管"看不看得出在动"，不影响对比度（那由 alpha 决定），
