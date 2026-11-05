@@ -835,3 +835,36 @@ neon 本来只有"数字"是等宽（`--font-num`），标签是比例字体，�
 相对主网关 53% 的 Flash 占用，62.7 KB 仍可接受（深蓝版一直在 24 KB）。
 注意 `forager_panel` 组件只内嵌**一个** HTML 文件，所以这个体积是**独占**的，
 不是两个页面相加。
+
+#### 5.5 neon 的按钮为什么会"死板"，以及怎么修
+
+用户：`neon 首页按钮样式太死板了`。拆开来是三个独立原因，对应三处改动（都只加在 neon）：
+
+| 原因 | 表现 | 改动 |
+|---|---|---|
+| ① 形状完全均匀，没有结构线索 | 一排排同样的圆角方块 = 网页按钮 | 四角**取景框角标**（HUD 取景框语汇，只是 8 个 1px 渐变，不增加填充） |
+| ② 状态只靠描边颜色 | 余光里分不清开/关 | 右下角等宽**状态码 ON / OFF**（9px、字距 1px） |
+| ③ 表面纯色平涂 | 像贴纸，不像面板 | 顶部一条主色**受光渐隐**（9% → 透明，46% 处结束） |
+
+配套：状态灯从圆点改成 **1px 描边的方形 LED**（技术语汇里"方"比"圆"更像指示灯），
+激活时标签提亮到 `--c-text`。场景卡的"按键"角签改成 `KEY` 工程标注。
+
+```css
+[data-skin="neon"] .tile::before{      /* 四角取景框 */
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.3;transition:opacity .18s;
+  background:
+    linear-gradient(var(--c-accent),var(--c-accent)) left 0 top 0/10px 1px no-repeat,
+    linear-gradient(var(--c-accent),var(--c-accent)) left 0 top 0/1px 10px no-repeat,
+    linear-gradient(var(--c-accent),var(--c-accent)) right 0 bottom 0/10px 1px no-repeat,
+    linear-gradient(var(--c-accent),var(--c-accent)) right 0 bottom 0/1px 10px no-repeat;
+}
+[data-skin="neon"] .tile.on::before{opacity:1}   /* 开 → 角标全亮 */
+[data-skin="neon"] .tile::after{content:'OFF';font-family:var(--font-num);font-size:9px}
+[data-skin="neon"] .tile.on::after{content:'ON';color:var(--c-accent)}
+```
+
+**为什么不做切角（clip-path）**：切角会裁掉 `box-shadow`，而 neon 激活态的发光正是靠
+`box-shadow:var(--glow-tile)`；角标能达到同样的"技术感"，还能保住发光。
+
+⚠ 注意 `.tile.on` 里写了 `background:var(--c-card)`（shorthand），会把背景图清掉；
+neon 的受光渐隐写在其后、同特异性，靠**源码顺序**取胜。以后调整顺序要复查这一点。

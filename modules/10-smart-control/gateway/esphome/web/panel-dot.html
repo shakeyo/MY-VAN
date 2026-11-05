@@ -1026,6 +1026,56 @@ html[data-motion="soft"]{--motion-speed:.6}
   filter:drop-shadow(0 0 5px color-mix(in srgb,var(--c-accent) 55%,transparent));
 }
 
+/* ===== neon：把首页/开关格子从"圆角方块"改成"仪表按键" =====
+   死板的根源有三个，对应三处改动：
+   ① 形状完全均匀、没有可读的结构线索 → 四角取景框角标（HUD 语汇，不增加填充）
+   ② 状态只靠描边颜色，余光里分不出开关 → 右下角等宽状态码 ON / OFF
+   ③ 表面是纯色平涂，像贴纸不像面板 → 顶部一条极淡的主色受光渐隐
+   只加在 neon 上；纸面皮肤仍是暖白圆角按钮（印刷语汇）。 */
+[data-skin="neon"] .tile,
+[data-skin="neon"] .scene-btn{
+  background-image:linear-gradient(180deg,
+    color-mix(in srgb,var(--c-accent) 9%,transparent), transparent 46%);
+}
+[data-skin="neon"] .tile::before,
+[data-skin="neon"] .scene-btn::before{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.3;
+  transition:opacity .18s;
+  background:
+    linear-gradient(var(--c-accent),var(--c-accent)) left 0 top 0/10px 1px no-repeat,
+    linear-gradient(var(--c-accent),var(--c-accent)) left 0 top 0/1px 10px no-repeat,
+    linear-gradient(var(--c-accent),var(--c-accent)) right 0 bottom 0/10px 1px no-repeat,
+    linear-gradient(var(--c-accent),var(--c-accent)) right 0 bottom 0/1px 10px no-repeat;
+}
+[data-skin="neon"] .tile.on::before,
+[data-skin="neon"] .scene-btn.active::before{opacity:1}
+/* 状态码：右下角，等宽、拉开字距 —— 仪表读数感，而不是"按钮文字" */
+[data-skin="neon"] .tile::after{
+  content:'OFF';position:absolute;right:6px;bottom:5px;
+  font-family:var(--font-num);font-size:9px;line-height:1;letter-spacing:1px;
+  color:var(--c-text-3);opacity:.7;pointer-events:none;transition:color .15s,opacity .15s;
+}
+[data-skin="neon"] .tile.on::after{content:'ON';color:var(--c-accent);opacity:1}
+[data-skin="neon"] .tile.disabled::after{content:''}
+/* 状态灯：圆点 → 1px 描边的方形 LED（技术语汇里"方"比"圆"更像指示灯） */
+[data-skin="neon"] .tile .mark{
+  width:5px;height:5px;border-radius:1px;background:transparent;
+  box-shadow:inset 0 0 0 1px var(--c-line-2);transition:background .15s,box-shadow .15s;
+}
+[data-skin="neon"] .tile.on .mark{
+  background:var(--c-mark-on);box-shadow:0 0 7px -1px var(--c-mark-on);
+}
+/* 激活时标签提亮：余光里也能分辨开关 */
+[data-skin="neon"] .tile.on .lb{color:var(--c-text)}
+/* 场景卡：状态值用等宽；"按键"角签改成工程标注 */
+[data-skin="neon"] .scene-btn .st{font-family:var(--font-num);letter-spacing:.8px}
+[data-skin="neon"] .scene-btn.readonly::after{
+  content:'KEY';font-family:var(--font-num);letter-spacing:1px;font-size:9px;
+  padding:1px 3px;border-radius:1px;color:var(--c-text-3);
+  background:transparent;box-shadow:inset 0 0 0 1px var(--c-line);
+}
+[data-skin="neon"] .scene-btn.active.readonly::after{color:var(--c-accent);box-shadow:inset 0 0 0 1px var(--c-accent)}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}
 }
