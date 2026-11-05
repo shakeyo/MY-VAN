@@ -407,6 +407,50 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-texture-size:auto,auto;
     --bg-fx-name:none;
   }
+  /* ---------- 8) ios26：Liquid Glass / iOS 26 ----------
+     与 ios6 的拟物相反：ios6 让每个表面"有厚度"，ios26 让每个表面"有玻璃"。
+     玻璃的关键不是透明，而是三件事同时成立：
+       ① 背景被**折射**（backdrop-filter 模糊 + 提饱和）——不是简单的半透明；
+       ② 边缘有一道**高光棱线**（1px 白色内描边 + 外侧柔和投影）；
+       ③ 形体是**大圆角/胶囊**，像悬浮在背景上的一层，而不是贴在页面上。
+     底色用低饱和的冷色渐变 + 一层极慢的柔光，玻璃才有东西可折射。 */
+  [data-skin="ios26"]{
+    --c-page-bg:#E7EDF7; --c-shell:#F4F8FD; --c-card:#FFFFFF;
+    --c-sunken:#EDF2FA;  --c-raised:#FAFCFF;
+    --c-text:#0B1220;    --c-text-2:#3A4657; --c-text-3:#556274;
+    --c-text-soft:rgba(11,18,32,.45); --c-accent-soft:rgba(10,132,255,.14);
+    --c-line:rgba(11,18,32,.12); --c-line-2:rgba(11,18,32,.2);
+    --c-accent:#0A6FE0;  --c-info:#0A84FF;
+    --c-ok:#1B7F45;      --c-warn:#8A5A00;   --c-danger:#C0262C;
+    --c-ok-bg:rgba(27,127,69,.13); --c-warn-bg:rgba(138,90,0,.14); --c-danger-bg:rgba(192,38,44,.12);
+    --c-switch-off:rgba(11,18,32,.22); --c-switch-on:#0A84FF; --c-knob:#FFFFFF;
+    --c-slider:#0A84FF;  --c-mark-on:#FFFFFF; --c-scene-on:#0A84FF;
+    --bd-card:1px solid rgba(255,255,255,.7);
+    /* 大圆角 + 胶囊：玻璃的形体必须"软"，直角会立刻变成卡片 */
+    --r-card:26px; --r-block:18px; --r-chip:999px; --r-sm:12px; --r-xs:8px;
+    --shadow-card:0 12px 32px -18px rgba(16,32,64,.45);
+    --shadow-knob:0 2px 6px rgba(16,32,64,.35), 0 0 0 .5px rgba(16,32,64,.12);
+    --glow-accent:none; --glow-tile:none;
+    --icon-stroke:1.8; --icon-off-opacity:.92;
+    /* 玻璃的透明度在这里控制；模糊与棱线在组件规则里加 */
+    --surf-alpha:58%; --surf-alpha-2:52%; --surf-alpha-btn:66%;
+    --font-body:-apple-system,'SF Pro Text','Helvetica Neue',Helvetica,Arial,var(--cjk-sys);
+    --font-num:-apple-system,'SF Pro Display','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --font-num-weight:600; --font-num-spacing:-.3px;
+    --fs-body:13px; --fs-sm:13px; --fs-val:22px;
+    /* 背景：低饱和冷色渐变（玻璃需要"有东西可折射"，但不能是彩色色块） */
+    --bg-texture:
+      radial-gradient(120% 80% at 8% -12%, rgba(207,224,255,.85), rgba(207,224,255,0) 55%),
+      radial-gradient(110% 75% at 96% 108%, rgba(226,215,255,.8), rgba(226,215,255,0) 58%),
+      linear-gradient(180deg,#EEF3FA 0%,#DFE7F3 100%);
+    --bg-texture-size:auto,auto,auto;
+    --bg-fx-name:none;
+    /* 一层极慢的柔光：让玻璃后面的颜色缓慢变化 → 折射才有"活"的感觉 */
+    --bg-glow:radial-gradient(60% 45% at 40% 30%, rgba(120,180,255,.35), rgba(120,180,255,0) 72%);
+    --bg-glow-size:100% 100%;
+    --bg-glow-name:glowPan; --bg-glow-dur:24s;
+    --bg-glow2:none; --bg-glow2-name:none;
+  }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
   margin:0;padding:0;background:var(--c-page-bg);color:var(--c-text);
@@ -1205,7 +1249,10 @@ html[data-motion="soft"]{--motion-speed:.6}
   border-top:1px solid #1F2A36;
   box-shadow:0 1px 0 rgba(255,255,255,.28) inset;
 }
-[data-skin="ios6"] nav button{color:#C9D3DE;text-shadow:0 -1px 0 rgba(0,0,0,.55)}
+[data-skin="ios6"] nav button{color:#D8E1EA;text-shadow:0 -1px 0 rgba(0,0,0,.55)}
+/* 图标必须单独给色：nav button .ic 自带 color:var(--c-text-3)，
+   在 ios6 里那是深灰 #4A4A4A，落在深色底栏上几乎看不见 */
+[data-skin="ios6"] nav button .ic{color:#D8E1EA;opacity:1}
 [data-skin="ios6"] nav button.active{color:#FFF}
 [data-skin="ios6"] nav button.active .ic{color:#FFF;opacity:1}
 [data-skin="ios6"] nav button.active::after{
@@ -1226,6 +1273,96 @@ html[data-motion="soft"]{--motion-speed:.6}
   color:#3A3A3A;text-shadow:0 1px 0 rgba(255,255,255,.85);
 }
 [data-skin="ios6"] .sec-note{color:#4A4A4A}
+
+/* ===== ios26 专属：Liquid Glass =====
+   玻璃 = 折射 + 棱线 + 大圆角，三件事必须同时成立，少一个就变成"半透明的纸"。
+   折射靠 backdrop-filter，棱线靠 1px 白色内描边 + 外侧柔和阴影，
+   形体靠 --r-* 的胶囊/大圆角。所有玻璃面共用同一套参数，保证是一整块材质。 */
+[data-skin="ios26"] .card,
+[data-skin="ios26"] .tile,
+[data-skin="ios26"] .scene-btn,
+[data-skin="ios26"] .stat,
+[data-skin="ios26"] .set-row,
+[data-skin="ios26"] .chip,
+[data-skin="ios26"] .skin-btn,
+[data-skin="ios26"] .pill,
+[data-skin="ios26"] header,
+[data-skin="ios26"] .statusbar,
+[data-skin="ios26"] nav,
+[data-skin="ios26"] .card,
+[data-skin="ios26"] .tile,
+[data-skin="ios26"] .scene-btn,
+[data-skin="ios26"] .chip,
+[data-skin="ios26"] .skin-btn,
+[data-skin="ios26"] .pill,
+[data-skin="ios26"] header,
+[data-skin="ios26"] nav{
+  -webkit-backdrop-filter:blur(18px) saturate(180%);
+  backdrop-filter:blur(18px) saturate(180%);
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.98),      /* 顶棱线：最亮的一条 */
+    inset 0 0 0 1px rgba(255,255,255,.45),    /* 四周细棱 */
+    0 10px 26px -16px rgba(16,32,64,.5);      /* 悬浮投影 */
+}
+[data-skin="ios26"] .tile,
+[data-skin="ios26"] .scene-btn,
+[data-skin="ios26"] .skin-btn{background-image:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.28))}
+[data-skin="ios26"] .tile .lb,[data-skin="ios26"] .scene-btn .lb,
+[data-skin="ios26"] .chip,[data-skin="ios26"] .tile .ic{color:#25303F}
+[data-skin="ios26"] header{
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(240,246,255,.42));
+}
+[data-skin="ios26"] .statusbar{
+  background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(240,246,255,.3));
+}
+[data-skin="ios26"] nav{
+  background:linear-gradient(180deg,rgba(250,252,255,.7),rgba(228,237,249,.55));
+  border-top:1px solid rgba(255,255,255,.8);
+}
+[data-skin="ios26"] nav button{color:#556274}
+[data-skin="ios26"] nav button .ic{color:#556274;opacity:1}
+[data-skin="ios26"] nav button.active{color:#0A5FC0}
+[data-skin="ios26"] nav button.active .ic{color:#0A5FC0;opacity:1}
+/* 选中态：不是"填满强调色"，而是"玻璃被染上强调色"——
+   填满会让白字对比度掉到 3 以下；染色玻璃 + 深蓝字仍然 ≥4.5 */
+[data-skin="ios26"] .tile.on,
+[data-skin="ios26"] .scene-btn.active,
+[data-skin="ios26"] .chip.active,
+[data-skin="ios26"] .skin-btn[aria-pressed="true"]{
+  background-image:linear-gradient(160deg,rgba(255,255,255,.5),rgba(255,255,255,.12));
+  background-color:rgba(10,132,255,.22);
+  border-color:rgba(255,255,255,.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 0 0 1px rgba(255,255,255,.35),
+    0 10px 26px -14px rgba(10,132,255,.8);
+}
+[data-skin="ios26"] .tile.on .lb,
+[data-skin="ios26"] .tile.on .ic,
+[data-skin="ios26"] .scene-btn.active .lb,
+[data-skin="ios26"] .scene-btn.active .st,
+[data-skin="ios26"] .scene-btn.active .ic,
+[data-skin="ios26"] .chip.active{
+  color:#0A4E9E;
+}
+[data-skin="ios26"] .tile.on .mark{background:#0A84FF;box-shadow:0 0 8px -1px rgba(10,132,255,.9)}
+[data-skin="ios26"] .switch{
+  background:rgba(11,18,32,.16);
+  box-shadow:inset 0 1px 2px rgba(16,32,64,.25), inset 0 0 0 1px rgba(255,255,255,.4);
+}
+[data-skin="ios26"] .switch[aria-checked="true"]{background:#0A84FF;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
+[data-skin="ios26"] .sec-title{color:#26313F}
+/* 老 WebView 没有 backdrop-filter 时退化为"更实的白玻璃"：
+   不做这个兜底，低端安卓上玻璃会变成一层半透明纸，字会糊。
+   Safari 用的是 -webkit- 前缀，所以 @supports 里两个都要判。 */
+@supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+  [data-skin="ios26"] .card,[data-skin="ios26"] .tile,[data-skin="ios26"] .scene-btn,
+  [data-skin="ios26"] .chip,[data-skin="ios26"] .skin-btn,[data-skin="ios26"] header,
+  [data-skin="ios26"] .statusbar,[data-skin="ios26"] nav{
+    background-image:none;background-color:rgba(255,255,255,.9);
+  }
+}
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}
@@ -2411,6 +2548,7 @@ const SKINS = [
   { id:'neon',     name:'Neon',    note:'HUD 未来感' },
   { id:'contrast', name:'Contrast',note:'高对比' },
   { id:'ios6',     name:'iOS 6',   note:'拟物光泽' },
+  { id:'ios26',    name:'iOS 26',  note:'Liquid Glass' },
 ];
 const SKIN_STORE='forager_skin';
 /* 缩略图取每款皮肤的代表色：底 / 卡片 / 强调 */
@@ -2420,6 +2558,7 @@ const SKIN_SWATCH = {
   night:   ['#111214','#1A1D20','#D9636B'],
   neon:    ['#070B11','#111823','#22D3EE'],
   ios6:    ['#C7CED6','#FFFFFF','#0B6FD8'],
+  ios26:   ['#E7EDF7','#FFFFFF','#0A84FF'],
   contrast:['#FFFFFF','#000000','#B30000'],
 };
 
