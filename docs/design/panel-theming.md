@@ -1322,3 +1322,72 @@ ios6 的瓷白规则里也误带了 `.set-row` → 同样的方框（还更明�
 
 **只改 ios26**：其余 5 款皮肤的 `header/.statusbar` 计算样式 `background-image` 仍为各自规则
 （paper/night/neon/contrast 无渐变，ios6 保留自己的两段），零影响。
+
+#### 5.14 情景模式 vs 快捷开关：一个只读、一个可写，必须区分
+
+##### 先查固件：情景模式能不能远程改？
+
+结论：**不能**。
+
+- `light_scene / camp_scene / fan_scene` 是 `base.yaml` 里的 **globals**（0/1/2 三档），
+  只由 `scenes.yaml` 的 `*_scene_next` 脚本推进，触发源是**物理按键**；
+- `scene-state.yaml` 只把它们包成 3 个 **template sensor**（每 1s publish），
+  目的是让 `web_server` 的 `/sensor/<name>` 读得到当前档位；
+- 没有任何 `select / number / button` 实体 → REST 写不了档位。
+
+所以"分段选择器（点击切档）"这条路要改固件：加 `select`（或 `number`）实体 +
+网关 action 映射，属于另一个工单。
+
+##### 为什么必须区分
+
+实测两组的计算样式几乎是同一个控件：
+
+| | 情景模式（旧 `scene-btn`） | 快捷开关（`tile`） |
+|---|---|---|
+| 尺寸 | 173×99 | 114×88 |
+| 圆角 / 描边 / 底色 | 18px / 1px / 白半透明 | 18px / 1px / 白半透明 |
+| 选中态 | accent 描边 + 内环 + 柔光 | accent 描边 + 柔光 |
+| 交互 | `cursor:default`、`onclick:null`、`aria-readonly` | 点击发命令、`scale(.97)` 按压 |
+
+**一个只读控件长得像按钮，是 UI 里最贵的错误**：用户会一直点，然后以为坏了。
+旧版靠右上角「按键」小角标解释，那是"用标签补外观"的补丁。
+
+##### 改法：情景模式 = 只读状态行
+
+```html
+<h3 class="sec-title">情景模式 <span class="sec-note">物理按键切换</span></h3>
+<div class="scene-rows">
+  <div class="scene-row" id="scene-light" aria-readonly="true">
+    <span class="ic"></span><span class="lb">灯光</span><span class="st">明亮</span>
+  </div>
+  …
+</div>
+```
+
+- 用 `<div>` + `cursor:default`，去掉按钮骨架（大块、居中图标、描边高亮）
+- 当前档位放在右侧**中性药丸**里；非 0 档才用 `--c-scene-on` 的 14% 淡色 + 深一档字色
+- 「物理按键切换」只在段标题出现一次，不再每行挂角标
+- 高度：整段 **134 → 111px**（两行各 38px），首屏多出 23px 给快捷开关
+
+##### 对比度（药丸字数 12px，按 4.5 要求）
+
+| 皮肤 | 亮档 | 暗档 |
+|---|---|---|
+| paper | 8.59 | 6.77 |
+| night | 11.61 | 5.51 |
+| neon | 9.30 | 5.79 |
+| contrast | 17.14 | 10.69 |
+| ios6 | **2.75 → 5.88** | 10.43 |
+| ios26 | **2.86 → 6.17** | 8.99 |
+
+ios6/ios26 的 `--c-scene-on` 是亮蓝（#0B6FD8 / #0A84FF），直接当 12px 小字压在
+14% 同色底上只有 2.7~2.9，**必须压深两档**（#0B3D7A / #0A4E9E）。
+
+##### 顺带一条 harness 教训
+
+新增的 `SCENE-TIGHT` 检查一开始全尺寸全皮肤报错——原因是**非活动页 `.page{display:none}`，
+其中元素的 `getBoundingClientRect()` 全是 0**，`st.left(0) < lb.right(0)+2` 恒真。
+> 规则：任何几何断言都要先判 `rect.width > 0`，否则隐藏元素会制造整片假红线。
+
+（`.scene-btn` 的旧 CSS 暂未删除，已无元素引用，后续清理时连同皮肤里的
+`.scene-btn` 选择器一起删。）

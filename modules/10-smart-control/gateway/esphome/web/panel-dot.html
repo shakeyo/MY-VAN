@@ -640,6 +640,29 @@ section{margin-bottom:var(--sp-6)}
   box-shadow:0 0 0 1px var(--c-scene-on) inset,var(--glow-tile);color:var(--c-text)}
 .scene-btn.active .st{color:var(--c-text)}
 
+/* 情景模式：只读状态行（不是按钮）——
+   档位由物理按键推进，页面只负责"现在在哪一档"。
+   所以它不该有按钮的骨架（大块、居中图标、描边高亮），
+   而是一条带当前档位标签的列表行。 */
+.scene-rows{display:flex;flex-direction:column;border-top:1px solid var(--c-line)}
+.scene-row{display:flex;align-items:center;gap:9px;padding:8px 2px;cursor:default;
+  border-bottom:1px solid var(--c-line)}
+.scene-row .ic{display:flex;flex:none;width:17px;height:17px;color:var(--c-text-3);
+  transition:color .15s ease}
+.scene-row .ic svg{width:17px;height:17px;display:block}
+.scene-row .lb{font-size:var(--fs-body);font-weight:500;color:var(--c-text-2)}
+.scene-row .st{margin-left:auto;font-size:var(--fs-label);line-height:1.5;
+  padding:2px 10px;border-radius:999px;white-space:nowrap;
+  color:var(--c-text-2);background:var(--c-raised);transition:color .15s,background .15s}
+.scene-row.on .ic{color:var(--c-scene-on)}
+.scene-row.on .st{color:var(--c-scene-on);font-weight:600;
+  background:color-mix(in srgb,var(--c-scene-on) 14%,transparent)}
+
+/* 情景状态标签：ios6 / ios26 的 --c-scene-on 偏亮（#0B6FD8 / #0A84FF），
+   当 12px 小字压在 14% 同色底上只有 2.7~2.9 的对比度，压到深两档。 */
+[data-skin="ios6"] .scene-row.on .st{color:#0B3D7A;background:rgba(11,111,216,.16)}
+[data-skin="ios26"] .scene-row.on .st{color:#0A4E9E;background:rgba(10,132,255,.18)}
+
 /* ===== 开关格子 ===== */
 .grid{
   display:flex;flex-wrap:wrap;gap:8px;
@@ -1525,14 +1548,14 @@ html[data-motion="soft"]{--motion-speed:.6}
   <!-- ============ 首页 ============ -->
   <div class="page active" id="page-home">
     <section>
-      <h3 class="sec-title">情景模式</h3>
-      <div class="scenes">
-        <button class="scene-btn active readonly" data-scene="light" id="scene-light" aria-readonly="true">
-          <span class="ic"></span><span class="lb">灯光</span><span class="st">明亮</span>
-        </button>
-        <button class="scene-btn readonly" data-scene="camp" id="scene-camp" aria-readonly="true">
+      <h3 class="sec-title">情景模式 <span class="sec-note">物理按键切换</span></h3>
+      <div class="scene-rows">
+        <div class="scene-row" data-scene="light" id="scene-light" aria-readonly="true">
+          <span class="ic"></span><span class="lb">灯光</span><span class="st">关闭</span>
+        </div>
+        <div class="scene-row" data-scene="camp" id="scene-camp" aria-readonly="true">
           <span class="ic"></span><span class="lb">离车/驻车</span><span class="st">正常</span>
-        </button>
+        </div>
       </div>
     </section>
 
@@ -2068,7 +2091,7 @@ function renderScenes(){
     const n=Math.round(map[k]||0);
     const st=el.querySelector('.st');
     st.textContent=(SCENE_META[k].labels[n]||'--');
-    el.classList.toggle('active', n>0);
+    el.classList.toggle('on', n>0);
   });
 }
 
