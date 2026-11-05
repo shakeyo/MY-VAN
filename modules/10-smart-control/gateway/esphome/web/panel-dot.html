@@ -87,13 +87,6 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   --bg-fx2:none;          /* 第二层：扫描线之类 */
   --bg-fx2-name:none;
   --bg-fx2-dur:8s;
-  /* 背景动效 = 两层半调网点（见 .hal）。默认 none，由各皮肤给实际值。
-     网点必须"高覆盖率 + 极低墨量"：低覆盖率+高墨量会变成一颗颗孔洞（密集恐惧），
-     高覆盖率+低墨量才是"网点覆盖率变化 = 明暗变化"的半调本义。 */
-  --hal-far-img:none;  --hal-far-size:4px 4px;
-  --hal-far-mask:none; --hal-far-dur:30s; --hal-far-bob:17s;
-  --hal-near-img:none; --hal-near-size:5px 5px;
-  --hal-near-mask:none;--hal-near-dur:18s; --hal-near-bob:11s;
   /* 表面不透明度：卡片/格子有多透。100% = 完全不透（光斑只能在缝隙里看到）。 */
   --surf-alpha:100%;
   /* 凹槽表面（stat / skin-btn）：压在卡片之上，要单独给透明度，
@@ -216,20 +209,12 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-texture:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27180%27%20height%3D%27180%27%3E%3Cfilter%20id%3D%27g%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.9%27%20numOctaves%3D%272%27%20stitchTiles%3D%27stitch%27%2F%3E%3CfeColorMatrix%20type%3D%27matrix%27%20values%3D%270%200%200%200%200%200%200%200%200%200%200%200%200%200%200%20.075%200%200%200%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27180%27%20height%3D%27180%27%20filter%3D%27url%28%23g%29%27%2F%3E%3C%2Fsvg%3E");
     --bg-texture-size:180px 180px;
     /* 位移取整 1 个贴片（180px），循环处不会跳 */
-    --bg-fx-name:dotDrift; --bg-fx-dur:44s;
+    --bg-fx-name:none;
     /* 远层：3px 细网屏，覆盖率 ~63%、墨量仅 5% → 网点之间几乎相连，读成"面"的密度
        而不是一颗颗孔；显影区横跨大半屏、极柔，所以是"纸面某处更密"而不是一块斑。
        位置按盒内坐标：视口 = 盒内 ×2.5 − 0.75，故盒内 30–70% = 视口 0–100%。 */
-    --hal-far-img:radial-gradient(circle at 2px 2px, color-mix(in srgb,var(--c-text) 8%,transparent) 1.45px, transparent 1.7px);
-    --hal-far-size:4px 4px;
-    --hal-far-mask:radial-gradient(62% 48% at 46% 42%, #000 0%, rgba(0,0,0,.9) 36%, transparent 80%);
-    --hal-far-dur:20s; --hal-far-bob:13s;
     /* 近层：5px 网屏（网点更粗 = 更近），覆盖 ~61%、墨量 4%；
        显影区更小更集中、移动更快更大 → 这就是纵深感的来源。 */
-    --hal-near-img:radial-gradient(circle at 3px 3px, color-mix(in srgb,var(--c-text) 6.5%,transparent) 2.45px, transparent 2.7px);
-    --hal-near-size:6px 6px;
-    --hal-near-mask:radial-gradient(36% 27% at 54% 46%, #000 0%, rgba(0,0,0,.95) 32%, transparent 76%);
-    --hal-near-dur:12s; --hal-near-bob:8s;
     --surf-alpha:62%; --surf-alpha-2:48%;
   }
 
@@ -264,14 +249,6 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     /* 冷色极光：夜间最合适的动效——暗底上极淡的光在缓慢移位 */
     /* 暗色皮肤：用浅色墨点（--c-text 本身是浅的），墨量同样很低。
        深底上亮度变化更敏感，所以墨量比 paper 再降一档。 */
-    --hal-far-img:radial-gradient(circle at 2px 2px, color-mix(in srgb,var(--c-text) 9%,transparent) 1.45px, transparent 1.7px);
-    --hal-far-size:4px 4px;
-    --hal-far-mask:radial-gradient(60% 46% at 44% 40%, #000 0%, rgba(0,0,0,.88) 36%, transparent 80%);
-    --hal-far-dur:22s; --hal-far-bob:14s;
-    --hal-near-img:radial-gradient(circle at 3px 3px, color-mix(in srgb,var(--c-text) 7%,transparent) 2.45px, transparent 2.7px);
-    --hal-near-size:6px 6px;
-    --hal-near-mask:radial-gradient(36% 27% at 56% 48%, #000 0%, rgba(0,0,0,.92) 32%, transparent 76%);
-    --hal-near-dur:13s; --hal-near-bob:9s;
     --surf-alpha:55%; --surf-alpha-2:45%;
     /* 数字用系统无衬线，笔画柔和尚可读 */
     --font-num:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
@@ -306,7 +283,6 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --font-num-spacing:-.5px;
   }
   /* 高对比皮肤不做任何背景网点：它的价值就是极致清晰 */
-  [data-skin="contrast"] .hal{display:none}
 
 
   /* ---------- 6) neon：未来感 · 深空 + 青电光 ----------
@@ -343,20 +319,12 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
       linear-gradient(90deg, color-mix(in srgb,var(--c-accent) 7%,transparent) 1px, transparent 1px);
     --bg-texture-size:auto, 30px 30px, 30px 30px;
     /* 网格 26px 周期 → 漂移一整格无缝；再加一条扫描线周期性扫过 */
-    --bg-fx-name:gridDrift; --bg-fx-dur:13s;
+    --bg-fx-name:none;
     --bg-fx2:linear-gradient(180deg,
       transparent 47%, color-mix(in srgb,var(--c-accent) 13%,transparent) 50%, transparent 53%);
     --bg-fx2-name:scanSweep; --bg-fx2-dur:6s;
     /* 电光网点：HUD 的"能量场"。青色墨点，墨量极低 —— 彩色只有一种色相，
        不会读成"彩色色块"。 */
-    --hal-far-img:radial-gradient(circle at 2px 2px, color-mix(in srgb,var(--c-accent) 7.5%,transparent) 1.45px, transparent 1.7px);
-    --hal-far-size:4px 4px;
-    --hal-far-mask:radial-gradient(60% 46% at 44% 40%, #000 0%, rgba(0,0,0,.88) 36%, transparent 80%);
-    --hal-far-dur:18s; --hal-far-bob:12s;
-    --hal-near-img:radial-gradient(circle at 3px 3px, color-mix(in srgb,var(--c-accent) 6%,transparent) 2.45px, transparent 2.7px);
-    --hal-near-size:6px 6px;
-    --hal-near-mask:radial-gradient(36% 27% at 56% 48%, #000 0%, rgba(0,0,0,.92) 32%, transparent 76%);
-    --hal-near-dur:11s; --hal-near-bob:7.5s;
     --surf-alpha:55%; --surf-alpha-2:45%;
     /* 未来感：等宽数字 + 拉开字距，像 HUD 读数 */
     --font-num:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
@@ -373,7 +341,7 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 /* ===== 顶栏 ===== */
 header{
   flex:none;position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
-  padding:var(--sp-3) var(--sp-4);padding-top:calc(var(--sp-3) + env(safe-area-inset-top));
+  padding:var(--sp-2) var(--sp-4);padding-top:calc(var(--sp-2) + env(safe-area-inset-top));
   background:var(--c-shell);border-bottom:1px solid var(--c-line);
 }
 .brand{display:flex;align-items:center;gap:var(--sp-2)}
@@ -384,7 +352,6 @@ header{
   font-weight:800;font-size:var(--fs-label);letter-spacing:.5px;background:var(--c-card);
 }
 .bn{font-family:var(--font-num);font-weight:700;font-size:var(--fs-sec);letter-spacing:1px}
-.bs{font-size:var(--fs-label);color:var(--c-text-3);letter-spacing:.5px;margin-top:var(--sp-opt)}
 .status{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
 .pill{
   display:inline-flex;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-2);border-radius:var(--r-pill);
@@ -409,92 +376,36 @@ header{
    全程在合成层上，不重绘。位移量见 @keyframes glowPan：
    单程约为视口宽度的 13%，在 16s 内走完 —— 肉眼看得出在动。 */
 /* 中景光斑：慢、位移中等（远的东西动得慢 → 视差） */
-/* ===== 半调网点层（背景动效的主体） =====
-
-   为什么不是云：云是**连续彩色渐变**，而整套设计语言是**离散**的（点阵字、网点、
-   网格）。连续彩色渐变放进离散语言里，永远会被读成"一团团色块"——这是四轮反馈的
-   共同结论。半调网点是同一件事的离散版本：用点的**覆盖率**表达明暗，单色墨，
-   天然属于印刷/点阵语言，不会读成色块。
-
-   结构：两层独立 fixed 层（不放进 .bg-fx，避免和底纹位移叠乘坐标）
-   - 远层 inset:-75%（250% 视口），4px 网屏，位移小、周期长
-   - 近层 同尺寸，7px 网屏（网点更粗 = 更近），位移大、周期短
-   纵深靠**网点粗细差 + 速度差**，这是点阵语言里天然的景深线索。
-
-   ⚠ 网屏角度：远 15°、近 75°（印刷里相邻分色的标准角度对），
-   两个角度不同才不会两套网格叠出摩尔纹。
-   ⚠ 显影区用 mask 的柔和径向渐变实现：点的**密度**随位置连续变化，
-   而不是整屏均匀网点。整屏均匀网点 = 壁纸 = 密集恐惧。 */
-.hal{
-  position:fixed;inset:-75%;z-index:0;pointer-events:none;
-  background-repeat:repeat;
-  mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;
-  mask-size:100% 100%;-webkit-mask-size:100% 100%;
-  will-change:transform,translate;
-}
-.hal-far{
-  background-image:var(--hal-far-img);
-  background-size:var(--hal-far-size);
-  rotate:15deg;
-  -webkit-mask-image:var(--hal-far-mask);mask-image:var(--hal-far-mask);
-  animation:halBreathe calc(var(--hal-far-dur) / var(--motion-speed)) ease-in-out infinite alternate;
-}
-.hal-near{
-  background-image:var(--hal-near-img);
-  background-size:var(--hal-near-size);
-  rotate:75deg;
-  -webkit-mask-image:var(--hal-near-mask);mask-image:var(--hal-near-mask);
-  animation:halBreathe calc(var(--hal-near-dur) / var(--motion-speed)) ease-in-out infinite alternate,
-            halDrift calc(var(--hal-near-bob) / var(--motion-speed)) ease-in-out infinite alternate;
-}
-.bg-fx::after{
-  content:'';position:absolute;inset:0;
-  background-image:var(--bg-fx2);
-  animation:var(--bg-fx2-name) calc(var(--bg-fx2-dur) / var(--motion-speed)) linear infinite;
-  will-change:transform;
-}
-/* 动效开关：直接掐掉三层动画（比把 --motion-speed 设 0 安全，
-   因为 calc(时长 / 0) 是无效值） */
-html[data-motion="off"] .bg-fx,
-html[data-motion="off"] .bg-fx::after,
-html[data-motion="off"] .hal{animation:none !important}
-html[data-motion="soft"]{--motion-speed:.6}
-/* ===== 常驻状态条 =====
-   只放三项：电量 / 净电流（正充负放）/ 剩余时间。
-   放在 header 之下、main 之上，四个页面都在视野内——所以首页不需要再重复一份。
-   表面半透明，让底下在动的网点能透上来。 */
-.statusbar{
-  flex:none;position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);
-  padding:5px var(--sp-4);
-  background:color-mix(in srgb,var(--c-shell) var(--surf-alpha),transparent);
-  border-bottom:1px solid var(--c-line);
-  font-size:var(--fs-label);color:var(--c-text-3);
-}
-.sb-main{display:flex;align-items:center;gap:2px}
-.sb-main b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
-  letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
-.sb-main .u{font-size:var(--fs-label)}
-.sb-track{display:block;width:38px;height:4px;border-radius:2px;margin-left:6px;
-  background:var(--c-raised);overflow:hidden}
+/* ===== 顶栏能源簇 =====
+   电量 + 进度条 + 净电流（正充负放）+ 剩余时间；宽屏（≥700px）再补发电功率与电池电压。
+   这块原本是一条独立的 28px 状态条，后来按提议并进顶栏 —— 省 28px 纵向空间，
+   也解决"只有三项、中间一片空"的问题：顶栏本来就该放常驻信息。 */
+.hdr-energy{display:flex;align-items:center;gap:var(--sp-2);min-width:0;
+  font-size:var(--fs-label);color:var(--c-text-3)}
+.he-soc{display:flex;align-items:center;gap:1px}
+.he-soc b,.sb-cur b,.sb-time b,.sb-w b{font-family:var(--font-num);font-weight:700;
+  font-size:var(--fs-body);letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
+.hdr-energy .u{font-size:var(--fs-label);color:var(--c-text-3)}
+.sb-track{display:block;width:34px;height:4px;border-radius:2px;margin-left:4px;
+  background:var(--c-raised);overflow:hidden;flex:none}
 .sb-fill{display:block;height:100%;width:0;background:var(--c-ok);border-radius:2px;
   transition:width .4s ease,background .4s ease}
-.sb-sep{width:1px;height:12px;background:var(--c-line-2);flex:none}
 .sb-cur{display:flex;align-items:baseline;gap:2px}
-.sb-cur b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
-  letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
 .sb-cur .dir{font-size:var(--fs-label)}
 .sb-cur.charge .dir,.sb-cur.charge b{color:var(--c-ok)}
 .sb-cur.dis .dir,.sb-cur.dis b{color:var(--c-warn)}
 .sb-time{display:flex;align-items:baseline;gap:4px}
 .sb-w{display:flex;align-items:baseline;gap:2px}
-.sb-w b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
-  letter-spacing:var(--font-num-spacing,0);color:var(--c-text)}
 .wide-only{display:none}
 @media (min-width:700px){.wide-only{display:flex}}
-.sb-clock b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
-  letter-spacing:var(--font-num-spacing,0);color:var(--c-text)}
-.sb-time b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
-  letter-spacing:var(--font-num-spacing,0);color:var(--c-text)}
+
+/* 极窄屏（≤359px，如 iPhone SE 一代）：顶栏必须放得下。
+   依次舍弃：品牌文字 → 剩余时间（都不影响核心信息：电量与电流仍在） */
+@media (max-width:359px){
+  .bn{display:none}
+  .sb-time{display:none}
+  .hdr-energy{gap:var(--sp-1)}
+}
 
 main{
   flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
@@ -920,9 +831,8 @@ nav button.active::after{
 @media (max-height:520px){
   header{padding:var(--sp-1) var(--sp-4)}
   .bs{display:none}                    /* 副标题在矮屏是浪费 */
-  .statusbar{padding:3px var(--sp-4)}
-  .sb-track{width:28px}
-  .sb-time .k{display:none}
+  .sb-track{width:26px}
+  .hdr-energy{gap:var(--sp-1)}
   nav{padding:var(--sp-opt) var(--sp-1) calc(var(--sp-opt) + env(safe-area-inset-bottom))}
   nav button{min-height:40px;flex-direction:row;gap:var(--sp-1);padding:var(--sp-1) var(--sp-3);font-size:var(--fs-label)}
   nav button .ic{width:16px;height:16px}
@@ -945,33 +855,12 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
 /* ===== 动效 =====
    全部是纯 CSS 合成层动画（只动 transform / opacity），不触发重排；
    prefers-reduced-motion 下由末尾的全局规则统一关闭。 */
-@keyframes dotDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(180px,90px,0)}}
-/* 30px 网格 → 位移取 2 格 60px，循环无缝 */
-@keyframes gridDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(60px,60px,0)}}
 /* 位移幅度只管"看不看得出在动"，不影响对比度（那由 alpha 决定），
    所以可以放心加大：单程 18% ≈ 260px（390 屏），约 18px/s。
    光斑层比视口大 50%（inset:-25%），±18% 位移不会露边。 */
 @keyframes glowPan{
   from{transform:translate3d(-18%,-9%,0) scale(1)}
   to{transform:translate3d(18%,9%,0) scale(1.18)}
-}
-/* 网点层动效的两条硬规则 ─────────────────────────────────────────
-   ① 网点本身**不能平移**。细网点（4–6px）一滑动就是摩尔纹爬行，
-      看起来像屏幕在闪 —— 这是用户实测反馈"太闪了"的直接原因。
-   ② 所以动的只能是**覆盖率/密度**：让整层的墨量慢慢呼吸，
-      网点位置始终不动，视觉上是"这片的网点变密/变疏"，
-      正是半调印刷里"墨量变化"的样子。
-
-   远层呼吸周期长、幅度小；近层周期短、幅度大 + 极小漂移（±3%），
-   两者周期错开 → 密度变化不同步，就有纵深，而网点不会爬。 */
-@keyframes halBreathe{
-  from{opacity:.42}
-  to{opacity:1}
-}
-/* 近层的极小漂移：±3% 层宽 ≈ 8% 视口，网点位移 <30px，远低于摩尔纹可见阈值 */
-@keyframes halDrift{
-  from{transform:translate3d(-3%,-1%,0)}
-  to{transform:translate3d(3%,1%,0)}
 }
 @keyframes breathe{
   0%,100%{opacity:.55;transform:scale(1)}
@@ -1014,41 +903,32 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
 <body>
 
 <div class="bg-fx" aria-hidden="true"></div>
-<i class="hal hal-far" aria-hidden="true"></i>
-<i class="hal hal-near" aria-hidden="true"></i>
 
+<!-- 顶栏 = 品牌 + 能源摘要 + 连接/时钟。
+     能源摘要原来是一条独立的 28px 状态条，现在并进顶栏：
+     ① 省 28px 纵向空间；② 不会再出现"只有三项、显得空"的问题；
+     ③ 电量/电流/续航本来就该是常驻信息，顶栏是最常驻的位置。
+     只放三项：电量、净电流（正充负放，带方向）、剩余时间；其余全在电池页。 -->
 <header>
   <div class="brand">
     <div class="logo">FG</div>
-    <div>
-      <div class="bn">FORAGER</div>
-      <div class="bs">觅食者号 · 485 网关</div>
-    </div>
+    <div class="bt"><div class="bn">FORAGER</div></div>
+  </div>
+  <div class="hdr-energy">
+    <span class="he-soc"><b id="sbSoc">--</b><span class="u">%</span>
+      <i class="sb-track"><i class="sb-fill" id="sbFill"></i></i></span>
+    <span class="sb-cur" id="sbCurWrap"><span class="dir" id="sbDir">·</span><b id="sbCur">--</b><span class="u">A</span></span>
+    <span class="sb-time"><b id="sbTime">--</b></span>
+    <span class="sb-w wide-only"><span class="k">发电</span><b id="sbPv">--</b><span class="u">W</span></span>
+    <span class="sb-w wide-only"><span class="k">电池</span><b id="sbV">--</b><span class="u">V</span></span>
   </div>
   <div class="status">
-    <span class="pill"><span class="dot" id="wifiDot"></span><span id="wifiTxt">WiFi</span></span>
+    <span class="pill"><span class="dot" id="wifiDot"></span></span>
+    <span class="clock" id="clock">--:--</span>
   </div>
 </header>
 
-<!-- 常驻状态条：所有页面都在。只放三项最该"一眼看到"的数：
-     电量、净电流（正充负放，带方向箭头）、剩余时间。
-     其余指标一律进电池页，避免同一数据出现两次。 -->
-<div class="statusbar" id="statusBar">
-  <div class="sb-main">
-    <b id="sbSoc">--</b><span class="u">%</span>
-    <i class="sb-track"><i class="sb-fill" id="sbFill"></i></i>
-  </div>
-  <div class="sb-sep"></div>
-  <div class="sb-cur" id="sbCurWrap"><span class="dir" id="sbDir">·</span><b id="sbCur">--</b><span class="u">A</span></div>
-  <div class="sb-sep"></div>
-  <div class="sb-time"><span class="k">剩余</span><b id="sbTime">--</b></div>
-  <div class="sb-sep wide-only"></div>
-  <div class="sb-w wide-only"><span class="k">发电</span><b id="sbPv">--</b><span class="u">W</span></div>
-  <div class="sb-sep wide-only"></div>
-  <div class="sb-w wide-only"><span class="k">电池</span><b id="sbV">--</b><span class="u">V</span></div>
-  <div class="sb-sep"></div>
-  <div class="sb-clock"><b id="clock">--:--</b></div>
-</div>
+
 
 <main>
   <!-- ============ 首页 ============ -->
