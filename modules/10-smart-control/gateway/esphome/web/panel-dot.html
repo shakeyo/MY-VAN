@@ -90,12 +90,23 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   /* 第三层：大面积漂移光斑——"背景在动"的主要来源。
      图案漂移（上面两层）再快也看不见，因为位移只有十几像素；
      真正的可见动感来自几百像素级的光斑缓慢横移。 */
+  /* 中景层：大团柔光（视差基准） */
   --bg-glow:none;
   /* 必须 100%：若用 200%，渐变图被放大两倍且默认从左上角铺，
      位于 76% 的第二团光斑会被推到视口外，只剩一团在动。 */
   --bg-glow-size:100% 100%;
   --bg-glow-name:none;
   --bg-glow-dur:16s;
+  /* 近景层：位移更大、更快的第二组光斑。
+     与中景层的速度差就是"层次感"的来源（视差）。 */
+  --bg-glow2:none;
+  --bg-glow2-name:none;
+  --bg-glow2-dur:10s;
+  /* 表面不透明度：卡片/格子有多透。100% = 完全不透（光斑只能在缝隙里看到）。 */
+  --surf-alpha:100%;
+  /* 凹槽表面（stat / skin-btn）：压在卡片之上，要单独给透明度，
+     否则不透明凹槽会把整张卡片盖死，光透不上来。 */
+  --surf-alpha-2:100%;
   /* 动效强度：1=明显  0.6=柔和（时长除以它 → 更慢）。
      "关"由 html[data-motion="off"] 直接掐掉动画，不走这里。 */
   --motion-speed:1;
@@ -105,8 +116,11 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   --c-sunken:#EDEDEB;    /* 卡片内的凹槽块（stat / cell） */
   --c-raised:#E4E4E1;    /* 选中态块 / 进度槽 */
   --c-text:#2B2B2B;
-  --c-text-2:#535351;
-  --c-text-3:#6A6A66;
+  /* text-2 比纯灰更深一档：它要压在会动的光斑上（.hint / .sec-note），
+     最坏底色处仍需 >=4.5:1 */
+  --c-text-2:#4A4A48;
+  /* 卡片半透明后底色随光斑变深，t3 要相应压深才守得住 4.5:1 */
+  --c-text-3:#61615D;
   --c-line:#D7D7D3;
   --c-line-2:#C4C4BF;
 
@@ -204,11 +218,19 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-texture-size:14px 14px;
     /* 网点以 14px 为周期，位移取 3 格（42px）→ 循环无缝 */
     --bg-fx-name:dotDrift; --bg-fx-dur:26s;
-    /* 主可见动效：两团极淡暖光在纸面上缓慢游走（红/琥珀，呼应强调色） */
+    /* 主可见动效：两团极淡暖光在纸面上缓慢游走（红/琥珀，呼应强调色）。
+       位置必须按"盒子坐标"写：渐变盒比视口大 186%（.bg-fx inset -12%
+       叠 ::before inset -25%），所以视口 y=20% 对应盒内 y=34%，
+       视口 y=80% 对应盒内 y=66%。半径同理放大——50% 竖半径 ≈ 视口 93%。
+       不这么换算，光斑会全停在屏幕外，下半屏一动不动。 */
     --bg-glow:
-      radial-gradient(46% 40% at 24% 26%, color-mix(in srgb,var(--c-accent) 10%,transparent), transparent 68%),
-      radial-gradient(40% 34% at 76% 74%, color-mix(in srgb,var(--c-warn) 11%,transparent), transparent 70%);
+      radial-gradient(70% 55% at 30% 34%, color-mix(in srgb,var(--c-accent) 12%,transparent), transparent 70%),
+      radial-gradient(65% 50% at 72% 66%, color-mix(in srgb,var(--c-warn) 12%,transparent), transparent 72%);
     --bg-glow-name:glowPan; --bg-glow-dur:14s;
+    /* 近景：更小更聚的一团，动得更快 → 与中景拉开速度差 */
+    --bg-glow2:radial-gradient(62% 50% at 54% 46%, color-mix(in srgb,var(--c-accent) 8%,transparent), transparent 70%);
+    --bg-glow2-name:glowPanNear; --bg-glow2-dur:9s;
+    --surf-alpha:62%; --surf-alpha-2:48%;
   }
 
   /* ---------- 2) night：安静的夜色 ----------
@@ -216,9 +238,12 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
      所以这里刻意**没有**网格底纹、没有辉光、圆角更大、数字用系统无衬线，
      语义色也压暗一档，夜里看着不刺眼。 */
   [data-skin="night"]{
-    --c-page-bg:#111214; --c-shell:#151719; --c-card:#1A1D20;
-    --c-sunken:#202327;  --c-raised:#262A2F;
-    --c-text:#E6E7E9;    --c-text-2:#A0A4A9; --c-text-3:#83878D;
+    /* 卡片刻意比"纯黑系深色"再亮一点：光斑会把页面提亮，
+       卡片必须始终高于页面亮度，否则半透明后会出现层次反转
+       （卡片看起来比背景还暗 = 破图）。 */
+    --c-page-bg:#0C0E11; --c-shell:#12151A; --c-card:#262C35;
+    --c-sunken:#1B2027;  --c-raised:#303740;
+    --c-text:#EAECEE;    --c-text-2:#A6ABB1; --c-text-3:#9AA0A7;
     --c-line:#2B2F34;    --c-line-2:#3A3F45;
     --c-accent:#D9636B;  --c-info:#6FA8C7; --c-ok:#6FB98A; --c-warn:#C9A45F; --c-danger:#D9636B;
     --c-switch-off:#3A3F45; --c-switch-on:#A0A4A9; --c-knob:#E6E7E9;
@@ -237,10 +262,17 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
       color-mix(in srgb,var(--c-info) 9%,transparent), transparent 62%);
     --bg-fx-name:breathe; --bg-fx-dur:12s; --bg-fx-ease:ease-in-out;
     /* 冷色极光：夜间最合适的动效——暗底上极淡的光在缓慢移位 */
+    /* 暗色皮肤的关键：不要靠"提亮"来制造动感。
+       提亮会把页面亮度推向卡片亮度，层次就没了；而且深底上亮度变化本身不明显。
+       改用**亮度相近、色相不同**的两团光（青 ↔ 紫），色相漂移肉眼很敏感，
+       而总亮度仍在预算内，卡片始终比页面亮。 */
     --bg-glow:
-      radial-gradient(52% 40% at 28% 22%, color-mix(in srgb,var(--c-info) 15%,transparent), transparent 68%),
-      radial-gradient(46% 34% at 74% 78%, color-mix(in srgb,var(--c-accent) 11%,transparent), transparent 70%);
+      radial-gradient(76% 60% at 30% 34%, color-mix(in srgb,#2A7488 11%,transparent), transparent 74%),
+      radial-gradient(70% 56% at 72% 66%, color-mix(in srgb,#5C4F8C 9%,transparent), transparent 76%);
     --bg-glow-name:glowPan; --bg-glow-dur:16s;
+    --bg-glow2:radial-gradient(60% 48% at 54% 46%, color-mix(in srgb,#2A7488 6%,transparent), transparent 72%);
+    --bg-glow2-name:glowPanNear; --bg-glow2-dur:11s;
+    --surf-alpha:55%; --surf-alpha-2:45%;
     /* 数字用系统无衬线，笔画柔和尚可读 */
     --font-num:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
     --font-num-weight:600;
@@ -265,8 +297,9 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --icon-stroke:2.1;
     --icon-off-opacity:.85;
     --deco-focus:var(--c-info);
-    /* 高对比要的是锐利，不要柔光 */
+    /* 高对比要的是锐利，不要柔光；表面也不透（透光会降低对比度） */
     --glow-accent:none; --glow-tile:none;
+    --surf-alpha:100%;
     /* 高对比：数值用系统无衬线，笔画最扎实 */
     --font-num:-apple-system,'Segoe UI',Roboto,sans-serif;
     --font-num-weight:700;
@@ -281,9 +314,9 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   /* HUD 皮肤的激活格带一点呼吸光，呼应"通电" */
   [data-skin="neon"] .tile.on{animation:hudPulse 3.4s ease-in-out infinite}
   [data-skin="neon"]{
-    --c-page-bg:#070B11; --c-shell:#0A0F16; --c-card:#111823;
-    --c-sunken:#0C121B;  --c-raised:#1A2432;
-    --c-text:#DCEAF7;    --c-text-2:#8B9FB4; --c-text-3:#6B84A0;
+    --c-page-bg:#06090E; --c-shell:#0A0F16; --c-card:#1A2533;
+    --c-sunken:#101822;  --c-raised:#24313F;
+    --c-text:#DCEAF7;    --c-text-2:#8FA3B8; --c-text-3:#8599B0;
     --c-line:#1D2A3A;    --c-line-2:#2A3D52;
     /* 电光青做主强调；成功/警告/危险保持语义可辨 */
     --c-accent:#22D3EE;  --c-info:#38BDF8; --c-ok:#34D399; --c-warn:#FBBF24; --c-danger:#FB7185;
@@ -313,10 +346,14 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
       transparent 47%, color-mix(in srgb,var(--c-accent) 13%,transparent) 50%, transparent 53%);
     --bg-fx2-name:scanSweep; --bg-fx2-dur:6s;
     /* 电光光斑：HUD 的"能量场"在视野里游移 */
+    /* 同 night：青 ↔ 品红，靠色相漂移而不是亮度 */
     --bg-glow:
-      radial-gradient(50% 36% at 22% 18%, color-mix(in srgb,var(--c-accent) 14%,transparent), transparent 68%),
-      radial-gradient(44% 30% at 80% 80%, color-mix(in srgb,var(--c-info) 11%,transparent), transparent 70%);
+      radial-gradient(74% 58% at 26% 32%, color-mix(in srgb,#12889B 9%,transparent), transparent 74%),
+      radial-gradient(68% 54% at 74% 68%, color-mix(in srgb,#8A3A7A 6%,transparent), transparent 76%);
     --bg-glow-name:glowPan; --bg-glow-dur:12s;
+    --bg-glow2:radial-gradient(58% 46% at 54% 46%, color-mix(in srgb,#12889B 4%,transparent), transparent 72%);
+    --bg-glow2-name:glowPanNear; --bg-glow2-dur:8s;
+    --surf-alpha:55%; --surf-alpha-2:45%;
     /* 未来感：等宽数字 + 拉开字距，像 HUD 读数 */
     --font-num:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
     --font-num-weight:500;
@@ -367,12 +404,22 @@ header{
 /* 光斑层：元素比视口大 50%（inset:-25%），靠 transform 横移，
    全程在合成层上，不重绘。位移量见 @keyframes glowPan：
    单程约为视口宽度的 13%，在 16s 内走完 —— 肉眼看得出在动。 */
+/* 中景光斑：慢、位移中等（远的东西动得慢 → 视差） */
 .bg-fx::before{
   content:'';position:absolute;inset:-25%;
   background-image:var(--bg-glow);
   background-size:var(--bg-glow-size);
   background-repeat:no-repeat;
   animation:var(--bg-glow-name) calc(var(--bg-glow-dur) / var(--motion-speed)) ease-in-out infinite alternate;
+  will-change:transform;
+}
+/* 近景光斑：快、位移大。两层速度差越大，纵深越明显。 */
+.bg-fx .l-near{
+  position:absolute;inset:-45%;pointer-events:none;
+  background-image:var(--bg-glow2);
+  background-size:var(--bg-glow-size);
+  background-repeat:no-repeat;
+  animation:var(--bg-glow2-name) calc(var(--bg-glow2-dur) / var(--motion-speed)) ease-in-out infinite alternate;
   will-change:transform;
 }
 .bg-fx::after{
@@ -385,7 +432,7 @@ header{
    因为 calc(时长 / 0) 是无效值） */
 html[data-motion="off"] .bg-fx,
 html[data-motion="off"] .bg-fx::before,
-html[data-motion="off"] .bg-fx::after{animation:none !important}
+html[data-motion="off"] .bg-fx::after,html[data-motion="off"] .bg-fx .l-near{animation:none !important}
 html[data-motion="soft"]{--motion-speed:.6}
 main{
   flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
@@ -410,14 +457,28 @@ section{margin-bottom:var(--sp-6)}
 .sec-note{font-size:var(--fs-label);letter-spacing:.5px;color:var(--c-text-2);font-weight:400;text-transform:none}
 
 /* ===== 卡片 ===== */
-.card{background:var(--c-card);border:var(--bd-card);border-radius:var(--r-card);
+.card{
+  /* 半透明表面：让背后移动的光斑透上来，这是"3D/层次感"成立的前提。
+     注意只有一层——格子与卡片都是直接贴在页面上的，不存在嵌套叠加。 */
+  background:color-mix(in srgb,var(--c-card) var(--surf-alpha),transparent);
+  border:var(--bd-card);border-radius:var(--r-card);
   padding:var(--pad-card);box-shadow:var(--shadow-card)}
 .card + .card{margin-top:var(--gap-card)}
+
+/* color-mix() 在 Safari 16.2 / Chrome 111 以下不支持。
+   那种浏览器上 background 会整条失效变成 transparent —— 卡片会直接"消失"。
+   这里退回不透明表面：动效还在（背景层不受影响），只是光透不上来。 */
+@supports not (background:color-mix(in srgb,#fff 50%,transparent)){
+  .card,.tile,.scene-btn{background:var(--c-card)}
+  .stat{background:var(--c-page-bg)}
+  .skin-btn{background:var(--c-sunken)}
+}
 
 /* ===== 情景模式 ===== */
 .scenes{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-3)}
 .scene-btn{
-  appearance:none;border:1px solid var(--c-line);background:var(--c-card);border-radius:var(--r-block);
+  appearance:none;border:1px solid var(--c-line);
+  background:color-mix(in srgb,var(--c-card) var(--surf-alpha),transparent);border-radius:var(--r-block);
   padding:var(--sp-3) var(--sp-2);display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);
   color:var(--c-text-2);min-height:76px;position:relative;cursor:default;font-family:var(--font-body);
   transition:border-color .15s,box-shadow .15s,color .15s,background .15s;
@@ -442,7 +503,8 @@ section{margin-bottom:var(--sp-6)}
 .grid > .tile{flex:1 1 calc(33.333% - 6px);min-width:calc(33.333% - 6px)}
 .grid.cols-2 > .tile{flex:1 1 calc(50% - 4px);min-width:calc(50% - 4px)}
 .tile{
-  appearance:none;background:var(--c-card);border:1px solid var(--c-line);border-radius:var(--r-block);
+  appearance:none;border:1px solid var(--c-line);border-radius:var(--r-block);
+  background:color-mix(in srgb,var(--c-card) var(--surf-alpha),transparent);
   padding:var(--sp-3) var(--sp-2);display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);
   color:var(--c-text-2);cursor:pointer;position:relative;min-height:88px;font-family:var(--font-body);
   transition:border-color .15s,box-shadow .15s,color .15s,background .15s,transform .12s ease-out;
@@ -552,7 +614,8 @@ section{margin-bottom:var(--sp-6)}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);flex:1;
   /* flex 子项默认 min-width:auto，会以 min-content 撑破卡片（实测超 14px） */
   min-width:0}
-.stat{background:var(--c-page-bg);border-radius:var(--r-block);padding:var(--sp-3);min-width:0}
+.stat{background:color-mix(in srgb,var(--c-page-bg) var(--surf-alpha-2),transparent);
+  border-radius:var(--r-block);padding:var(--sp-3);min-width:0}
 .stat .k{font-size:var(--fs-label);color:var(--c-text-3);letter-spacing:.5px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stat .v{font-family:var(--font-num);font-size:var(--fs-val);font-weight:var(--font-num-weight);margin-top:var(--sp-1);color:var(--c-text);letter-spacing:var(--font-num-spacing);
@@ -698,7 +761,8 @@ section{margin-bottom:var(--sp-6)}
 .skin-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .skin-btn{
   appearance:none;cursor:pointer;font-family:var(--font-body);text-align:left;
-  background:var(--c-sunken);border:1px solid var(--c-line);border-radius:var(--r-block);
+  background:color-mix(in srgb,var(--c-sunken) var(--surf-alpha-2),transparent);
+  border:1px solid var(--c-line);border-radius:var(--r-block);
   padding:var(--sp-3);display:flex;align-items:center;gap:var(--sp-2);color:var(--c-text-2);
   transition:border-color .15s,box-shadow .15s,color .15s;
 }
@@ -819,6 +883,11 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
   from{transform:translate3d(-18%,-9%,0) scale(1)}
   to{transform:translate3d(18%,9%,0) scale(1.18)}
 }
+/* 近景层：位移比中景更大（±26%），周期更短 → 与中景形成速度差 */
+@keyframes glowPanNear{
+  from{transform:translate3d(26%,12%,0) scale(1.05)}
+  to{transform:translate3d(-26%,-12%,0) scale(1)}
+}
 @keyframes breathe{
   0%,100%{opacity:.55;transform:scale(1)}
   50%{opacity:1;transform:scale(1.03)}
@@ -859,7 +928,7 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
 </head>
 <body>
 
-<div class="bg-fx" aria-hidden="true"></div>
+<div class="bg-fx" aria-hidden="true"><i class="l-near"></i></div>
 
 <header>
   <div class="brand">
