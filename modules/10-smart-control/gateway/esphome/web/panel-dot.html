@@ -91,7 +91,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   --bg-fx2-name:none;
   --bg-fx2-dur:8s;
   /* 纵向光带的墨量：浅色皮肤用深墨、深色皮肤用浅墨，都是 4–5% 的低墨量 */
-  --veil-ink:color-mix(in srgb,var(--c-text) 10%,transparent);
+  --veil-ink:color-mix(in srgb,var(--c-text) 13%,transparent);
   /* 表面不透明度：卡片/格子有多透。100% = 完全不透（光斑只能在缝隙里看到）。 */
   --surf-alpha:100%;
   /* 凹槽表面（stat / skin-btn）：压在卡片之上，要单独给透明度，
@@ -250,7 +250,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     /* 不铺网格（那是 neon 的语言），只留一层极淡顶部冷光，缓慢呼吸 */
     --bg-texture:radial-gradient(120% 62% at 50% -12%,
       color-mix(in srgb,var(--c-info) 9%,transparent), transparent 62%);
-    --veil-ink:color-mix(in srgb,var(--c-text) 10%,transparent);
+    --veil-ink:color-mix(in srgb,var(--c-text) 13%,transparent);
     --bg-fx-name:breathe; --bg-fx-dur:12s; --bg-fx-ease:ease-in-out;
     /* 冷色极光：夜间最合适的动效——暗底上极淡的光在缓慢移位 */
     /* 暗色皮肤：用浅色墨点（--c-text 本身是浅的），墨量同样很低。
@@ -325,7 +325,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
       linear-gradient(90deg, color-mix(in srgb,var(--c-accent) 7%,transparent) 1px, transparent 1px);
     --bg-texture-size:auto, 30px 30px, 30px 30px;
     /* 网格 26px 周期 → 漂移一整格无缝；再加一条扫描线周期性扫过 */
-    --veil-ink:color-mix(in srgb,var(--c-accent) 9%,transparent);
+    --veil-ink:color-mix(in srgb,var(--c-accent) 11%,transparent);
     --bg-fx-name:none;
     --bg-fx2:linear-gradient(180deg,
       transparent 47%, color-mix(in srgb,var(--c-accent) 13%,transparent) 50%, transparent 53%);
@@ -346,19 +346,12 @@ html,body{
 body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 
 /* ===== 顶栏 ===== */
-/* 顶栏用 grid 而不是 flex + space-between：
-   flex 下 .hdr-energy 的 min-width:0 会让它缩到比内容还窄，子元素溢出后
-   直接压在时钟/WiFi 上（手机上字体渲染略宽就会发生）。
-   grid 的 auto/minmax(0,1fr)/auto 三列 + overflow:hidden 从结构上不可能重叠。 */
 header{
-  flex:none;position:relative;z-index:2;
-  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;
-  column-gap:var(--sp-3);overflow:hidden;
-  padding:var(--sp-2) var(--sp-4);padding-top:calc(var(--sp-2) + env(safe-area-inset-top));
+  flex:none;position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
+  padding:var(--sp-3) var(--sp-4);padding-top:calc(var(--sp-3) + env(safe-area-inset-top));
   background:var(--c-shell);border-bottom:1px solid var(--c-line);
 }
-.brand{display:flex;align-items:center;gap:var(--sp-2);flex:none}
-.bt{white-space:nowrap}
+.brand{display:flex;align-items:center;gap:var(--sp-2)}
 .logo{
   font-family:var(--font-num);
   width:32px;height:32px;border-radius:var(--r-chip);border:1.5px solid var(--c-text);
@@ -366,8 +359,8 @@ header{
   font-weight:800;font-size:var(--fs-label);letter-spacing:.5px;background:var(--c-card);
 }
 .bn{font-family:var(--font-num);font-weight:700;font-size:var(--fs-sec);letter-spacing:1px}
-.status{display:flex;align-items:center;gap:var(--sp-2);flex:none;white-space:nowrap;
-  font-size:var(--fs-sm);color:var(--c-text-2)}
+.bs{font-size:var(--fs-label);color:var(--c-text-3);letter-spacing:.5px;margin-top:var(--sp-opt)}
+.status{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
 .pill{
   display:inline-flex;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-2);border-radius:var(--r-pill);
   background:var(--c-card);border:1px solid var(--c-line);
@@ -387,49 +380,58 @@ header{
   animation:var(--bg-fx-name) calc(var(--bg-fx-dur) / var(--motion-speed)) var(--bg-fx-ease) infinite;
   will-change:transform,opacity;
 }
-/* ===== 纵向光带（背景唯一的动效）=====
-   为什么只剩这一种：四代背景动效的失败点各不相同，但共同点是"有可识别的形状在横移"
-   —— 彩色光斑=色块、云=瓷砖、细网点横移=摩尔纹闪烁、任意层的横移=Safari 条带
-   合成出的"从左到右"横带。所以：
-     ① 只沿 Y 轴动（永不改 X）；② 形状是一条没有左右边的软光带（上下渐隐，
-        左右贯通整屏），所以不存在"一块东西在移动"的读法；
-     ③ 只有极低墨量（4–5%），是"光线慢慢扫过纸面/屏幕"，不是一个图形。
-   `alternate` 让它下行到底再原路返回，没有循环跳变。 */
+/* ===== 背景动效：纵向扫描带 =====
+   为什么换掉"软光带"：软光带墨量 10%、40vh 高、24s 扫一遍，在没有 UI 的截图里
+   能测到 20 级摆动，但真实页面里卡片盖住 85% 面积、只剩 16px 缝隙，
+   而且它没有边——人眼没有可跟踪的边缘，所以"还是没效果"。
+
+   现在改成"窄 + 亮 + 快"：
+     · 高度 14vh（窄），核心墨量 13%（亮），9 秒扫过整屏（快）
+     · 上下都有 40% 的渐隐边，所以它是一条"有边缘的亮带"，
+       人眼靠边缘判断运动，而不是靠亮度差
+     · 仍然只有 translate3d(0,Y,0)：X 恒为 0，不会触发 Safari 条带合成的横向亮带
+     · 双实例错开半个周期（::after 负 delay）→ 屏幕上永远有一条在扫
+   这是"扫描"而不是"形状"：左右贯通整屏、没有闭合轮廓。 */
 .bg-veil{
-  position:fixed;left:-10%;right:-10%;top:0;height:40vh;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,transparent 0%,var(--veil-ink) 50%,transparent 100%);
-  animation:veilSweep calc(24s / var(--motion-speed)) linear infinite;
+  position:fixed;left:-10%;right:-10%;top:0;height:14vh;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 0%,var(--veil-ink) 42%,var(--veil-ink) 58%,transparent 100%);
+  animation:veilSweep calc(9s / var(--motion-speed)) linear infinite;
   will-change:transform;
 }
-/* 第二条带：同一条渐变、相位差半周期（负 delay），所以屏幕上永远至少有一条在走，
-   不会出现"带走出屏幕 → 画面静止十几秒"的情况。 */
 .bg-veil::after{
   content:'';position:absolute;inset:0;background:inherit;
-  animation:veilSweep calc(24s / var(--motion-speed)) linear infinite;
-  animation-delay:calc(-12s / var(--motion-speed));
+  animation:veilSweep calc(9s / var(--motion-speed)) linear infinite;
+  animation-delay:calc(-4.5s / var(--motion-speed));
 }
 @keyframes veilSweep{
-  from{transform:translate3d(0,-40vh,0)}
-  to{transform:translate3d(0,104vh,0)}
+  from{transform:translate3d(0,-20vh,0)}
+  to{transform:translate3d(0,105vh,0)}
 }
 
-/* ===== 顶栏能源簇 =====
-   电量 + 进度条 + 净电流（正充负放）+ 剩余时间；宽屏（≥700px）再补发电功率与电池电压。
-   这块原本是一条独立的 28px 状态条，后来按提议并进顶栏 —— 省 28px 纵向空间，
-   也解决"只有三项、中间一片空"的问题：顶栏本来就该放常驻信息。 */
-.hdr-energy{display:flex;align-items:center;gap:var(--sp-2);min-width:0;
-  overflow:hidden;white-space:nowrap;justify-content:flex-start;
-  font-size:var(--fs-label);color:var(--c-text-3)}
-.hdr-energy>*{flex:none}
-.he-soc{display:flex;align-items:center;gap:1px}
-.he-soc b,.sb-cur b,.sb-time b,.sb-w b{font-family:var(--font-num);font-weight:700;
-  font-size:var(--fs-body);letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
-.hdr-energy .u{font-size:var(--fs-label);color:var(--c-text-3)}
-.sb-track{display:block;width:34px;height:4px;border-radius:2px;margin-left:4px;
+/* ===== 常驻状态条 =====
+   只放三项：电量 / 净电流（正充负放）/ 剩余时间，宽屏再补发电与电压。
+   位置在 header 之下、main 之上，四个页面都在视野内 —— 所以首页不必再放一份。
+   表面半透明，让底下在动的背景透上来。 */
+.statusbar{
+  flex:none;position:relative;z-index:2;display:flex;align-items:center;
+  justify-content:space-between;gap:var(--sp-2);
+  padding:5px var(--sp-4);
+  background:color-mix(in srgb,var(--c-shell) var(--surf-alpha),transparent);
+  border-bottom:1px solid var(--c-line);
+  font-size:var(--fs-label);color:var(--c-text-3);
+}
+.sb-main{display:flex;align-items:center;gap:2px}
+.sb-main b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
+  letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
+.sb-main .u{font-size:var(--fs-label)}
+.sb-track{display:block;width:38px;height:4px;border-radius:2px;margin-left:6px;
   background:var(--c-raised);overflow:hidden;flex:none}
 .sb-fill{display:block;height:100%;width:0;background:var(--c-ok);border-radius:2px;
   transition:width .4s ease,background .4s ease}
+.sb-sep{width:1px;height:12px;background:var(--c-line-2);flex:none}
 .sb-cur{display:flex;align-items:baseline;gap:2px}
+.sb-cur b,.sb-time b,.sb-w b,.sb-clock b{font-family:var(--font-num);font-weight:700;
+  font-size:var(--fs-body);letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
 .sb-cur .dir{font-size:var(--fs-label)}
 .sb-cur.charge .dir,.sb-cur.charge b{color:var(--c-ok)}
 .sb-cur.dis .dir,.sb-cur.dis b{color:var(--c-warn)}
@@ -438,26 +440,18 @@ header{
 .wide-only{display:none}
 @media (min-width:700px){.wide-only{display:flex}}
 
-/* 极窄屏（≤359px，如 iPhone SE 一代）：顶栏必须放得下。
-   依次舍弃：品牌文字 → 剩余时间（都不影响核心信息：电量与电流仍在） */
-/* 顶栏取舍（宽度不够时按这个顺序让位，保证永不相压）：
-   ① ≤430px：舍品牌文字（FG 方块仍标识品牌）→ 换来"剩余时间"能显示
-   ② ≤359px：再舍剩余时间 → 只留电量与净电流
-   品牌文字在宽屏才有意义，所以先牺牲它是合理的。 */
-@media (max-width:430px){
-  .bn{display:none}
-  .hdr-energy{gap:var(--sp-2)}
-}
+/* 极窄屏：状态条里"剩余"两字去掉（只留 6h53），保证状态条仍是一行 28px */
 @media (max-width:359px){
-  .sb-time{display:none}
-  .hdr-energy{gap:var(--sp-1)}
+  .sb-time .k{display:none}
+  .sb-track{width:26px}
+  .statusbar{gap:var(--sp-1)}
 }
 
 main{
   flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   position:relative;z-index:1;
   padding:var(--sp-4) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom));
-  /* 底色仍由 body 提供，这里透明好让底纹层透出来 */
+  /* 底色由 body 提供，这里透明，好让底纹/动效层透上来 */
   background:transparent;
 }
 main::-webkit-scrollbar{width:0}
@@ -470,9 +464,7 @@ section{margin-bottom:var(--sp-6)}
   font-family:var(--font-body);font-size:var(--fs-sec);font-weight:600;letter-spacing:.4px;color:var(--c-text-2);
 }
 .sec-title::before{content:'';width:3px;height:14px;border-radius:2px;background:var(--deco-sec-bar)}
-/* 注意：.sec-note 与 .hint 直接压在会动的页面上（没有卡片底），
-   若用 --c-text-3，光斑经过时对比度会跌破 AA（paper 原本就只有 4.63）。
-   所以这两处固定用 --c-text-2。 */
+/* .sec-note 与 .hint 直接压在会动的背景上（没有卡片底），固定用 --c-text-2 保证 AA */
 .sec-note{font-size:var(--fs-label);letter-spacing:.5px;color:var(--c-text-2);font-weight:400;text-transform:none}
 
 /* ===== 卡片 ===== */
@@ -877,8 +869,8 @@ nav button.active::after{
 @media (max-height:520px){
   header{padding:var(--sp-1) var(--sp-4)}
   .bs{display:none}                    /* 副标题在矮屏是浪费 */
-  .sb-track{width:26px}
-  .hdr-energy{gap:var(--sp-1)}
+  .sb-track{width:28px}
+  .sb-time .k{display:none}
   nav{padding:var(--sp-opt) var(--sp-1) calc(var(--sp-opt) + env(safe-area-inset-bottom))}
   nav button{min-height:40px;flex-direction:row;gap:var(--sp-1);padding:var(--sp-1) var(--sp-3);font-size:var(--fs-label)}
   nav button .ic{width:16px;height:16px}
@@ -967,23 +959,35 @@ html[data-motion="soft"]{--motion-speed:.6}
 <header>
   <div class="brand">
     <div class="logo">FG</div>
-    <div class="bt"><div class="bn">FORAGER</div></div>
-  </div>
-  <div class="hdr-energy">
-    <span class="he-soc"><b id="sbSoc">--</b><span class="u">%</span>
-      <i class="sb-track"><i class="sb-fill" id="sbFill"></i></i></span>
-    <span class="sb-cur" id="sbCurWrap"><span class="dir" id="sbDir">·</span><b id="sbCur">--</b><span class="u">A</span></span>
-    <span class="sb-time"><b id="sbTime">--</b></span>
-    <span class="sb-w wide-only"><span class="k">发电</span><b id="sbPv">--</b><span class="u">W</span></span>
-    <span class="sb-w wide-only"><span class="k">电池</span><b id="sbV">--</b><span class="u">V</span></span>
+    <div>
+      <div class="bn">FORAGER</div>
+      <div class="bs">觅食者号 · 485 网关</div>
+    </div>
   </div>
   <div class="status">
-    <span class="pill"><span class="dot" id="wifiDot"></span></span>
-    <span class="clock" id="clock">--:--</span>
+    <span class="pill"><span class="dot" id="wifiDot"></span><span id="wifiTxt">WiFi</span></span>
   </div>
 </header>
 
-
+<!-- 常驻状态条：所有页面都在。只放三项最该"一眼看到"的数：
+     电量、净电流（正充负放，带方向箭头）、剩余时间。
+     其余指标一律进电池页，避免同一数据出现两次。 -->
+<div class="statusbar" id="statusBar">
+  <div class="sb-main">
+    <b id="sbSoc">--</b><span class="u">%</span>
+    <i class="sb-track"><i class="sb-fill" id="sbFill"></i></i>
+  </div>
+  <div class="sb-sep"></div>
+  <div class="sb-cur" id="sbCurWrap"><span class="dir" id="sbDir">·</span><b id="sbCur">--</b><span class="u">A</span></div>
+  <div class="sb-sep"></div>
+  <div class="sb-time"><span class="k">剩余</span><b id="sbTime">--</b></div>
+  <div class="sb-sep wide-only"></div>
+  <div class="sb-w wide-only"><span class="k">发电</span><b id="sbPv">--</b><span class="u">W</span></div>
+  <div class="sb-sep wide-only"></div>
+  <div class="sb-w wide-only"><span class="k">电池</span><b id="sbV">--</b><span class="u">V</span></div>
+  <div class="sb-sep"></div>
+  <div class="sb-clock"><b id="clock">--:--</b></div>
+</div>
 
 <main>
   <!-- ============ 首页 ============ -->
