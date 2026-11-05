@@ -1053,7 +1053,7 @@ AA 不达标；染色玻璃 + 深蓝字实测 **6.21**，而且更像 iOS 26 的
 | 位置 | 显示 | 理由 |
 |---|---|---|
 | **状态条**（顶栏下面那条） | 数字 + `%` + 4px 细条 | 一眼要读到精确值（"还剩 78%"），细条只是趋势 |
-| **底栏电池 tab 徽标** | **5 格小方块** | 底栏窄，一格一格的亮度变化比两位数更快读懂 |
+| **底栏电池 tab 的电池图标** | **图标本身就是 5 格** | 不额外加徽标：电量画在电池图标里面，图标自己会说话 |
 
 ```html
 <!-- 状态条：数字 + 细条（保持原样） -->
@@ -1110,3 +1110,79 @@ ios6 也顺手去掉了状态条顶部的白色内高光（它紧贴深色顶栏
 
 > 定为硬规则：**任何换皮肤后的颜色断言，必须等 ≥400ms**。
 > 布局/几何可以立刻读，颜色/阴影不行。
+
+#### 5.10 底栏电量画进图标 + 分段控件统一 + 玻璃状态条精修
+
+用户三点反馈，前两点是"位置/层级错了"，第三点是组件材质不统一。
+
+##### A. 底栏电量：不是加徽标，是**改电池图标本身**
+
+上一版在 tab 图标旁边加了个 5 格小徽标 —— 仍然"多长出来一块"。正确做法是把
+`navBat` 图标换成带 5 格的电池 SVG，靠 `opacity` 点亮：
+
+```html
+<span class="ic nav-batt" id="navBatt" role="img" aria-label="电量">
+  <svg viewBox="0 0 24 24">
+    <rect x="2.2" y="6.8" width="17.2" height="10.4" rx="2.6"/>   <!-- 外壳 -->
+    <path d="M21.6 10.4v3.2"/>                                    <!-- 正极 -->
+    <rect class="cell" x="4.2" …/> ×5                             <!-- 5 格 -->
+  </svg>
+</span>
+```
+
+```css
+.nav-batt .cell{fill:currentColor;stroke:none;opacity:.2;transition:opacity .3s}
+.nav-batt .cell.on{opacity:1}
+```
+
+图标 SVG 直接写在 HTML 里（不用 `data-icon` 注入），这样不会被图标工厂覆盖；
+`applySkin()` 统一改描边宽度时它也会跟着变。
+
+##### B. 为什么这几个按钮的文字会【竖排】
+
+`.seg .chip` 原来是 `flex:1` —— 在 `justify-content:space-between` 的行里会被压窄，
+而中文每字一个断行点，宽度不够就变成"一列字"。
+
+```css
+.seg .chip{flex:1 1 auto; white-space:nowrap}
+```
+
+修完实测：`关 37px / 柔和 51px / 明显 51px`、`white-space:nowrap`，三枚并排单行。
+
+##### C. 分段控件：凹槽 + 凸起，而不是三块飘着的白片
+
+用户：`外面有圆角，有背景，这一层又是直角，又是白色背景`。
+原因是 `.seg` 是个透明容器、`.chip` 各自实心白，看起来就是"白块贴在玻璃卡片上"，
+既没有控制器的整体感，也和玻璃材质打架。
+
+iOS 的做法是**两件套**：外层是凹槽（内阴影），选中片才抬起来。
+
+```css
+[data-skin="ios26"] .seg{
+  padding:2px;border-radius:999px;background:rgba(11,18,32,.07);
+  box-shadow:inset 0 1px 2px rgba(16,32,64,.18), inset 0 -1px 0 rgba(255,255,255,.5);
+}
+[data-skin="ios26"] .seg .chip{background:transparent;border:0;box-shadow:none;border-radius:999px}
+[data-skin="ios26"] .seg .chip.active{background:rgba(255,255,255,.96);box-shadow:0 1px 2px rgba(16,32,64,.22)}
+```
+
+ios6 用同一套结构、换塑料语汇：凹槽 `linear-gradient(#AEB8C2,#D6DCE2)` + 内阴影，
+选中片是蓝玻璃渐变。
+
+顺带把卡片里单独出现的 `.chip`（重启 / 打开 / 暂停 / 清空）也改成半透明玻璃
+`rgba(255,255,255,.55)`，不再实心白——它们在同一张玻璃卡片里，实心白会"跳出来"。
+
+##### D. ios26 状态条：一排数据 + 三条竖线 = 碎
+
+- 去掉 `.sb-sep` 竖分隔线，改用 `gap:14px` 分组
+- 数字 `font-variant-numeric:tabular-nums` + 字距 -0.2px，单位压暗到 `--c-text-3`
+- 细条 38×4 → 30×3，底色改成 12% 深色（亮玻璃上更稳）
+- 状态条底色由"两段渐变"改为更平的一层（顶部和顶栏渐变叠加后会显得发灰）
+
+##### 验证
+
+- 5 尺寸 × 6 皮肤 × 4 页面零越界、零 JS 报错
+- 新增 `TXT-WRAP` 检查：任何 chip 的 `scrollHeight > clientHeight` 即判定文字折行
+- 新增"直角白块"扫描：设置页内 `background` 接近纯白且 `radius<2px` 的元素
+  （只剩皮肤选择器里被父级 `overflow:hidden` 裁圆的三色色条，属正常）
+- CSS 390 条规则（无解析损失）
