@@ -1385,25 +1385,58 @@ html[data-motion="soft"]{--motion-speed:.6}
   }
 }
 
-/* ===== ios26：状态条精修 + 分段控件 =====
-   状态条的问题：一排数据 + 三条竖分隔线，在亮玻璃上显得碎。
-   做法：去掉分隔线用间距分组、数字用表格数字对齐、单位压暗，
-   让它像"一块玻璃上的读数"，而不是一排小标签。 */
+/* ===== ios26：状态条 =====
+   之前的问题是"一排右对齐的数字 + 三条竖线"，视觉上没有一个"组"：
+   电量数字、电流、剩余时间权重完全一样，眼睛不知道该先读哪个。
+   改成 iOS 的分组读数：电量是一枚药丸（数字 + 细条同框），
+   电流是第二枚药丸，剩余时间和大屏.width 的发电/电压退成次要小字，
+   时钟单独靠右。层级是：药丸 > 小字 > 分隔。
+   注意：不加任何 1px 白色描边（之前顶栏接缝就是这么叠出白框的）。 */
 [data-skin="ios26"] .statusbar{
-  background:linear-gradient(180deg,rgba(255,255,255,.52),rgba(240,246,255,.34));
-  gap:14px;
+  justify-content:flex-start;gap:8px;
+  padding:6px var(--sp-3);
+  background:linear-gradient(180deg,rgba(244,248,255,.58),rgba(232,241,254,.42));
 }
 [data-skin="ios26"] .statusbar .sb-sep{display:none}
-[data-skin="ios26"] .sb-main b{font-size:13.5px;font-weight:650;letter-spacing:-.2px;
-  font-variant-numeric:tabular-nums}
-[data-skin="ios26"] .sb-main .u{color:var(--c-text-3);margin-left:1px;font-size:11px}
-[data-skin="ios26"] .sb-track{width:30px;height:3px;border-radius:2px;
-  background:rgba(11,18,32,.12);margin-left:5px}
-[data-skin="ios26"] .sb-cur b,[data-skin="ios26"] .sb-time b,
-[data-skin="ios26"] .sb-w b,[data-skin="ios26"] .sb-clock b{
-  font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.2px;
+
+/* 电量药丸：数字 + 细条是一个整体，不再被分隔线切开 */
+[data-skin="ios26"] .sb-main{
+  gap:4px;padding:3px 9px 3px 10px;border-radius:999px;
+  background:rgba(255,255,255,.72);
+  box-shadow:inset 0 1px 0 #FFF, 0 1px 2px rgba(16,32,64,.10);
 }
-[data-skin="ios26"] .statusbar .k{color:var(--c-text-3);opacity:.92}
+[data-skin="ios26"] .sb-main b{font-size:13px;font-weight:650;letter-spacing:-.2px;
+  font-variant-numeric:tabular-nums;color:#0B1220}
+[data-skin="ios26"] .sb-main .u{font-size:10px;color:#556274;margin-left:-1px}
+[data-skin="ios26"] .sb-track{width:26px;height:5px;border-radius:3px;margin-left:3px;
+  background:rgba(11,18,32,.14)}
+[data-skin="ios26"] .sb-fill{border-radius:3px}
+
+/* 电流药丸：方向箭头保留语义色（充电绿/放电琥珀），数值不再染色 */
+[data-skin="ios26"] .sb-cur{
+  gap:3px;padding:3px 9px;border-radius:999px;
+  background:rgba(255,255,255,.46);
+}
+[data-skin="ios26"] .sb-cur .dir{font-size:11px}
+[data-skin="ios26"] .sb-cur b{font-size:12px;font-weight:600;color:#0B1220;
+  font-variant-numeric:tabular-nums}
+[data-skin="ios26"] .sb-cur .u{font-size:10px;color:#556274}
+[data-skin="ios26"] .sb-cur.charge b{color:#0B1220}
+[data-skin="ios26"] .sb-cur.dis b{color:#0B1220}
+
+/* 次要读数：标签小、数值中，退到第二层 */
+[data-skin="ios26"] .sb-time{display:flex;align-items:baseline;gap:4px;padding-left:2px}
+[data-skin="ios26"] .sb-time .k,
+[data-skin="ios26"] .sb-w .k{font-size:10px;color:#556274}
+[data-skin="ios26"] .sb-time b,
+[data-skin="ios26"] .sb-w b{font-size:12px;font-weight:600;color:#2B3746;
+  font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+[data-skin="ios26"] .sb-w .u{font-size:10px;color:#556274}
+
+/* 时钟：唯一的右对齐元素，给它一点视觉重量 */
+[data-skin="ios26"] .sb-clock{margin-left:auto;display:flex;align-items:baseline}
+[data-skin="ios26"] .sb-clock b{font-size:13px;font-weight:650;color:#2B3746;
+  font-variant-numeric:tabular-nums;letter-spacing:-.2px}
 
 /* 分段控件（关/柔和/明显、以及所有 .seg）：
    之前是三个各自半透明白块飘在卡片上——既有直角感又和玻璃语言不统一。
