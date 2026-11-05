@@ -82,16 +82,16 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   /* --- 2. 表面与文字（按层级从底到顶） --- */
   /* 页面底纹 + 动效：底纹画在固定层 .bg-fx 上（不动 main），
      所以可以用 transform 做位移，滚动时也不会重排。 */
-  --bg-texture:none;
-  --bg-texture-size:auto;
-  --bg-fx-name:none;      /* 第一层：底纹自身漂移/呼吸 */
-  --bg-fx-dur:60s;
-  --bg-fx-ease:linear;
-  --bg-fx2:none;          /* 第二层：扫描线之类 */
-  --bg-fx2-name:none;
-  --bg-fx2-dur:8s;
+
+
+      /* 第一层：底纹自身漂移/呼吸 */
+
+
+          /* 第二层：扫描线之类 */
+
+
   /* 纵向光带的墨量：浅色皮肤用深墨、深色皮肤用浅墨，都是 4–5% 的低墨量 */
-  --veil-ink:color-mix(in srgb,var(--c-text) 13%,transparent);
+
   /* 表面不透明度：卡片/格子有多透。100% = 完全不透（光斑只能在缝隙里看到）。 */
   --surf-alpha:100%;
   /* 凹槽表面（stat / skin-btn）：压在卡片之上，要单独给透明度，
@@ -100,6 +100,13 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   /* 动效强度：1=明显  0.6=柔和（时长除以它 → 更慢）。
      "关"由 html[data-motion="off"] 直接掐掉动画，不走这里。 */
   --motion-speed:1;
+  /* 背景各层的默认值（"什么都不做"）；皮肤块只覆盖需要的项。
+     注意：animation 简写里的 var() 只要有一个未定义，整条声明就会失效 →
+     所以这些默认值必须存在，否则皮肤不写 --bg-fx-ease 时动画直接变 none。 */
+  --bg-fx-name:none; --bg-fx-dur:60s; --bg-fx-ease:linear;
+  --bg-fx2:none; --bg-fx2-name:none; --bg-fx2-dur:8s;
+  --bg-glow:none; --bg-glow-size:100% 100%; --bg-glow-name:none; --bg-glow-dur:16s;
+  --bg-glow2:none; --bg-glow2-name:none; --bg-glow2-dur:10s;
   --c-page-bg:#EDEDEB;   /* 页面最外层（手机壳之外） */
   --c-shell:#FAFAF8;     /* 顶栏/底栏底色 */
   --c-card:#FFFFFF;      /* 卡片底色 */
@@ -161,7 +168,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   /* 制热态专用微渐变（照设计稿 .mode.heating.on）。
      ⚠ 只有"制热开启"才用它：普通卡片/按钮**不要**默认盖渐变，
         否则浅底上会发灰、深色皮肤上会发亮，两边都难看。 */
-  --veil-heat:linear-gradient(180deg,color-mix(in srgb,var(--c-text) 5%,transparent),transparent 70%);
+
 
   /* --- 6. 排版 --- */
   /* 字号阶梯：五级，刻意拉开。L1 显示 24 > L2 标题/数值 15-16
@@ -190,6 +197,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   --deco-focus:var(--c-info); /* 键盘焦点环 */
   --deco-sec-bar:var(--c-text); /* 区块标题左侧竖条 */
 
+
 }
 
   /* =====================================================================
@@ -203,25 +211,27 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --cjk:'PxCJK',var(--cjk-sys);
     /* 点阵中文字形按 12px 设计：正文对齐 12px 才锐利 */
     --fs-body:12px; --fs-sm:12px;
-    /* 纸纹 = **细颗粒噪声**，不是图案。
-       踩过两个坑，都是"瓷砖感"的来源：
-       ① 规则网点：点小了像灰雾，点大了满屏密集小孔（密集恐惧）；
-       ② 不规则大斑纹 + 默认 background-repeat：每 300px 一模一样地重复一次，
-          屏幕上就是一块块贴上去的瓷砖。
-       现在用 SVG feTurbulence 生成真正的随机颗粒（stitchTiles 保证无缝），
-       黑色、alpha 上限 .075（均值约 .037），叠在暖白上整体只压暗约 8 级 —— 近看是纸的纤维感，
-       远看是平的。噪声没有可识别特征，所以即使重复也**不会**被眼睛读成图案。 */
-    --bg-texture:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27180%27%20height%3D%27180%27%3E%3Cfilter%20id%3D%27g%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.9%27%20numOctaves%3D%272%27%20stitchTiles%3D%27stitch%27%2F%3E%3CfeColorMatrix%20type%3D%27matrix%27%20values%3D%270%200%200%200%200%200%200%200%200%200%200%200%200%200%200%20.075%200%200%200%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27180%27%20height%3D%27180%27%20filter%3D%27url%28%23g%29%27%2F%3E%3C%2Fsvg%3E");
-    --bg-texture-size:180px 180px;
-    /* 位移取整 1 个贴片（180px），循环处不会跳 */
-    --bg-fx-name:none;
-    /* 远层：3px 细网屏，覆盖率 ~63%、墨量仅 5% → 网点之间几乎相连，读成"面"的密度
-       而不是一颗颗孔；显影区横跨大半屏、极柔，所以是"纸面某处更密"而不是一块斑。
-       位置按盒内坐标：视口 = 盒内 ×2.5 − 0.75，故盒内 30–70% = 视口 0–100%。 */
-    /* 近层：5px 网屏（网点更粗 = 更近），覆盖 ~61%、墨量 4%；
-       显影区更小更集中、移动更快更大 → 这就是纵深感的来源。 */
+    
+
+
+
+    
+
+    
+    
     --surf-alpha:62%; --surf-alpha-2:48%;
-  }
+    /* 背景：点阵底纹 + 双层柔光（"点阵云"），token 含义见 :root */
+  --bg-texture:radial-gradient(circle at 1px 1px, color-mix(in srgb,var(--c-text) 7%,transparent) .9px, transparent 0);
+  --bg-texture-size:14px 14px;
+  --bg-fx-name:dotDrift; --bg-fx-dur:26s;
+  --bg-glow:
+      radial-gradient(70% 55% at 30% 34%, color-mix(in srgb,var(--c-accent) 12%,transparent), transparent 70%),
+      radial-gradient(65% 50% at 72% 66%, color-mix(in srgb,var(--c-warn) 12%,transparent), transparent 72%);
+  --bg-glow-size:100% 100%;
+  --bg-glow-name:glowPan; --bg-glow-dur:12s;
+  --bg-glow2:radial-gradient(62% 50% at 54% 46%, color-mix(in srgb,var(--c-accent) 8%,transparent), transparent 70%);
+  --bg-glow2-name:glowPanNear; --bg-glow2-dur:8s;
+}
 
   /* ---------- 2) night：安静的夜色 ----------
      与 neon 的分工：night 是"关掉装饰的深色"，neo 是"通电的 HUD"。
@@ -248,10 +258,9 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --glow-accent:0 0 14px -10px color-mix(in srgb,var(--c-accent) 45%,transparent);
     --glow-tile:0 0 16px -11px color-mix(in srgb,var(--c-accent) 40%,transparent);
     /* 不铺网格（那是 neon 的语言），只留一层极淡顶部冷光，缓慢呼吸 */
-    --bg-texture:radial-gradient(120% 62% at 50% -12%,
-      color-mix(in srgb,var(--c-info) 9%,transparent), transparent 62%);
-    --veil-ink:color-mix(in srgb,var(--c-text) 13%,transparent);
-    --bg-fx-name:breathe; --bg-fx-dur:12s; --bg-fx-ease:ease-in-out;
+
+
+
     /* 冷色极光：夜间最合适的动效——暗底上极淡的光在缓慢移位 */
     /* 暗色皮肤：用浅色墨点（--c-text 本身是浅的），墨量同样很低。
        深底上亮度变化更敏感，所以墨量比 paper 再降一档。 */
@@ -260,7 +269,18 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --font-num:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
     --font-num-weight:600;
     --font-num-spacing:-.2px;
-  }
+  
+    --bg-texture:radial-gradient(120% 62% at 50% -12%,
+      color-mix(in srgb,var(--c-info) 9%,transparent), transparent 62%);
+    --bg-texture-size:auto;
+    --bg-fx-name:breathe; --bg-fx-dur:12s; --bg-fx-ease:ease-in-out;
+    --bg-glow:
+      radial-gradient(76% 60% at 30% 34%, color-mix(in srgb,#2A7488 16%,transparent), transparent 74%),
+      radial-gradient(70% 56% at 72% 66%, color-mix(in srgb,#5C4F8C 13%,transparent), transparent 76%);
+    --bg-glow-name:glowPan; --bg-glow-dur:10s;
+    --bg-glow2:radial-gradient(60% 48% at 54% 46%, color-mix(in srgb,#2A7488 12%,transparent), transparent 72%);
+    --bg-glow2-name:glowPanNear; --bg-glow2-dur:7s;
+}
 
 
   /* ---------- 4) contrast：高对比，户外强光下可读 ---------- */
@@ -324,14 +344,20 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
       linear-gradient(color-mix(in srgb,var(--c-accent) 7%,transparent) 1px, transparent 1px),
       linear-gradient(90deg, color-mix(in srgb,var(--c-accent) 7%,transparent) 1px, transparent 1px);
     --bg-texture-size:auto, 30px 30px, 30px 30px;
-    /* 网格 26px 周期 → 漂移一整格无缝；再加一条扫描线周期性扫过 */
-    --veil-ink:color-mix(in srgb,var(--c-accent) 11%,transparent);
+    /* 网格保持静止（网格带非周期性的顶部渐隐，整体漂移循环会跳），
+       动感交给上面的扫描线与下面的柔光 */
     --bg-fx-name:none;
     --bg-fx2:linear-gradient(180deg,
       transparent 47%, color-mix(in srgb,var(--c-accent) 13%,transparent) 50%, transparent 53%);
     --bg-fx2-name:scanSweep; --bg-fx2-dur:6s;
-    /* 电光网点：HUD 的"能量场"。青色墨点，墨量极低 —— 彩色只有一种色相，
-       不会读成"彩色色块"。 */
+    /* 柔光 = HUD 的"能量场"：两层青/紫极低墨量，纵向慢漂 → 网格线上有明暗流动 */
+    --bg-glow:
+      radial-gradient(74% 58% at 26% 32%, color-mix(in srgb,#12889B 13%,transparent), transparent 74%),
+      radial-gradient(68% 54% at 74% 68%, color-mix(in srgb,#8A3A7A 10%,transparent), transparent 76%);
+    --bg-glow-size:100% 100%;
+    --bg-glow-name:glowPan; --bg-glow-dur:10s;
+    --bg-glow2:radial-gradient(58% 46% at 54% 46%, color-mix(in srgb,#12889B 8%,transparent), transparent 72%);
+    --bg-glow2-name:glowPanNear; --bg-glow2-dur:8s;
     --surf-alpha:55%; --surf-alpha-2:45%;
     /* 未来感：等宽数字 + 拉开字距，像 HUD 读数 */
     --font-num:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
@@ -380,32 +406,51 @@ header{
   animation:var(--bg-fx-name) calc(var(--bg-fx-dur) / var(--motion-speed)) var(--bg-fx-ease) infinite;
   will-change:transform,opacity;
 }
-/* ===== 背景动效：纵向扫描带 =====
-   为什么换掉"软光带"：软光带墨量 10%、40vh 高、24s 扫一遍，在没有 UI 的截图里
-   能测到 20 级摆动，但真实页面里卡片盖住 85% 面积、只剩 16px 缝隙，
-   而且它没有边——人眼没有可跟踪的边缘，所以"还是没效果"。
+/* 点阵底纹纵向漂移：位移 = 3 个贴片周期（14px × 3 = 42px），循环处无缝 */
+@keyframes dotDrift{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(0,42px,0)}
+}
+/* 网格纵向漂移：位移 = 2 个网格周期（26px × 2 = 52px） */
+@keyframes gridDrift{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(0,52px,0)}
+}
+/* 远层柔光：慢、位移小（远的东西动得慢）；只有纵向位移 + scale，没有 X */
+@keyframes glowPan{
+  from{transform:translate3d(0,-28%,0) scale(1)}
+  to{transform:translate3d(0,28%,0) scale(1.26)}
+}
+/* 近层柔光：快、位移大 → 两层速度差就是纵深感的来源 */
+@keyframes glowPanNear{
+  from{transform:translate3d(0,30%,0) scale(1.1)}
+  to{transform:translate3d(0,-30%,0) scale(1)}
+}
 
-   现在改成"窄 + 亮 + 快"：
-     · 高度 14vh（窄），核心墨量 13%（亮），9 秒扫过整屏（快）
-     · 上下都有 40% 的渐隐边，所以它是一条"有边缘的亮带"，
-       人眼靠边缘判断运动，而不是靠亮度差
-     · 仍然只有 translate3d(0,Y,0)：X 恒为 0，不会触发 Safari 条带合成的横向亮带
-     · 双实例错开半个周期（::after 负 delay）→ 屏幕上永远有一条在扫
-   这是"扫描"而不是"形状"：左右贯通整屏、没有闭合轮廓。 */
-.bg-veil{
-  position:fixed;left:-10%;right:-10%;top:0;height:14vh;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,transparent 0%,var(--veil-ink) 42%,var(--veil-ink) 58%,transparent 100%);
-  animation:veilSweep calc(9s / var(--motion-speed)) linear infinite;
+/* 光斑层（"云"）：远近两层柔光，速度与位移幅度不同 → 视差纵深。
+   位移全是纵向 + scale：translate3d(0,Y,0) scale(k)，X 恒为 0。
+   层比视口大（远处 inset:-25%、近处 inset:-45%），纵向位移不会露边。 */
+.bg-fx::before{
+  content:'';position:absolute;inset:-25%;
+  background-image:var(--bg-glow);
+  background-size:var(--bg-glow-size);
+  background-repeat:no-repeat;
+  animation:var(--bg-glow-name) calc(var(--bg-glow-dur) / var(--motion-speed)) ease-in-out infinite alternate;
   will-change:transform;
 }
-.bg-veil::after{
-  content:'';position:absolute;inset:0;background:inherit;
-  animation:veilSweep calc(9s / var(--motion-speed)) linear infinite;
-  animation-delay:calc(-4.5s / var(--motion-speed));
+.bg-fx .l-near{
+  position:absolute;inset:-45%;pointer-events:none;
+  background-image:var(--bg-glow2);
+  background-size:var(--bg-glow-size);
+  background-repeat:no-repeat;
+  animation:var(--bg-glow2-name) calc(var(--bg-glow2-dur) / var(--motion-speed)) ease-in-out infinite alternate;
+  will-change:transform;
 }
-@keyframes veilSweep{
-  from{transform:translate3d(0,-20vh,0)}
-  to{transform:translate3d(0,105vh,0)}
+.bg-fx::after{
+  content:'';position:absolute;inset:0;
+  background-image:var(--bg-fx2);
+  animation:var(--bg-fx2-name) calc(var(--bg-fx2-dur) / var(--motion-speed)) linear infinite;
+  will-change:transform;
 }
 
 /* ===== 常驻状态条 =====
@@ -905,9 +950,9 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
    "关"：直接掐掉所有背景动画（比把 --motion-speed 设 0 安全，calc(时长/0) 是无效值）。
    "柔和"：时长 ÷0.6（变慢），"明显"：÷1。 */
 html[data-motion="off"] .bg-fx,
+html[data-motion="off"] .bg-fx::before,
 html[data-motion="off"] .bg-fx::after,
-html[data-motion="off"] .bg-veil,
-html[data-motion="off"] .bg-veil::after{animation:none !important}
+html[data-motion="off"] .bg-fx .l-near{animation:none !important}
 html[data-motion="soft"]{--motion-speed:.6}
 
 /* 切页入场：轻微上浮 + 淡入，给"点了有反应"的反馈 */
@@ -936,10 +981,9 @@ html[data-motion="soft"]{--motion-speed:.6}
 }
 
 [data-skin="contrast"] .bg-fx,
+[data-skin="contrast"] .bg-fx::before,
 [data-skin="contrast"] .bg-fx::after,
-[data-skin="contrast"] .bg-veil,
-[data-skin="contrast"] .bg-veil::after{animation:none !important}
-[data-skin="contrast"] .bg-veil{display:none}
+[data-skin="contrast"] .bg-fx .l-near{animation:none !important;display:none}
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}
@@ -948,14 +992,9 @@ html[data-motion="soft"]{--motion-speed:.6}
 </head>
 <body>
 
-<div class="bg-fx" aria-hidden="true"></div>
-<div class="bg-veil" aria-hidden="true"></div>
+<div class="bg-fx" aria-hidden="true"><i class="l-near"></i></div>
 
-<!-- 顶栏 = 品牌 + 能源摘要 + 连接/时钟。
-     能源摘要原来是一条独立的 28px 状态条，现在并进顶栏：
-     ① 省 28px 纵向空间；② 不会再出现"只有三项、显得空"的问题；
-     ③ 电量/电流/续航本来就该是常驻信息，顶栏是最常驻的位置。
-     只放三项：电量、净电流（正充负放，带方向）、剩余时间；其余全在电池页。 -->
+<!-- 顶栏 = 品牌 + 连接状态；能源摘要在其下的常驻状态条里（两栏） -->
 <header>
   <div class="brand">
     <div class="logo">FG</div>

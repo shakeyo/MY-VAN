@@ -305,7 +305,7 @@ base64 -i /tmp/sub.woff2 | tr -d '\n'
 结论：**图案漂移再快也看不见**，因为位移尺度只有十几像素。
 真正的可见动感来自**几百像素级的大面积光斑缓慢横移**。
 
-#### 背景的最终形态：静止纹理 + 纵向扫描带（横向动效全部删除）
+#### 背景的最终形态：点阵云（静态点阵 + 双层柔光，横向动效全部删除）
 
 背景动效一共试了四代，每代都被实测反馈否掉，最后收敛到"基本静止"：
 
@@ -317,7 +317,8 @@ base64 -i /tmp/sub.woff2 | tr -d '\n'
 | 3b | 两层半调网点 + 只呼吸 | 「从左到右的效果，有点奇怪」 |
 | 4 | 静止纹理（纸纹 / 网格）+ 纵向扫描 | 「是停止了，我还是需要背景动起来」 |
 | 5 | 静止纹理 + 一条纵向**软光带**（10% 墨、40vh 高、24s 往复） | 「还是没效果」 |
-| 6 | **纵向扫描带**（13% 墨、14vh 高、9s 扫一遍、双带错相） | 当前版本 |
+| 6 | 纵向扫描带（13% 墨、14vh 高、9s 扫一遍、双带错相） | 「有效果，但我不喜欢，还不如最前面的点阵云」 |
+| 7 | **点阵云**：静态点阵底纹 + 双层柔光纵向慢漂（视差） | 当前版本 |
 
 ##### ⚠ 陷阱一：背景层禁止横向平移（"从左到右"的真正来源）
 
@@ -355,49 +356,60 @@ Safari 的合成器会把它们按条带重绘，于是横向位移被读成**�
 > 模糊 2px 后 ≤3 级、模糊 12px 后 ≤1 级。修前 7 / 5（明显块状），修后 2 / 0。
 > 详见"纸纹的验收判据"。
 
-##### 现行方案：纵向扫描带（`.bg-veil`）
+##### 现行方案：点阵云（`.bg-fx` + `.bg-fx::before` + `.bg-fx .l-near`）
 
-第 5 代的软光带在"隐藏 UI"的截图里能测到 20 级区域均值摆动，用户却反馈
-「还是没效果」。原因很具体：
+第 6 代的扫描带"有效果"——用户确认看得见了——但回复是「我不喜欢，还不如最前面的
+**点阵云**」。这是最重要的一条产品判断：**动效首先得是用户认得的那个意象**，
+其次才是强度。扫描带是"扫描仪"，点阵云是"纸面上的云"，后者才是这套设计的语言。
 
-> **真实页面里卡片盖住了约 85% 的面积**，光带只在那 16px 的缝隙里露出一点；
-> 而且软光带没有边——人眼判断运动靠的是**可跟踪的边缘**，不是亮度差。
-
-所以第 6 代换成"窄 + 亮 + 快"，靠边缘被看见：
+点阵云 = **静态点阵底纹** + **底下两层缓慢漂移的柔光**：
 
 ```css
-.bg-veil{
-  position:fixed;left:-10%;right:-10%;top:0;height:14vh;
-  background:linear-gradient(180deg,transparent,var(--veil-ink) 42%,
-             var(--veil-ink) 58%,transparent);
-  animation:veilSweep calc(9s / var(--motion-speed)) linear infinite;
+/* 底纹：静态点阵，14px 网屏、7% 墨、0.9px 点 → 提供"点阵"的语言 */
+--bg-texture:radial-gradient(circle at 1px 1px,
+  color-mix(in srgb,var(--c-text) 7%,transparent) .9px, transparent 0);
+--bg-texture-size:14px 14px;
+--bg-fx-name:dotDrift; --bg-fx-dur:26s;   /* 点阵以 1.6px/s 极慢上移 */
+
+/* 柔光：远层 inset:-25%，慢、位移小；近层 inset:-45%，快、位移大 → 视差 */
+.bg-fx::before{ animation:glowPan 12s ease-in-out infinite alternate; }
+.bg-fx .l-near{ animation:glowPanNear 8s ease-in-out infinite alternate; }
+@keyframes glowPan{
+  from{transform:translate3d(0,-28%,0) scale(1)}
+  to{transform:translate3d(0,28%,0) scale(1.26)}
 }
-.bg-veil::after{ /* 第二条：相位差半周期 → 屏幕上永远有一条在扫 */
-  content:'';position:absolute;inset:0;background:inherit;
-  animation:veilSweep calc(9s / var(--motion-speed)) linear infinite;
-  animation-delay:calc(-4.5s / var(--motion-speed));
-}
-@keyframes veilSweep{
-  from{transform:translate3d(0,-20vh,0)} to{transform:translate3d(0,105vh,0)}
+@keyframes glowPanNear{
+  from{transform:translate3d(0,30%,0) scale(1.1)}
+  to{transform:translate3d(0,-30%,0) scale(1)}
 }
 ```
 
-它仍然满足全部禁令：只有 `translateY`（X 恒 0，不触发 Safari 横向亮带）、
-左右贯通整屏没有闭合轮廓（不会被读成"一块东西"）、纯渐变没有网点（不会闪）、
-单色低墨量（不是色块）。各皮肤墨量：paper 13%、night 13%、neon 主色 11%。
+**关键改动：把所有位移改成纵向。** 最早的版本是横向漂移（±18% X），真机上会被
+Safari 的条带合成读成"一道从左到右的亮带"。点阵云的**意象**不需要横向移动——
+纵向漂移 + scale 一样有视差，而且安全。
 
-##### ⚠ 验收方法：隐藏 UI 的截图会骗你
+各皮肤墨量（对比度余量决定上限，都实测过 AA）：
 
-这一条是踩了两次坑才定的：**背景动效必须在真实页面（UI 可见）下、用逐像素帧差验证**。
-
-| 指标 | 隐藏 UI 的区域均值 | 真实页面逐像素帧差 |
+| 皮肤 | 底纹 | 柔光墨量（远/近） |
 |---|---|---|
-| 软光带（第 5 代） | 摆动 20 级（看着"足够"） | 实际几乎不可见 |
-| 扫描带（第 6 代） | — | 每 0.9s 有 7.6–8.3% 像素变化 >8 级，最大 147 级 |
+| paper | 14px 点阵 7% | accent 12% + warn 12% / accent 8% |
+| night | 顶部冷色渐隐 9% | #2A7488 16% + #5C4F8C 13% / #2A7488 12% |
+| neon | 30px 网格 7% + 顶部 14% | #12889B 13% + #8A3A7A 10% / #12889B 8% |
+| contrast | 无 | 无（整层 `display:none`） |
 
-判据：真实页面下，**相邻帧平均绝对差 ≥1.5 级**、**变化 >8 级的像素占比 ≥5%**，
-才算"肉眼能看出背景在动"。第 6 代实测 paper 1.77 / 7.6%、night 1.89 / 8.3%、
-neon 1.30 / 4.5%（neon 有网格线，变化被平均到更少像素上）。
+⚠ 深色皮肤的柔光要**靠提速而不只是加墨**：墨量加到 20% 以上，夜色会变成"彩色雾"，
+那就又回到"很多色块"的老问题。night 最终是 16% 墨 + 10s 周期。
+
+##### 两套动效要用两种指标验收
+
+| 动效类型 | 该看的指标 | 判据 |
+|---|---|---|
+| 有硬边的（扫描带、扫描线） | 逐像素帧差 | 平均差 ≥1.5、>8 级像素 ≥5% |
+| 平滑的（点阵云、柔光） | 区域均值摆动 | 可见缝隙/页面上 ≥5 级 |
+
+点阵云实测：区域均值摆动 paper 2.4–15.8 级（左右缝隙 15.8/11.5）、night 1.9–5.7、
+neon 3.4–10.7；逐像素帧差只有 paper 1.12 / neon 0.85 / night 0.79 ——
+这不是"动得不够"，而是平滑动效本来就该用区域亮度看，用帧差会低估它。
 
 ##### 那"动感"还剩什么
 
