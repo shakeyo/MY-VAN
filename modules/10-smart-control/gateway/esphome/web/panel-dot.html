@@ -989,7 +989,11 @@ nav button.active{
 }
 /* 底栏电池 tab：电量直接画在电池图标里面（5 格，每格 20%），
    不额外加徽标、不写数字——底栏本来就窄，图标自己会说话。 */
-.nav-batt .cell{fill:currentColor;stroke:none;opacity:.2;transition:opacity .3s ease}
+/* 电池外壳跟随主题（currentColor = 底栏该项的字色）；
+   只有里面的格子用电量语义色（绿/琥珀/红），否则整枚图标会绿得突兀。 */
+.nav-batt .shell{stroke:currentColor}
+.nav-batt .cell{fill:var(--batt-col,currentColor);stroke:none;opacity:.2;
+  transition:opacity .3s ease,fill .4s ease}
 .nav-batt .cell.on{opacity:1}
 nav button.active .nav-badge{background:var(--c-accent);color:var(--c-shell)}
 nav button.active .ic{color:var(--c-accent)}
@@ -1200,8 +1204,7 @@ html[data-motion="soft"]{--motion-speed:.6}
 [data-skin="ios6"] .statusbar b,[data-skin="ios6"] .statusbar .k{color:#2A2A2A}
 /* 卡片：白瓷面 + 发丝描边 + 顶部 1px 高光 */
 [data-skin="ios6"] .card,
-[data-skin="ios6"] .stat,
-[data-skin="ios6"] .set-row{
+[data-skin="ios6"] .stat{
   background:linear-gradient(180deg,#FFFFFF,#FAFBFC);
   border:1px solid #9AA5B1;
   box-shadow:0 1px 0 rgba(255,255,255,.95) inset, 0 1px 2px rgba(0,0,0,.16);
@@ -1272,6 +1275,10 @@ html[data-motion="soft"]{--motion-speed:.6}
   color:#3A3A3A;text-shadow:0 1px 0 rgba(255,255,255,.85);
 }
 [data-skin="ios6"] .sec-note{color:#4A4A4A}
+[data-skin="ios6"] .set-row{
+  background:none;border:0;border-bottom:1px solid rgba(0,0,0,.14);border-radius:0;box-shadow:none;
+}
+[data-skin="ios6"] .set-row:last-child{border-bottom:0}
 
 /* ===== ios26 专属：Liquid Glass =====
    玻璃 = 折射 + 棱线 + 大圆角，三件事必须同时成立，少一个就变成"半透明的纸"。
@@ -1281,7 +1288,6 @@ html[data-motion="soft"]{--motion-speed:.6}
 [data-skin="ios26"] .tile,
 [data-skin="ios26"] .scene-btn,
 [data-skin="ios26"] .stat,
-[data-skin="ios26"] .set-row,
 [data-skin="ios26"] .chip,
 [data-skin="ios26"] .skin-btn,
 [data-skin="ios26"] .pill,
@@ -1361,6 +1367,13 @@ html[data-motion="soft"]{--motion-speed:.6}
 }
 [data-skin="ios26"] .switch[aria-checked="true"]{background:#0A84FF;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
 [data-skin="ios26"] .sec-title{color:#26313F}
+/* 设置行（系统与维护 / 光伏控制）：行是"卡片内的横条"，不是独立卡片。
+   它一旦被玻璃规则命中，就会得到 1px 白边 + 直角 → 卡片里套了一排小方框。 */
+[data-skin="ios26"] .set-row{
+  background:none;border:0;border-bottom:1px solid rgba(11,18,32,.10);border-radius:0;
+  box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+}
+[data-skin="ios26"] .set-row:last-child{border-bottom:0}
 /* 老 WebView 没有 backdrop-filter 时退化为"更实的白玻璃"：
    不做这个兜底，低端安卓上玻璃会变成一层半透明纸，字会糊。
    Safari 用的是 -webkit- 前缀，所以 @supports 里两个都要判。 */
@@ -1755,7 +1768,7 @@ html[data-motion="soft"]{--motion-speed:.6}
 <nav>
   <button data-page="home" class="active"><span class="ic" data-icon="navHome"></span>首页</button>
   <button data-page="switches"><span class="ic" data-icon="navSw"></span>开关</button>
-  <button data-page="power"><span class="ic nav-batt" id="navBatt" role="img" aria-label="电量"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.2" y="6.8" width="17.2" height="10.4" rx="2.6"/><path d="M21.6 10.4v3.2"/><rect class="cell" x="4.2" y="8.8" width="2.2" height="6.4" rx=".7"/><rect class="cell" x="6.9" y="8.8" width="2.2" height="6.4" rx=".7"/><rect class="cell" x="9.6" y="8.8" width="2.2" height="6.4" rx=".7"/><rect class="cell" x="12.3" y="8.8" width="2.2" height="6.4" rx=".7"/><rect class="cell" x="15" y="8.8" width="2.2" height="6.4" rx=".7"/></svg></span>电池</button>
+  <button data-page="power"><span class="ic nav-batt" id="navBatt" role="img" aria-label="电量"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="shell" x="2.2" y="6.8" width="17.2" height="10.4" rx="2.6"/><path class="shell" d="M21.6 10.4v3.2"/><rect class="cell" x="4.2" y="8.8" width="2.2" height="6.4" rx=".7"/><rect class="cell" x="6.9" y="8.8" width="2.2" height="6.4" rx=".7"/><rect class="cell" x="9.6" y="8.8" width="2.2" height="6.4" rx=".7"/><rect class="cell" x="12.3" y="8.8" width="2.2" height="6.4" rx=".7"/><rect class="cell" x="15" y="8.8" width="2.2" height="6.4" rx=".7"/></svg></span>电池</button>
   <button data-page="settings"><span class="ic" data-icon="navGear"></span>设置</button>
 </nav>
 
@@ -2043,7 +2056,8 @@ function renderPower(){
   for(let i=0;i<navCells.length;i++) navCells[i].classList.toggle('on',i<lit);
   const nb=$('navBatt');
   if(nb){
-    nb.style.color=battColor(pct);
+    /* 只把语义色给格子，外壳继续用 currentColor（主题色） */
+    nb.style.setProperty('--batt-col',battColor(pct));
     nb.setAttribute('aria-label','电量 '+pct+'%');   /* 数字只留给读屏和悬停 */
     nb.title='电量 '+pct+'%';
   }

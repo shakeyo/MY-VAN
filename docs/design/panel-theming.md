@@ -1186,3 +1186,63 @@ ios6 用同一套结构、换塑料语汇：凹槽 `linear-gradient(#AEB8C2,#D6D
 - 新增"直角白块"扫描：设置页内 `background` 接近纯白且 `radius<2px` 的元素
   （只剩皮肤选择器里被父级 `overflow:hidden` 裁圆的三色色条，属正常）
 - CSS 390 条规则（无解析损失）
+
+#### 5.11 电池外壳跟主题 + 设置行的"直角白框"真凶
+
+##### A. 电池：外壳跟主题，只有格子带语义色
+
+上一版整个图标都用 `battColor()` 染成绿/琥珀/红 → 底栏里凭空多一块彩色，**很突兀**。
+
+拆成两层：
+
+```css
+.nav-batt .shell{stroke:currentColor}          /* 外壳 = 底栏该项的字色（主题/选中强调色） */
+.nav-batt .cell{fill:var(--batt-col,currentColor)}  /* 格子 = 语义色 */
+```
+
+```js
+nb.style.setProperty('--batt-col', battColor(pct));   // 只给格子
+// 不再 nb.style.color = battColor(pct)
+```
+
+实测：ios26 未选中外壳 `rgb(85,98,116)`（主题次要色）、选中 `rgb(10,95,192)`（强调蓝），
+格子始终 `rgb(27,127,69)`（绿）。整枚图标不再"独立于主题"。
+
+##### B. 设置行的白框：`.set-row` 被玻璃选择器误伤
+
+用户：`系统与维护几个配置项还是直角加背景色不协调`。
+
+真凶不是 chip，是 **`.set-row` 自己**。玻璃皮肤的选择器是一长串：
+
+```css
+[data-skin="ios26"] .card, .tile, .stat, .set-row, .chip, … {
+  border:1px solid rgba(255,255,255,.72); border-radius:…; box-shadow:…;
+}
+```
+
+`.set-row` 混在这串里 → 每个设置行都得到 **1px 白边 + 直角**，
+于是 26px 圆角卡片里套了一排"小方框"，行与行之间白线还互相压着。
+ios6 的瓷白规则里也误带了 `.set-row` → 同样的方框（还更明显，因为它是实心白）。
+
+修法两步：
+
+1. 把 `.set-row` 从这两处的选择器组里**摘掉**
+2. 再显式声明它的正确定位：
+
+```css
+[data-skin="ios26"] .set-row{
+  background:none;border:0;border-bottom:1px solid rgba(11,18,32,.10);
+  border-radius:0;box-shadow:none;backdrop-filter:none;
+}
+[data-skin="ios26"] .set-row:last-child{border-bottom:0}
+```
+
+> 教训：玻璃/瓷白这类"给一大串元素统一加边框阴影"的规则，**只能列真正的卡片
+> 级元素**。行、工具栏、内联容器一旦混进去，就会得到"卡片内部的卡片轮廓"，
+> 表现为直角白框。加进选择器列表前先问一句：这个元素本身就是一张卡片吗？
+
+##### 验证
+
+- 6 皮肤 × 设置页扫描：`.set-row` 上/左/右边框宽度 = 0、底色透明、无投影、无圆角
+- 5 尺寸 × 6 皮肤 × 4 页面零越界、零 JS 报错
+- CSS 395 条规则（无解析损失）
