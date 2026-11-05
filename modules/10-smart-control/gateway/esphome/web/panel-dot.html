@@ -591,6 +591,7 @@ section{margin-bottom:var(--sp-6)}
 /* 占位卡：无实体、不可点 */
 .tile.disabled{border-style:dashed;opacity:.55;cursor:default;background:transparent}
 .tile.disabled:active{transform:none}
+.tile .tv{display:none}   /* 默认皮肤不显示读数；neon 打开 */
 .tile .hint-txt{font-size:var(--fs-micro);line-height:1.3;letter-spacing:.2px;color:var(--c-text-3);text-align:center}
 .hint{font-size:var(--fs-label);color:var(--c-text-2);text-align:left;margin-top:var(--sp-2);line-height:1.6;
   /* 中文长句左对齐才顺；居中只适合极短说明 */
@@ -1049,14 +1050,14 @@ html[data-motion="soft"]{--motion-speed:.6}
 }
 [data-skin="neon"] .tile.on::before,
 [data-skin="neon"] .scene-btn.active::before{opacity:1}
-/* 状态码：右下角，等宽、拉开字距 —— 仪表读数感，而不是"按钮文字" */
-[data-skin="neon"] .tile::after{
-  content:'OFF';position:absolute;right:6px;bottom:5px;
-  font-family:var(--font-num);font-size:9px;line-height:1;letter-spacing:1px;
-  color:var(--c-text-3);opacity:.7;pointer-events:none;transition:color .15s,opacity .15s;
+/* 读数：右下角等宽小字 "ON 3m" / "OFF" —— 仪表读数，不是按钮文案 */
+[data-skin="neon"] .tile .tv{
+  display:block;position:absolute;right:6px;bottom:5px;
+  font-family:var(--font-num);font-size:9px;line-height:1;letter-spacing:.8px;
+  color:var(--c-text-3);opacity:.72;pointer-events:none;
+  transition:color .15s,opacity .15s;font-variant-numeric:tabular-nums;
 }
-[data-skin="neon"] .tile.on::after{content:'ON';color:var(--c-accent);opacity:1}
-[data-skin="neon"] .tile.disabled::after{content:''}
+[data-skin="neon"] .tile.on .tv{color:var(--c-accent);opacity:1}
 /* 状态灯：圆点 → 1px 描边的方形 LED（技术语汇里"方"比"圆"更像指示灯） */
 [data-skin="neon"] .tile .mark{
   width:5px;height:5px;border-radius:1px;background:transparent;
@@ -1067,6 +1068,11 @@ html[data-motion="soft"]{--motion-speed:.6}
 }
 /* 激活时标签提亮：余光里也能分辨开关 */
 [data-skin="neon"] .tile.on .lb{color:var(--c-text)}
+/* 按下：角标瞬间全亮、图标回缩、内描边压一层 —— 给"通断"一个手感 */
+[data-skin="neon"] .tile .ic{transition:color .15s,opacity .15s,transform .12s ease-out}
+[data-skin="neon"] .tile:active::before{opacity:1;transition-duration:0s}
+[data-skin="neon"] .tile:active .ic{transform:scale(.94)}
+[data-skin="neon"] .tile:active{box-shadow:inset 0 0 0 1px var(--c-accent)}
 /* 场景卡：状态值用等宽；"按键"角签改成工程标注 */
 [data-skin="neon"] .scene-btn .st{font-family:var(--font-num);letter-spacing:.8px}
 [data-skin="neon"] .scene-btn.readonly::after{
@@ -1592,7 +1598,8 @@ function renderGrid(el, keys){
     b.dataset.key=k;
     b.setAttribute('aria-pressed',String(!!on));
     b.innerHTML=`<span class="ic">${ICONS[k]||ICONS.bolt}</span>`+
-                `<span class="lb">${NAMES[k]||k}</span><span class="mark"></span>`;
+                `<span class="lb">${NAMES[k]||k}</span>`+
+                `<span class="tv"></span><span class="mark"></span>`;
     b.addEventListener('click',()=>toggleSwitch(k,b));
     el.appendChild(b);
   });
@@ -1604,17 +1611,46 @@ function renderAllSwitches(){
   renderGrid($('water-grid'),GROUPS.water);
   renderGrid($('device-grid'),GROUPS.device);
   renderEnergySlots();
+  updateTileReadouts();
 }
 function renderEnergySlots(){
   const el=$('energy-grid'); if(!el) return;
   el.innerHTML='';
   ENERGY_SLOTS.forEach(s=>el.appendChild(slotTile(s)));
 }
+/* 开关读数：ON + 已开启时长。
+   设备没有给"每个回路"的功率，所以读数用**本地计时**做——
+   它是真实可解释的信息（这个灯开了多久），比编一个假的瓦数诚实。
+   页面重新加载后从 0 开始计，这一点在文档里写明。 */
+const SINCE = {};
+function fmtDur(ms){
+  const sec=Math.floor(ms/1000);
+  if(sec<60) return sec+'s';
+  const min=Math.floor(sec/60);
+  if(min<60) return min+'m';
+  const h=Math.floor(min/60), m=min%60;
+  return h+'h'+(m?String(m).padStart(2,'0'):'');
+}
+function updateTileReadouts(){
+  document.querySelectorAll('.tile[data-key]').forEach(t=>{
+    const k=t.dataset.key, on=!!state.switches[k], tv=t.querySelector('.tv');
+    if(!tv) return;
+    if(on){
+      if(!SINCE[k]) SINCE[k]=Date.now();
+      tv.textContent='ON '+fmtDur(Date.now()-SINCE[k]);
+    }else{
+      delete SINCE[k];
+      tv.textContent='OFF';
+    }
+  });
+}
 function syncTile(k,on){
+  if(on){ if(!SINCE[k]) SINCE[k]=Date.now(); } else { delete SINCE[k]; }
   document.querySelectorAll(`.tile[data-key="${k}"]`).forEach(t=>{
     t.classList.toggle('on',on);
     t.setAttribute('aria-pressed',String(!!on));
   });
+  updateTileReadouts();
 }
 async function toggleSwitch(k,btn){
   const e=ENTITIES[k]; if(!e) return;
@@ -1625,6 +1661,8 @@ async function toggleSwitch(k,btn){
   state.switches[k]=on;
   syncTile(k,on);
 }
+
+setInterval(updateTileReadouts,10000);
 
 /* ---------- 情景模式（只读，档位由物理按键驱动） ---------- */
 function renderScenes(){

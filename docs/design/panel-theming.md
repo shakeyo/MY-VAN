@@ -868,3 +868,50 @@ neon 本来只有"数字"是等宽（`--font-num`），标签是比例字体，�
 
 ⚠ 注意 `.tile.on` 里写了 `background:var(--c-card)`（shorthand），会把背景图清掉；
 neon 的受光渐隐写在其后、同特异性，靠**源码顺序**取胜。以后调整顺序要复查这一点。
+
+#### 5.6 neon 按钮的"活气"：按下手感 + 角上读数
+
+用户批准的两个方向（A + B）。
+
+##### A. 按下微动效（纯 CSS，40 行）
+
+```css
+[data-skin="neon"] .tile:active::before{opacity:1;transition-duration:0s}  /* 角标瞬间全亮 */
+[data-skin="neon"] .tile:active .ic{transform:scale(.94)}                  /* 图标回缩 */
+[data-skin="neon"] .tile:active{box-shadow:inset 0 0 0 1px var(--c-accent)}/* 内描边压一层 */
+```
+
+关键点是**「瞬时」**：角标用 `transition-duration:0s` 直接跳到全亮，不做渐变。
+按下的反馈必须是即时的，任何 100ms 以上的渐变都会被读成"卡"。
+
+##### B. 角上读数：`ON 3m` / `OFF`
+
+设备没有提供**每个回路**的功率，所以读数用「已开启时长」——真实可解释，
+比编一个假瓦数诚实。实现：
+
+- 格子模板里加一个真实元素 `<span class="tv">`（不能用 `::after`，因为内容是动态的）
+- `SINCE[k]` 记录每次变 ON 的时间戳，`updateTileReadouts()` 每 10s 刷一次
+- 时长格式：`<60s → 30s`、`<60m → 12m`、再往上 `1h05`
+- `.tv` 默认 `display:none`，只有 neon 打开；其他皮肤仍是纯图标格子
+
+```js
+function updateTileReadouts(){
+  document.querySelectorAll('.tile[data-key]').forEach(t=>{
+    const k=t.dataset.key, on=!!state.switches[k], tv=t.querySelector('.tv');
+    if(!tv) return;
+    if(on){ if(!SINCE[k]) SINCE[k]=Date.now();
+            tv.textContent='ON '+fmtDur(Date.now()-SINCE[k]); }
+    else  { delete SINCE[k]; tv.textContent='OFF'; }
+  });
+}
+```
+
+⚠ 已知局限：读数从**页面加载后**开始计时，刷新会归零（设备不带"开启时刻"字段）。
+如果以后固件在开关实体上暴露 `last_changed`，这里直接换成真实时间差即可。
+
+##### 为什么不做"切角 / 3D 凹凸 / 拟物按键"
+
+- 切角会裁掉 `box-shadow`，而 neon 激活态发光全靠它
+- 凹凸/拟物与"点阵 + 线条"的平面语言冲突（前几轮已经因为"色块""密集"被否过）
+
+按钮的"活"来自**状态可见 + 反馈即时**，不是来自材质堆叠——这是这一轮的核心结论。
