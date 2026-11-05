@@ -348,10 +348,11 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     /* 30px 网格线层：上移一个完整周期（30px）后无缝回到起点 → 线条在动，
        但没有任何"亮线扫过全屏"（用户明确不要扫描效果） */
     --bg-fx2:
-      linear-gradient(color-mix(in srgb,var(--c-accent) 7%,transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in srgb,var(--c-accent) 7%,transparent) 1px, transparent 1px);
+      linear-gradient(color-mix(in srgb,var(--c-accent) 13%,transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb,var(--c-accent) 13%,transparent) 1px, transparent 1px);
     --bg-fx2-size:30px 30px, 30px 30px;
-    --bg-fx2-name:lineDrift; --bg-fx2-dur:14s;
+    /* 30px / 6s = 5px/s：能看出线在走，又不至于像画面在滚 */
+    --bg-fx2-name:lineDrift; --bg-fx2-dur:6s;
     /* 深色皮肤不要"彩色雾"：柔光只保留极低墨量的一层做厚度，
        存在感远低于线条本身（用户：深色就那个线条就可以了） */
     --bg-glow:radial-gradient(70% 55% at 30% 34%,
@@ -359,7 +360,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-glow-size:100% 100%;
     --bg-glow-name:glowPan; --bg-glow-dur:16s;
     --bg-glow2:none; --bg-glow2-name:none;
-    --surf-alpha:55%; --surf-alpha-2:45%;
+    --surf-alpha:50%; --surf-alpha-2:42%;
     /* 未来感：等宽数字 + 拉开字距，像 HUD 读数 */
     --font-num:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
     --font-num-weight:500;
