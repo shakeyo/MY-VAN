@@ -87,22 +87,13 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
   --bg-fx2:none;          /* 第二层：扫描线之类 */
   --bg-fx2-name:none;
   --bg-fx2-dur:8s;
-  /* 第三层：大面积漂移光斑——"背景在动"的主要来源。
-     图案漂移（上面两层）再快也看不见，因为位移只有十几像素；
-     真正的可见动感来自几百像素级的光斑缓慢横移。 */
-  /* 中景层：大团柔光（视差基准） */
-  --bg-glow:none;
-  /* 必须 100%：若用 200%，渐变图被放大两倍且默认从左上角铺，
-     位于 76% 的第二团光斑会被推到视口外，只剩一团在动。 */
-  --bg-glow-size:100% 100%;
-  --bg-glow-dur:16s;
-  /* 近景层：位移更大、更快的第二组光斑。
-     与中景层的速度差就是"层次感"的来源（视差）。 */
-  --bg-glow2:none;
-  --bg-glow2-dur:10s;
-  --glow-bob-dur:9s;      /* 中景竖直起伏周期（与水平周期错开） */
-  --glow2-bob-dur:7s;
-  --cloud-rot:0deg;       /* 整层旋转 → 云堤是斜的，不是同心圆 */
+  /* 背景动效 = 两层半调网点（见 .hal）。默认 none，由各皮肤给实际值。
+     网点必须"高覆盖率 + 极低墨量"：低覆盖率+高墨量会变成一颗颗孔洞（密集恐惧），
+     高覆盖率+低墨量才是"网点覆盖率变化 = 明暗变化"的半调本义。 */
+  --hal-far-img:none;  --hal-far-size:4px 4px;
+  --hal-far-mask:none; --hal-far-dur:30s; --hal-far-bob:17s;
+  --hal-near-img:none; --hal-near-size:5px 5px;
+  --hal-near-mask:none;--hal-near-dur:18s; --hal-near-bob:11s;
   /* 表面不透明度：卡片/格子有多透。100% = 完全不透（光斑只能在缝隙里看到）。 */
   --surf-alpha:100%;
   /* 凹槽表面（stat / skin-btn）：压在卡片之上，要单独给透明度，
@@ -226,19 +217,19 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-texture-size:180px 180px;
     /* 位移取整 1 个贴片（180px），循环处不会跳 */
     --bg-fx-name:dotDrift; --bg-fx-dur:44s;
-    /* 中景云堤：三团横向拉长的暖色云（阴影面），位置都在盒内 30–70%
-       （= 视口 0–100%），透明停点收到 58–66% 让云有较清楚的边界。 */
-    --bg-glow:
-      radial-gradient(34% 22% at 42% 40%, color-mix(in srgb,var(--c-accent) 13%,transparent), transparent 62%),
-      radial-gradient(30% 20% at 64% 56%, color-mix(in srgb,var(--c-warn) 11%,transparent), transparent 60%),
-      radial-gradient(26% 18% at 34% 64%, color-mix(in srgb,var(--c-accent) 9%,transparent), transparent 58%);
-    --bg-glow-dur:20s; --glow-bob-dur:9s; --cloud-rot:-7deg;
-    /* 近景云：偏白的高光云 + 一点暖调，边界更清楚、更小更快 → 纵深靠它 */
-    --bg-glow2:
-      radial-gradient(26% 17% at 56% 42%, color-mix(in srgb,#FFFFFF 62%,transparent), transparent 64%),
-      radial-gradient(22% 15% at 38% 58%, color-mix(in srgb,#FFFFFF 50%,transparent), transparent 62%),
-      radial-gradient(24% 16% at 68% 62%, color-mix(in srgb,var(--c-warn) 10%,transparent), transparent 64%);
-    --bg-glow2-dur:12s; --glow2-bob-dur:7s;
+    /* 远层：3px 细网屏，覆盖率 ~63%、墨量仅 5% → 网点之间几乎相连，读成"面"的密度
+       而不是一颗颗孔；显影区横跨大半屏、极柔，所以是"纸面某处更密"而不是一块斑。
+       位置按盒内坐标：视口 = 盒内 ×2.5 − 0.75，故盒内 30–70% = 视口 0–100%。 */
+    --hal-far-img:radial-gradient(circle at 2px 2px, color-mix(in srgb,var(--c-text) 8%,transparent) 1.45px, transparent 1.7px);
+    --hal-far-size:4px 4px;
+    --hal-far-mask:radial-gradient(62% 48% at 46% 42%, #000 0%, rgba(0,0,0,.9) 36%, transparent 80%);
+    --hal-far-dur:20s; --hal-far-bob:13s;
+    /* 近层：5px 网屏（网点更粗 = 更近），覆盖 ~61%、墨量 4%；
+       显影区更小更集中、移动更快更大 → 这就是纵深感的来源。 */
+    --hal-near-img:radial-gradient(circle at 3px 3px, color-mix(in srgb,var(--c-text) 6.5%,transparent) 2.45px, transparent 2.7px);
+    --hal-near-size:6px 6px;
+    --hal-near-mask:radial-gradient(36% 27% at 54% 46%, #000 0%, rgba(0,0,0,.95) 32%, transparent 76%);
+    --hal-near-dur:12s; --hal-near-bob:8s;
     --surf-alpha:62%; --surf-alpha-2:48%;
   }
 
@@ -271,19 +262,16 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
       color-mix(in srgb,var(--c-info) 9%,transparent), transparent 62%);
     --bg-fx-name:breathe; --bg-fx-dur:12s; --bg-fx-ease:ease-in-out;
     /* 冷色极光：夜间最合适的动效——暗底上极淡的光在缓慢移位 */
-    /* 暗色皮肤不能靠"提亮"制造动感：提亮会把页面亮度推向卡片亮度，
-       半透明后层次反转（卡片比背景还暗 = 破图）。
-       改用**亮度相近、色相不同**的云（青 ↔ 紫），色相漂移肉眼敏感，
-       总亮度仍在预算内，卡片始终比页面亮。 */
-    --bg-glow:
-      radial-gradient(36% 24% at 40% 38%, color-mix(in srgb,#2A7488 14%,transparent), transparent 64%),
-      radial-gradient(32% 22% at 66% 58%, color-mix(in srgb,#6A5B96 12%,transparent), transparent 62%),
-      radial-gradient(28% 18% at 30% 66%, color-mix(in srgb,#2A7488 10%,transparent), transparent 60%);
-    --bg-glow-dur:22s; --glow-bob-dur:11s; --cloud-rot:6deg;
-    --bg-glow2:
-      radial-gradient(22% 14% at 58% 44%, color-mix(in srgb,#3E8FA6 12%,transparent), transparent 56%),
-      radial-gradient(18% 12% at 36% 60%, color-mix(in srgb,#6A5B96 10%,transparent), transparent 54%);
-    --bg-glow2-dur:13s; --glow2-bob-dur:8s;
+    /* 暗色皮肤：用浅色墨点（--c-text 本身是浅的），墨量同样很低。
+       深底上亮度变化更敏感，所以墨量比 paper 再降一档。 */
+    --hal-far-img:radial-gradient(circle at 2px 2px, color-mix(in srgb,var(--c-text) 9%,transparent) 1.45px, transparent 1.7px);
+    --hal-far-size:4px 4px;
+    --hal-far-mask:radial-gradient(60% 46% at 44% 40%, #000 0%, rgba(0,0,0,.88) 36%, transparent 80%);
+    --hal-far-dur:22s; --hal-far-bob:14s;
+    --hal-near-img:radial-gradient(circle at 3px 3px, color-mix(in srgb,var(--c-text) 7%,transparent) 2.45px, transparent 2.7px);
+    --hal-near-size:6px 6px;
+    --hal-near-mask:radial-gradient(36% 27% at 56% 48%, #000 0%, rgba(0,0,0,.92) 32%, transparent 76%);
+    --hal-near-dur:13s; --hal-near-bob:9s;
     --surf-alpha:55%; --surf-alpha-2:45%;
     /* 数字用系统无衬线，笔画柔和尚可读 */
     --font-num:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
@@ -294,7 +282,7 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
 
   /* ---------- 4) contrast：高对比，户外强光下可读 ---------- */
   /* 高对比皮肤不做任何背景动效：它的价值就是极致清晰，飘动是干扰。
-     即使用户选了"明显"，这里也保持静止（云层直接 display:none）。 */
+     即使用户选了"明显"，这里也保持静止（网点层直接 display:none）。 */
   [data-skin="contrast"]{
     --c-page-bg:#FFFFFF; --c-shell:#FFFFFF; --c-card:#FFFFFF;
     --c-sunken:#F0F0F0;  --c-raised:#E2E2E2;
@@ -317,6 +305,8 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --font-num-weight:700;
     --font-num-spacing:-.5px;
   }
+  /* 高对比皮肤不做任何背景网点：它的价值就是极致清晰 */
+  [data-skin="contrast"] .hal{display:none}
 
 
   /* ---------- 6) neon：未来感 · 深空 + 青电光 ----------
@@ -357,17 +347,16 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --bg-fx2:linear-gradient(180deg,
       transparent 47%, color-mix(in srgb,var(--c-accent) 13%,transparent) 50%, transparent 53%);
     --bg-fx2-name:scanSweep; --bg-fx2-dur:6s;
-    /* 电光云堤：HUD 的"能量场"在视野里游移。
-       同 night：青 ↔ 品红，靠色相漂移而不是亮度。 */
-    --bg-glow:
-      radial-gradient(36% 24% at 38% 36%, color-mix(in srgb,#12889B 10%,transparent), transparent 64%),
-      radial-gradient(32% 22% at 68% 60%, color-mix(in srgb,#8A3A7A 7.5%,transparent), transparent 62%),
-      radial-gradient(26% 18% at 28% 66%, color-mix(in srgb,#12889B 6.5%,transparent), transparent 58%);
-    --bg-glow-dur:16s; --glow-bob-dur:8s; --cloud-rot:-5deg;
-    --bg-glow2:
-      radial-gradient(22% 14% at 58% 44%, color-mix(in srgb,#22D3EE 8.5%,transparent), transparent 56%),
-      radial-gradient(18% 12% at 36% 60%, color-mix(in srgb,#8A3A7A 6.5%,transparent), transparent 54%);
-    --bg-glow2-dur:10s; --glow2-bob-dur:6s;
+    /* 电光网点：HUD 的"能量场"。青色墨点，墨量极低 —— 彩色只有一种色相，
+       不会读成"彩色色块"。 */
+    --hal-far-img:radial-gradient(circle at 2px 2px, color-mix(in srgb,var(--c-accent) 7.5%,transparent) 1.45px, transparent 1.7px);
+    --hal-far-size:4px 4px;
+    --hal-far-mask:radial-gradient(60% 46% at 44% 40%, #000 0%, rgba(0,0,0,.88) 36%, transparent 80%);
+    --hal-far-dur:18s; --hal-far-bob:12s;
+    --hal-near-img:radial-gradient(circle at 3px 3px, color-mix(in srgb,var(--c-accent) 6%,transparent) 2.45px, transparent 2.7px);
+    --hal-near-size:6px 6px;
+    --hal-near-mask:radial-gradient(36% 27% at 56% 48%, #000 0%, rgba(0,0,0,.92) 32%, transparent 76%);
+    --hal-near-dur:11s; --hal-near-bob:7.5s;
     --surf-alpha:55%; --surf-alpha-2:45%;
     /* 未来感：等宽数字 + 拉开字距，像 HUD 读数 */
     --font-num:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
@@ -420,33 +409,43 @@ header{
    全程在合成层上，不重绘。位移量见 @keyframes glowPan：
    单程约为视口宽度的 13%，在 16s 内走完 —— 肉眼看得出在动。 */
 /* 中景光斑：慢、位移中等（远的东西动得慢 → 视差） */
-/* ===== 云层 =====
-   两层"云"是可见动感与纵深的主体。它们不放在 .bg-fx 里，而是独立的 fixed 层，
-   这样坐标只有一级内缩（好换算），也不会和 .bg-fx 的底纹漂移叠乘。
+/* ===== 半调网点层（背景动效的主体） =====
 
-   尺寸 250% 视口（inset:-75%），是为了能整体轻微旋转（rotate ≤8°）
-   而不露出边角。换算：视口比例 v → 盒内 (v + 0.75) / 2.5，
-   即盒内 30%..70% 正好对应视口 0%..100%。
+   为什么不是云：云是**连续彩色渐变**，而整套设计语言是**离散**的（点阵字、网点、
+   网格）。连续彩色渐变放进离散语言里，永远会被读成"一团团色块"——这是四轮反馈的
+   共同结论。半调网点是同一件事的离散版本：用点的**覆盖率**表达明暗，单色墨，
+   天然属于印刷/点阵语言，不会读成色块。
 
-   每个云层同时跑两个动画：
-   - transform: translate3d  → 水平漂移（主运动）
-   - translate: 0 ±2.5%      → 竖直起伏（独立属性，可与上面叠加）
-   两条轴周期不同（例如 20s vs 9s），合成后是李萨如式的游移，不像机械往复。 */
-.cloud{
+   结构：两层独立 fixed 层（不放进 .bg-fx，避免和底纹位移叠乘坐标）
+   - 远层 inset:-75%（250% 视口），4px 网屏，位移小、周期长
+   - 近层 同尺寸，7px 网屏（网点更粗 = 更近），位移大、周期短
+   纵深靠**网点粗细差 + 速度差**，这是点阵语言里天然的景深线索。
+
+   ⚠ 网屏角度：远 15°、近 75°（印刷里相邻分色的标准角度对），
+   两个角度不同才不会两套网格叠出摩尔纹。
+   ⚠ 显影区用 mask 的柔和径向渐变实现：点的**密度**随位置连续变化，
+   而不是整屏均匀网点。整屏均匀网点 = 壁纸 = 密集恐惧。 */
+.hal{
   position:fixed;inset:-75%;z-index:0;pointer-events:none;
-  background-repeat:no-repeat;background-size:100% 100%;
-  rotate:var(--cloud-rot,0deg);
+  background-repeat:repeat;
+  mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;
+  mask-size:100% 100%;-webkit-mask-size:100% 100%;
   will-change:transform,translate;
 }
-.cloud-mid{
-  background-image:var(--bg-glow);
-  animation:glowPan calc(var(--bg-glow-dur) / var(--motion-speed)) ease-in-out infinite alternate,
-            cloudBob calc(var(--glow-bob-dur) / var(--motion-speed)) ease-in-out infinite alternate;
+.hal-far{
+  background-image:var(--hal-far-img);
+  background-size:var(--hal-far-size);
+  rotate:15deg;
+  -webkit-mask-image:var(--hal-far-mask);mask-image:var(--hal-far-mask);
+  animation:halBreathe calc(var(--hal-far-dur) / var(--motion-speed)) ease-in-out infinite alternate;
 }
-.cloud-near{
-  background-image:var(--bg-glow2);
-  animation:glowPanNear calc(var(--bg-glow2-dur) / var(--motion-speed)) ease-in-out infinite alternate,
-            cloudBob calc(var(--glow2-bob-dur) / var(--motion-speed)) ease-in-out infinite alternate;
+.hal-near{
+  background-image:var(--hal-near-img);
+  background-size:var(--hal-near-size);
+  rotate:75deg;
+  -webkit-mask-image:var(--hal-near-mask);mask-image:var(--hal-near-mask);
+  animation:halBreathe calc(var(--hal-near-dur) / var(--motion-speed)) ease-in-out infinite alternate,
+            halDrift calc(var(--hal-near-bob) / var(--motion-speed)) ease-in-out infinite alternate;
 }
 .bg-fx::after{
   content:'';position:absolute;inset:0;
@@ -458,8 +457,45 @@ header{
    因为 calc(时长 / 0) 是无效值） */
 html[data-motion="off"] .bg-fx,
 html[data-motion="off"] .bg-fx::after,
-html[data-motion="off"] .cloud{animation:none !important}
+html[data-motion="off"] .hal{animation:none !important}
 html[data-motion="soft"]{--motion-speed:.6}
+/* ===== 常驻状态条 =====
+   只放三项：电量 / 净电流（正充负放）/ 剩余时间。
+   放在 header 之下、main 之上，四个页面都在视野内——所以首页不需要再重复一份。
+   表面半透明，让底下在动的网点能透上来。 */
+.statusbar{
+  flex:none;position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);
+  padding:5px var(--sp-4);
+  background:color-mix(in srgb,var(--c-shell) var(--surf-alpha),transparent);
+  border-bottom:1px solid var(--c-line);
+  font-size:var(--fs-label);color:var(--c-text-3);
+}
+.sb-main{display:flex;align-items:center;gap:2px}
+.sb-main b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
+  letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
+.sb-main .u{font-size:var(--fs-label)}
+.sb-track{display:block;width:38px;height:4px;border-radius:2px;margin-left:6px;
+  background:var(--c-raised);overflow:hidden}
+.sb-fill{display:block;height:100%;width:0;background:var(--c-ok);border-radius:2px;
+  transition:width .4s ease,background .4s ease}
+.sb-sep{width:1px;height:12px;background:var(--c-line-2);flex:none}
+.sb-cur{display:flex;align-items:baseline;gap:2px}
+.sb-cur b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
+  letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
+.sb-cur .dir{font-size:var(--fs-label)}
+.sb-cur.charge .dir,.sb-cur.charge b{color:var(--c-ok)}
+.sb-cur.dis .dir,.sb-cur.dis b{color:var(--c-warn)}
+.sb-time{display:flex;align-items:baseline;gap:4px}
+.sb-w{display:flex;align-items:baseline;gap:2px}
+.sb-w b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
+  letter-spacing:var(--font-num-spacing,0);color:var(--c-text)}
+.wide-only{display:none}
+@media (min-width:700px){.wide-only{display:flex}}
+.sb-clock b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
+  letter-spacing:var(--font-num-spacing,0);color:var(--c-text)}
+.sb-time b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
+  letter-spacing:var(--font-num-spacing,0);color:var(--c-text)}
+
 main{
   flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   position:relative;z-index:1;
@@ -867,6 +903,13 @@ nav button.active{
   /* 激活态统一语言：淡染底 + 强调色图标 + 顶部指示条，不再用灰块压底 */
   background:color-mix(in srgb,var(--c-accent) 8%,transparent);
 }
+nav button .nav-badge{
+  position:absolute;top:0;right:5px;
+  font-family:var(--font-num);font-size:9px;font-weight:700;line-height:1;
+  padding:2px 3px;border-radius:4px;letter-spacing:0;
+  background:color-mix(in srgb,var(--c-accent) 15%,transparent);color:var(--c-accent);
+}
+nav button.active .nav-badge{background:var(--c-accent);color:var(--c-shell)}
 nav button.active .ic{color:var(--c-accent)}
 nav button.active::after{
   content:'';position:absolute;bottom:-6px;width:20px;height:2.5px;
@@ -877,6 +920,9 @@ nav button.active::after{
 @media (max-height:520px){
   header{padding:var(--sp-1) var(--sp-4)}
   .bs{display:none}                    /* 副标题在矮屏是浪费 */
+  .statusbar{padding:3px var(--sp-4)}
+  .sb-track{width:28px}
+  .sb-time .k{display:none}
   nav{padding:var(--sp-opt) var(--sp-1) calc(var(--sp-opt) + env(safe-area-inset-bottom))}
   nav button{min-height:40px;flex-direction:row;gap:var(--sp-1);padding:var(--sp-1) var(--sp-3);font-size:var(--fs-label)}
   nav button .ic{width:16px;height:16px}
@@ -909,22 +955,23 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
   from{transform:translate3d(-18%,-9%,0) scale(1)}
   to{transform:translate3d(18%,9%,0) scale(1.18)}
 }
-/* 云层漂移：百分比相对"层自身尺寸"（250% 视口）。
-   ⚠ 安全上限不是 75%：横向每侧只有 75% 视口的余量，
-   而 75% 视口 = 层宽的 30%，再扣掉旋转占用的额度 → 取 24%。
-   超了就会在屏幕边上露出云层边界（一条硬边）。 */
-@keyframes glowPan{
-  from{transform:translate3d(-18%,-3%,0)}
-  to{transform:translate3d(18%,3%,0)}
+/* 网点层动效的两条硬规则 ─────────────────────────────────────────
+   ① 网点本身**不能平移**。细网点（4–6px）一滑动就是摩尔纹爬行，
+      看起来像屏幕在闪 —— 这是用户实测反馈"太闪了"的直接原因。
+   ② 所以动的只能是**覆盖率/密度**：让整层的墨量慢慢呼吸，
+      网点位置始终不动，视觉上是"这片的网点变密/变疏"，
+      正是半调印刷里"墨量变化"的样子。
+
+   远层呼吸周期长、幅度小；近层周期短、幅度大 + 极小漂移（±3%），
+   两者周期错开 → 密度变化不同步，就有纵深，而网点不会爬。 */
+@keyframes halBreathe{
+  from{opacity:.42}
+  to{opacity:1}
 }
-@keyframes glowPanNear{
-  from{transform:translate3d(24%,4%,0)}
-  to{transform:translate3d(-24%,-4%,0)}
-}
-/* 竖直起伏：和水平漂移周期不同，合成后是游移而不是直线往复 */
-@keyframes cloudBob{
-  from{translate:0 -2.5%}
-  to{translate:0 2.5%}
+/* 近层的极小漂移：±3% 层宽 ≈ 8% 视口，网点位移 <30px，远低于摩尔纹可见阈值 */
+@keyframes halDrift{
+  from{transform:translate3d(-3%,-1%,0)}
+  to{transform:translate3d(3%,1%,0)}
 }
 @keyframes breathe{
   0%,100%{opacity:.55;transform:scale(1)}
@@ -967,8 +1014,8 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
 <body>
 
 <div class="bg-fx" aria-hidden="true"></div>
-<i class="cloud cloud-mid" aria-hidden="true"></i>
-<i class="cloud cloud-near" aria-hidden="true"></i>
+<i class="hal hal-far" aria-hidden="true"></i>
+<i class="hal hal-near" aria-hidden="true"></i>
 
 <header>
   <div class="brand">
@@ -980,9 +1027,28 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
   </div>
   <div class="status">
     <span class="pill"><span class="dot" id="wifiDot"></span><span id="wifiTxt">WiFi</span></span>
-    <span class="clock" id="clock">--:--</span>
   </div>
 </header>
+
+<!-- 常驻状态条：所有页面都在。只放三项最该"一眼看到"的数：
+     电量、净电流（正充负放，带方向箭头）、剩余时间。
+     其余指标一律进电池页，避免同一数据出现两次。 -->
+<div class="statusbar" id="statusBar">
+  <div class="sb-main">
+    <b id="sbSoc">--</b><span class="u">%</span>
+    <i class="sb-track"><i class="sb-fill" id="sbFill"></i></i>
+  </div>
+  <div class="sb-sep"></div>
+  <div class="sb-cur" id="sbCurWrap"><span class="dir" id="sbDir">·</span><b id="sbCur">--</b><span class="u">A</span></div>
+  <div class="sb-sep"></div>
+  <div class="sb-time"><span class="k">剩余</span><b id="sbTime">--</b></div>
+  <div class="sb-sep wide-only"></div>
+  <div class="sb-w wide-only"><span class="k">发电</span><b id="sbPv">--</b><span class="u">W</span></div>
+  <div class="sb-sep wide-only"></div>
+  <div class="sb-w wide-only"><span class="k">电池</span><b id="sbV">--</b><span class="u">V</span></div>
+  <div class="sb-sep"></div>
+  <div class="sb-clock"><b id="clock">--:--</b></div>
+</div>
 
 <main>
   <!-- ============ 首页 ============ -->
@@ -1004,33 +1070,6 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
       <div class="grid" id="quick-grid"></div>
     </section>
 
-    <section>
-      <h3 class="sec-title">能源</h3>
-      <div class="card">
-        <div class="battery">
-          <div class="gauge">
-            <svg width="96" height="96" viewBox="0 0 96 96">
-              <circle class="bgc" cx="48" cy="48" r="40" fill="none" stroke-width="8"></circle>
-              <circle class="p" id="battArc" cx="48" cy="48" r="40"
-                      stroke-dasharray="251.3" stroke-dashoffset="251.3" style="stroke:var(--c-ok)"></circle>
-            </svg>
-            <div class="num"><b id="battPct">--</b><span>%</span></div>
-          </div>
-          <div class="stat-grid">
-            <div class="stat"><div class="k">电池电压</div><div class="v" id="batV">--V</div></div>
-            <div class="stat"><div class="k">充电电流</div><div class="v good" id="chgA">--A</div></div>
-            <div class="stat"><div class="k">发电功率</div><div class="v warn" id="solarW">--W</div></div>
-            <div class="stat"><div class="k">状态</div><div class="v good txt" id="chgState" title="--">--</div></div>
-            <div class="stat"><div class="k">剩余续航</div><div class="v" id="cbTime">--</div></div>
-            <div class="stat"><div class="k">剩余容量</div><div class="v" id="cbCap">--Ah</div></div>
-          </div>
-        </div>
-        <div class="solar-bar">
-          <div class="row"><span>今日发电</span><span id="dayK">-- kWh</span></div>
-          <div class="track"><div class="fill" id="solarFill" style="width:0%"></div></div>
-        </div>
-      </div>
-    </section>
   </div>
 
   <!-- ============ 开关页 ============ -->
@@ -1293,7 +1332,7 @@ nav button:focus-visible,.chip:focus-visible,.skin-btn:focus-visible,
 <nav>
   <button data-page="home" class="active"><span class="ic" data-icon="navHome"></span>首页</button>
   <button data-page="switches"><span class="ic" data-icon="navSw"></span>开关</button>
-  <button data-page="power"><span class="ic" data-icon="navBat"></span>电池</button>
+  <button data-page="power"><span class="ic" data-icon="navBat"></span>电池<b class="nav-badge" id="navSoc">--</b></button>
   <button data-page="settings"><span class="ic" data-icon="navGear"></span>设置</button>
 </nav>
 
@@ -1530,25 +1569,52 @@ function renderScenes(){
   });
 }
 
-/* ---------- 能源（首页） ---------- */
+/* ---------- 常驻状态条 ----------
+   首页不再有能源卡：那 6 个指标里，电压/充电电流/发电功率 在电池页已有一份，
+   剩余容量/剩余时间在电池页的库仑计卡里也有一份 —— 全是重复。
+   现在只把三项"随时要瞄"的数放在状态条上，所有页面都在。 */
 function renderPower(){
   const p=state.power;
-  const pct=p.batteryPercent;
-  $('battPct').textContent=pct;
-  const arc=$('battArc');
-  arc.setAttribute('stroke-dashoffset',ARC*(1-pct/100));
-  arc.setAttribute('stroke',battColor(pct));
-  $('batV').textContent=num(p.batV,1,'V');
-  $('chgA').textContent=num(p.chgA,1,'A');
-  $('solarW').textContent=num(p.solarW,0,'W');
-  $('chgState').textContent=p.state||'--';
-  $('chgState').title=p.state||'--';
-  $('dayK').textContent=num((p.dayWh||0)/1000,2,' kWh');
-  const maxDay=2000;
-  $('solarFill').style.width=Math.max(0,Math.min(100,((p.dayWh||0)/maxDay)*100))+'%';
+  const pct=Math.max(0,Math.min(100,Number(p.batteryPercent)||0));
+  $('sbSoc').textContent=pct;
+  const fill=$('sbFill');
+  fill.style.width=pct+'%';
+  fill.style.background=battColor(pct);
+  $('navSoc').textContent=pct+'%';
+  /* 净电流：正 = 充电，负 = 放电。优先库仑计（真实电池净电流），
+     没有库仑计时退回 BMS 电流；两者都没有就显示 --。
+     注意不能用 SolarChg：那是光伏控制器的输出电流，
+     同时带载时与电池净电流差很远（发 12A / 负载 5A → 只进 7A）。 */
+  const cbOn=p.cbSoc!==null;
+  const bmsOn=state.bms&&state.bms.online&&state.bms.curr!=null;
+  let cur=null;
+  if(cbOn&&p.cbCurr!=null) cur=Number(p.cbCurr);
+  else if(bmsOn) cur=Number(state.bms.curr);
+  const wrap=$('sbCurWrap');
+  wrap.classList.remove('charge','dis');
+  if(cur==null||!isFinite(cur)){
+    $('sbDir').textContent='·'; $('sbCur').textContent='--';
+  }else{
+    const a=Math.abs(cur);
+    $('sbDir').textContent = a<0.05?'·':(cur>0?'▲':'▼');
+    $('sbCur').textContent = a.toFixed(1);
+    if(cur>0.05) wrap.classList.add('charge');
+    else if(cur<-0.05) wrap.classList.add('dis');
+  }
+  $('sbTime').textContent = cbOn?fmtShort(p.cbTime):'--';
+  const pv=$('sbPv'), bv=$('sbV');
+  if(pv) pv.textContent=(p.solarW!=null&&isFinite(p.solarW))?Math.round(p.solarW):'--';
+  if(bv) bv.textContent=(p.batV!=null&&isFinite(p.batV)&&p.batV>0)?Number(p.batV).toFixed(1):'--';
   renderCoulomb();
   renderPv();
   $('wifiDot').className='dot'+($('connDot')&&$('connDot').classList.contains('ok')?'':' off');
+}
+/* 剩余时间压缩成 4h20m：状态条只有 30px，容不下 hh:mm:ss */
+function fmtShort(sec){
+  if(!isFinite(sec)||sec<=0) return '--';
+  const h=Math.floor(sec/3600),m=Math.round((sec%3600)/60);
+  if(h<=0) return m+'m';
+  return h+'h'+(m?String(m).padStart(2,'0'):'00');
 }
 function fmtRemain(sec){
   if(!isFinite(sec)||sec<=0) return '--';
@@ -1556,12 +1622,13 @@ function fmtRemain(sec){
   const p=n=>String(n).padStart(2,'0');
   return `${p(h)}:${p(m)}:${p(s)}`;
 }
+const set2=(id,txt)=>{ const el=$(id); if(el) el.textContent=txt; };
 function renderCoulomb(){
   const p=state.power;
   const online=p.cbSoc!==null;
   const soc=online?p.cbSoc:0;
-  $('cbTime').textContent=online?fmtRemain(p.cbTime):'--';
-  $('cbCap').textContent=online?(p.cbCap||0).toFixed(1)+'Ah':'--Ah';
+  set2('cbTime2',online?fmtRemain(p.cbTime):'--');
+  set2('cbCap2',online?(p.cbCap||0).toFixed(1)+'Ah':'--Ah');
   const arc=$('cbArc');
   if(arc){
     arc.setAttribute('stroke-dashoffset',ARC*(1-soc/100));
