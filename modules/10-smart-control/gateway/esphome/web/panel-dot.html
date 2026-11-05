@@ -370,6 +370,43 @@ var SKIN_OK={paper:1,night:1,neon:1,contrast:1};
     --font-num-weight:500;
     --font-num-spacing:1px;
   }
+  /* ---------- 7) ios6：拟物化 / iOS 6 ----------
+     与其它四款的差别是**维度**：paper/night/neon/contrast 都是平面
+     （靠留白、线条、明度分层次），ios6 靠高光、阴影、渐变让每个表面"有厚度"。
+     三条贯穿全皮肤的规则：
+       ① 亮面在上、暗面在下（光统一从上方来）；
+       ② 每个凸起 = 1px 白色内高光 + 1px 深色下沿；
+       ③ 按下/开启 = 换成蓝色玻璃、文字变白（iOS 6 的蓝 #0B6FD8 系）。
+     背景：极细横向拉丝 + 顶部白光，静态——拟物世界的背景不流动。 */
+  [data-skin="ios6"]{
+    --c-page-bg:#C7CED6; --c-shell:#DDE3EA; --c-card:#FFFFFF;
+    --c-sunken:#EDF0F4;  --c-raised:#F4F7FA;
+    --c-text:#1A1A1A;    --c-text-2:#333333; --c-text-3:#4A4A4A;
+    --c-text-soft:rgba(0,0,0,.42); --c-accent-soft:rgba(11,111,216,.12);
+    --c-line:#8E9AA8;    --c-line-2:#B9C2CC;
+    --c-accent:#0B6FD8;  --c-info:#0B6FD8;
+    --c-ok:#2E7D32;      --c-warn:#9A5B00;   --c-danger:#B3261E;
+    --c-ok-bg:rgba(46,125,50,.12); --c-warn-bg:rgba(154,91,0,.14); --c-danger-bg:rgba(179,38,30,.12);
+    --c-switch-off:#9AA6B3; --c-switch-on:#0B6FD8; --c-knob:#FFFFFF;
+    --c-slider:#0B6FD8;  --c-mark-on:#FFFFFF; --c-scene-on:#0B6FD8;
+    --bd-card:1px solid #9AA5B1;
+    --r-card:10px; --r-block:8px; --r-chip:6px; --r-sm:5px; --r-xs:3px;
+    --shadow-card:0 1px 0 rgba(255,255,255,.95) inset, 0 1px 2px rgba(0,0,0,.22);
+    --shadow-knob:0 1px 2px rgba(0,0,0,.45), 0 0 0 .5px rgba(0,0,0,.16);
+    --glow-accent:none; --glow-tile:none;
+    --icon-stroke:1.7; --icon-off-opacity:1;
+    /* 拟物世界不透明：半透明会同时露出背景高光，塑料感立刻散掉 */
+    --surf-alpha:100%; --surf-alpha-2:100%; --surf-alpha-btn:100%;
+    --font-body:-apple-system,'Helvetica Neue',Helvetica,Arial,var(--cjk-sys);
+    --font-num:-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif;
+    --font-num-weight:700; --font-num-spacing:0px;
+    --fs-body:13px; --fs-sm:13px; --fs-val:20px;
+    --bg-texture:
+      radial-gradient(120% 42% at 50% 0%, rgba(255,255,255,.7), rgba(255,255,255,0) 62%),
+      repeating-linear-gradient(180deg, rgba(0,0,0,.035) 0 1px, rgba(0,0,0,0) 1px 5px);
+    --bg-texture-size:auto,auto;
+    --bg-fx-name:none;
+  }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
   margin:0;padding:0;background:var(--c-page-bg);color:var(--c-text);
@@ -1081,6 +1118,114 @@ html[data-motion="soft"]{--motion-speed:.6}
   background:transparent;box-shadow:inset 0 0 0 1px var(--c-line);
 }
 [data-skin="neon"] .scene-btn.active.readonly::after{color:var(--c-accent);box-shadow:inset 0 0 0 1px var(--c-accent)}
+
+/* ===== ios6 专属：拟物化的表面规则 =====
+   基座部件只负责结构（间距、圆角、层级），这里只负责"材质"：
+   所有表面都用同一个光源（上白下暗），所有激活态都用同一块蓝玻璃。
+   这样即使组件很多，整体仍是一套系统，而不是逐个零件贴图。 */
+[data-skin="ios6"] header{
+  background:linear-gradient(180deg,#6E839D,#4E6379 52%,#415267);
+  border-bottom:1px solid #2E3C4C;
+  box-shadow:0 1px 0 rgba(255,255,255,.42) inset, 0 -1px 0 rgba(0,0,0,.24) inset,
+             0 1px 2px rgba(0,0,0,.26);
+}
+[data-skin="ios6"] .bn,
+[data-skin="ios6"] .bs,          /* 副标题：漏掉它会以深灰落在深色顶栏上（对比度 1.41） */
+[data-skin="ios6"] header .clock,
+[data-skin="ios6"] header .status,
+[data-skin="ios6"] .pill{
+  color:#FFF;text-shadow:0 -1px 0 rgba(0,0,0,.5);
+}
+[data-skin="ios6"] .bs{opacity:.88}
+[data-skin="ios6"] .logo{
+  background:linear-gradient(180deg,#FFF,#D8DEE6);
+  border-color:#6A7F98;color:#2A3A4E;
+  text-shadow:0 1px 0 rgba(255,255,255,.85);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 1px 2px rgba(0,0,0,.25);
+}
+[data-skin="ios6"] .pill{
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.06));
+  border-color:rgba(255,255,255,.5);
+  box-shadow:0 1px 0 rgba(255,255,255,.35) inset;
+}
+[data-skin="ios6"] .statusbar{
+  background:linear-gradient(180deg,#F8FAFC,#E2E8EF 60%,#D8DFE8);
+  border-bottom:1px solid #A7B2BE;
+  box-shadow:0 1px 0 rgba(255,255,255,.95) inset;
+  color:#3A3A3A;
+}
+[data-skin="ios6"] .statusbar b,[data-skin="ios6"] .statusbar .k{color:#2A2A2A}
+/* 卡片：白瓷面 + 发丝描边 + 顶部 1px 高光 */
+[data-skin="ios6"] .card,
+[data-skin="ios6"] .stat,
+[data-skin="ios6"] .set-row{
+  background:linear-gradient(180deg,#FFFFFF,#FAFBFC);
+  border:1px solid #9AA5B1;
+  box-shadow:0 1px 0 rgba(255,255,255,.95) inset, 0 1px 2px rgba(0,0,0,.16);
+}
+/* 按键：上亮下暗的塑料面 */
+[data-skin="ios6"] .tile,
+[data-skin="ios6"] .scene-btn,
+[data-skin="ios6"] .chip,
+[data-skin="ios6"] .skin-btn{
+  background-image:linear-gradient(180deg,#FFFFFF 0%,#F2F5F8 48%,#DDE3EA 100%);
+  border:1px solid #8D99A7;
+  color:#333;
+  box-shadow:0 1px 0 rgba(255,255,255,1) inset, 0 -1px 0 rgba(0,0,0,.07) inset,
+             0 1px 1px rgba(0,0,0,.14);
+}
+[data-skin="ios6"] .tile .lb,[data-skin="ios6"] .scene-btn .lb{
+  text-shadow:0 1px 0 rgba(255,255,255,.9);
+}
+/* 激活 = 蓝玻璃：中间亮、上下暗，白色内高光，文字纯白带暗投影 */
+[data-skin="ios6"] .tile.on,
+[data-skin="ios6"] .scene-btn.active,
+[data-skin="ios6"] .chip.active,
+[data-skin="ios6"] .skin-btn[aria-pressed="true"]{
+  background-image:linear-gradient(180deg,#2E86DA 0%,#0E63C4 50%,#0A52A6 100%);
+  border-color:#08498F;
+  color:#FFF;
+  box-shadow:0 1px 0 rgba(255,255,255,.42) inset, 0 -1px 0 rgba(0,0,0,.2) inset,
+             0 1px 2px rgba(0,0,0,.28);
+}
+[data-skin="ios6"] .tile.on .lb,
+[data-skin="ios6"] .tile.on .ic,
+[data-skin="ios6"] .scene-btn.active .lb,
+[data-skin="ios6"] .scene-btn.active .st,
+[data-skin="ios6"] .scene-btn.active .ic,
+[data-skin="ios6"] .chip.active{
+  color:#FFF;text-shadow:0 -1px 0 rgba(0,0,0,.35);
+}
+[data-skin="ios6"] .tile.on .mark{
+  background:#FFF;box-shadow:0 1px 2px rgba(0,0,0,.35);
+}
+/* 底部标签栏：深色玻璃条 + 顶部一道亮线（iOS 6 tab bar 的标志） */
+[data-skin="ios6"] nav{
+  background:linear-gradient(180deg,#5E6E82,#3A4757 45%,#2E3A48);
+  border-top:1px solid #1F2A36;
+  box-shadow:0 1px 0 rgba(255,255,255,.28) inset;
+}
+[data-skin="ios6"] nav button{color:#C9D3DE;text-shadow:0 -1px 0 rgba(0,0,0,.55)}
+[data-skin="ios6"] nav button.active{color:#FFF}
+[data-skin="ios6"] nav button.active .ic{color:#FFF;opacity:1}
+[data-skin="ios6"] nav button.active::after{
+  content:'';position:absolute;left:50%;bottom:2px;width:22px;height:2px;margin-left:-11px;
+  border-radius:1px;background:#FFF;box-shadow:0 0 6px rgba(255,255,255,.75);
+}
+/* 开关：凹槽 + 白瓷旋钮 */
+[data-skin="ios6"] .switch{
+  background:linear-gradient(180deg,#8A96A4,#B7C1CC);
+  box-shadow:0 1px 2px rgba(0,0,0,.3) inset;
+}
+[data-skin="ios6"] .switch[aria-checked="true"]{
+  background:linear-gradient(180deg,#2E86DA,#0B57AE);
+  box-shadow:0 1px 2px rgba(0,0,0,.35) inset, 0 1px 0 rgba(255,255,255,.35) inset;
+}
+/* 分区标题：iOS 6 分组表头的字号与阴影 */
+[data-skin="ios6"] .sec-title{
+  color:#3A3A3A;text-shadow:0 1px 0 rgba(255,255,255,.85);
+}
+[data-skin="ios6"] .sec-note{color:#4A4A4A}
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}
@@ -2265,6 +2410,7 @@ const SKINS = [
   { id:'night',    name:'Night',   note:'安静夜色' },
   { id:'neon',     name:'Neon',    note:'HUD 未来感' },
   { id:'contrast', name:'Contrast',note:'高对比' },
+  { id:'ios6',     name:'iOS 6',   note:'拟物光泽' },
 ];
 const SKIN_STORE='forager_skin';
 /* 缩略图取每款皮肤的代表色：底 / 卡片 / 强调 */
@@ -2273,6 +2419,7 @@ const SKIN_SWATCH = {
   paper:   ['#EDEDEB','#FFFFFF','#C4262E'],
   night:   ['#111214','#1A1D20','#D9636B'],
   neon:    ['#070B11','#111823','#22D3EE'],
+  ios6:    ['#C7CED6','#FFFFFF','#0B6FD8'],
   contrast:['#FFFFFF','#000000','#B30000'],
 };
 
