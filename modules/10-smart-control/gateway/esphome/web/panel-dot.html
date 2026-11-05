@@ -557,10 +557,17 @@ header{
 .sb-main b{font-family:var(--font-num);font-weight:700;font-size:var(--fs-body);
   letter-spacing:var(--font-num-spacing,0);color:var(--c-text);line-height:1}
 .sb-main .u{font-size:var(--fs-label)}
-.sb-track{display:block;width:38px;height:4px;border-radius:2px;margin-left:6px;
-  background:var(--c-raised);overflow:hidden;flex:none}
-.sb-fill{display:block;height:100%;width:0;background:var(--c-ok);border-radius:2px;
-  transition:width .4s ease,background .4s ease}
+/* 电量：用电池图标里的分格显示，不占文字位。
+   5 格 = 每格 20%；颜色仍按语义分级（>50 正常 / 20~50 警告 / <20 危险），
+   所以"还剩多少"是余光能读的，不需要停下来说数字。 */
+.sb-batt{display:inline-flex;align-items:center;gap:2px;flex:none;color:var(--c-ok);
+  transition:color .4s ease}
+.bb-body{display:inline-flex;align-items:stretch;gap:2px;width:26px;height:13px;padding:2px;
+  border:1.5px solid currentColor;border-radius:3.5px}
+.bb-body i{flex:1;border-radius:1px;background:currentColor;opacity:.22;
+  transition:opacity .35s ease}
+.bb-body i.on{opacity:1}
+.bb-tip{width:2px;height:6px;border-radius:0 1px 1px 0;background:currentColor;opacity:.85}
 .sb-sep{width:1px;height:12px;background:var(--c-line-2);flex:none}
 .sb-cur{display:flex;align-items:baseline;gap:2px}
 .sb-cur b,.sb-time b,.sb-w b,.sb-clock b{font-family:var(--font-num);font-weight:700;
@@ -1195,7 +1202,7 @@ html[data-motion="soft"]{--motion-speed:.6}
 [data-skin="ios6"] .statusbar{
   background:linear-gradient(180deg,#F8FAFC,#E2E8EF 60%,#D8DFE8);
   border-bottom:1px solid #A7B2BE;
-  box-shadow:0 1px 0 rgba(255,255,255,.95) inset;
+  /* 不再加顶部白色内高光：紧贴深色顶栏下方会出现一道白线，像"隔了几像素的边框" */
   color:#3A3A3A;
 }
 [data-skin="ios6"] .statusbar b,[data-skin="ios6"] .statusbar .k{color:#2A2A2A}
@@ -1310,11 +1317,20 @@ html[data-motion="soft"]{--motion-speed:.6}
 [data-skin="ios26"] .skin-btn{background-image:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.28))}
 [data-skin="ios26"] .tile .lb,[data-skin="ios26"] .scene-btn .lb,
 [data-skin="ios26"] .chip,[data-skin="ios26"] .tile .ic{color:#25303F}
+/* 顶栏 + 状态条是上下相接的同一片玻璃：
+   两块各自带 1px 白边 + 顶部内高光 → 接缝处会叠出 3px 左右的"白框"。
+   做法：只保留顶栏上沿和底部收口，中间接缝全部去掉。 */
 [data-skin="ios26"] header{
   background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(240,246,255,.42));
+  border-bottom:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.98),
+             0 10px 26px -16px rgba(16,32,64,.5);
 }
 [data-skin="ios26"] .statusbar{
-  background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(240,246,255,.3));
+  background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(240,246,255,.26));
+  /* 与内容的交界用一道"暗发丝"而不是白线：亮色玻璃上白线会被读成多出来的边框 */
+  border-top:0;border-bottom:1px solid rgba(16,32,64,.10);
+  box-shadow:none;
 }
 [data-skin="ios26"] nav{
   background:linear-gradient(180deg,rgba(250,252,255,.7),rgba(228,237,249,.55));
@@ -1392,8 +1408,9 @@ html[data-motion="soft"]{--motion-speed:.6}
      其余指标一律进电池页，避免同一数据出现两次。 -->
 <div class="statusbar" id="statusBar">
   <div class="sb-main">
-    <b id="sbSoc">--</b><span class="u">%</span>
-    <i class="sb-track"><i class="sb-fill" id="sbFill"></i></i>
+    <span class="sb-batt" id="sbBatt" role="img" aria-label="电量">
+      <span class="bb-body"><i></i><i></i><i></i><i></i><i></i></span><i class="bb-tip"></i>
+    </span>
   </div>
   <div class="sb-sep"></div>
   <div class="sb-cur" id="sbCurWrap"><span class="dir" id="sbDir">·</span><b id="sbCur">--</b><span class="u">A</span></div>
@@ -1958,6 +1975,8 @@ function renderScenes(){
   });
 }
 
+const batCells=[...document.querySelectorAll('#sbBatt .bb-body i')];
+
 /* ---------- 常驻状态条 ----------
    首页不再有能源卡：那 6 个指标里，电压/充电电流/发电功率 在电池页已有一份，
    剩余容量/剩余时间在电池页的库仑计卡里也有一份 —— 全是重复。
@@ -1965,10 +1984,16 @@ function renderScenes(){
 function renderPower(){
   const p=state.power;
   const pct=Math.max(0,Math.min(100,Number(p.batteryPercent)||0));
-  $('sbSoc').textContent=pct;
-  const fill=$('sbFill');
-  fill.style.width=pct+'%';
-  fill.style.background=battColor(pct);
+  /* 电量分格：0% = 全灭；1~20% = 1 格 …… 81~100% = 5 格（向上取整，不为 0 就至少亮一格） */
+  const lit=pct<=0?0:Math.max(1,Math.ceil(pct*5/100));
+  const cells=batCells;
+  for(let i=0;i<cells.length;i++) cells[i].classList.toggle('on',i<lit);
+  const batt=$('sbBatt');
+  if(batt){
+    batt.style.color=battColor(pct);
+    batt.setAttribute('aria-label','电量 '+pct+'%');   /* 数字只留给读屏和悬停提示 */
+    batt.title='电量 '+pct+'%';
+  }
   $('navSoc').textContent=pct+'%';
   /* 净电流：正 = 充电，负 = 放电。优先库仑计（真实电池净电流），
      没有库仑计时退回 BMS 电流；两者都没有就显示 --。
@@ -2580,6 +2605,9 @@ function applySkin(id){
     if(svg.classList.contains('airflow')) return;
     svg.setAttribute('stroke-width',sw);
   });
+  /* 语义色（电量分格/电流方向）是从 CSS 变量读的，换皮肤后要重算一次，
+     否则会沿用上一款皮肤的颜色，直到下一条 SSE 数据到达才纠正。 */
+  if(typeof renderPower==='function') renderPower();
   renderSkinPicker();
 }
 function renderSkinPicker(){
